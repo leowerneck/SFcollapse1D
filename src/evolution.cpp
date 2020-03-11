@@ -31,7 +31,8 @@
 using namespace std;
 
 /* Function prototypes needed by this file */
-REAL pointwise_Newton_method( const int j, grid::parameters grid, const std::vector<REAL> Phi, const std::vector<REAL> Pi, const std::vector<REAL> a );
+REAL pointwise_Newton_method_Spherical( const int j, grid::parameters grid, const std::vector<REAL> Phi, const std::vector<REAL> Pi, const std::vector<REAL> a );
+REAL pointwise_Newton_method_SinhSpherical( const int j, grid::parameters grid, const std::vector<REAL> Phi, const std::vector<REAL> Pi, const std::vector<REAL> a );
 void rescaling_of_the_lapse( grid::parameters grid, const std::vector<REAL> a, std::vector<REAL> &alpha );
 
 /* First time step driver function */
@@ -111,7 +112,7 @@ void evolution::first_time_step_Spherical( grid::parameters &grid, gridfunction 
   /* Step 1.b.iv: Apply boundary conditions */
   {
     /* phi: Apply no-incoming radiation boundary condition */
-    const REAL coeff1 = 1.0 + half_dt / x[0][J];
+    const REAL coeff1 = 1.0 - half_dt / x[0][J];
     const REAL coeff2 = half_dt * half_inv_dx0;
     phi.level_n[J]    = coeff1 * phi.level_nm1[J] - coeff2 * ( 3.0 * phi.level_nm1[J] - 4.0 * phi.level_nm1[Jm1] + phi.level_nm1[Jm2] );
     /* Phi: Compute at outer boundary from phi */
@@ -140,7 +141,7 @@ void evolution::first_time_step_Spherical( grid::parameters &grid, gridfunction 
    */
   LOOP(1,Nx0Total) {
     /* Step 1.c.i: Compute a */
-    a.level_n[j] = pointwise_Newton_method(j,grid,Phi.level_n,Pi.level_n,a.level_n);
+    a.level_n[j] = pointwise_Newton_method_Spherical(j,grid,Phi.level_n,Pi.level_n,a.level_n);
 
     /* Step 1.c.ii: Compute auxiliary quantities */
     const REAL b = a.level_n[j] + a.level_n[j-1];
@@ -205,7 +206,7 @@ void evolution::first_time_step_Spherical( grid::parameters &grid, gridfunction 
     /* phi: Apply no-incoming radiation boundary condition */
     const REAL coeff1 = dt / x[0][J];
     const REAL coeff2 = dt * half_inv_dx0;
-    phi.level_np1[J]  = phi.level_nm1[J] + coeff1 * phi.level_n[J] - coeff2 * ( 3.0 * phi.level_n[J] - 4.0 * phi.level_n[Jm1] + phi.level_n[Jm2] );
+    phi.level_np1[J]  = phi.level_nm1[J] - coeff1 * phi.level_n[J] - coeff2 * ( 3.0 * phi.level_n[J] - 4.0 * phi.level_n[Jm1] + phi.level_n[Jm2] );
     /* Phi: Compute at outer boundary from phi */
     Phi.level_np1[J] = half_inv_dx0 * ( 3.0 * phi.level_np1[J] - 4.0 * phi.level_np1[Jm1] + phi.level_np1[Jm2] );
     /* Pi: Apply Neumann boundary conditions at the inner boundary */
@@ -232,7 +233,7 @@ void evolution::first_time_step_Spherical( grid::parameters &grid, gridfunction 
    */
   LOOP(1,Nx0Total) {
     /* Step 2.c.i: Compute a */
-    a.level_np1[j] = pointwise_Newton_method(j,grid,Phi.level_np1,Pi.level_np1,a.level_np1);
+    a.level_np1[j] = pointwise_Newton_method_Spherical(j,grid,Phi.level_np1,Pi.level_np1,a.level_np1);
 
     /* Step 2.c.ii: Compute auxiliary quantities */
     const REAL b = a.level_np1[j] + a.level_np1[j-1];
@@ -283,31 +284,19 @@ void evolution::time_step_Spherical( grid::parameters &grid, gridfunction &phi, 
    */
   LOOP(1,Nx0Total-1) {
     /* Step 2.a: Compute useful auxiliary variables */
-    // r_{j-1}^{2} and r_{j-1}^{3}
     const REAL r_sqr_jm1               = SQR(x[0][j-1]);
     const REAL r_cbd_jm1               = r_sqr_jm1 * x[0][j-1];
-    // r_{j_1}^{2} and r_{j+1}^{3}
     const REAL r_sqr_jp1               = SQR(x[0][j+1]);
     const REAL r_cbd_jp1               = r_sqr_jp1 * x[0][j+1];
-    // ( alpha / a )^{n}_{j-1}
     const REAL alpha_over_a_jm1        = alpha.level_n[j-1]/a.level_n[j-1];
-    // ( alpha / a )^{n-1}_{j}
     const REAL alpha_over_a_j_nm1      = alpha.level_nm1[j]/a.level_nm1[j];
-    // ( alpha / a )^{n}_{j}
     const REAL alpha_over_a_j_n        = alpha.level_n[j]  /a.level_n[j];
-    // ( alpha / a )^{n}_{j+1}
     const REAL alpha_over_a_jp1        = alpha.level_n[j+1]/a.level_n[j+1];
-    // ( alpha * Pi / a )^{n}_{j-1}
     const REAL alpha_Pi_over_a_jm1     = alpha_over_a_jm1 * Pi.level_n[j-1];
-    // ( alpha * Pi / a )^{n-1}_{j}
     const REAL alpha_Pi_over_a_j_nm1   = alpha_over_a_j_nm1 * Pi.level_nm1[j];
-    // ( alpha * Pi / a )^{n}_{j}
     const REAL alpha_Pi_over_a_j_n     = alpha_over_a_j_n * Pi.level_n[j];
-    // ( alpha * Pi / a )^{n}_{j+1}
     const REAL alpha_Pi_over_a_jp1     = alpha_over_a_jp1 * Pi.level_n[j+1];
-    // ( r^{2} * alpha * Phi / a)^{n}_{j-1}
     const REAL alpha_Phi_r2_over_a_jm1 = r_sqr_jm1 * alpha_over_a_jm1 * Phi.level_n[j-1];
-    // ( r^{2} * alpha * Phi / a)^{n}_{j+1}
     const REAL alpha_Phi_r2_over_a_jp1 = r_sqr_jp1 * alpha_over_a_jp1 * Phi.level_n[j+1];
 
     /* Step 2.b: Compute the RHSs of Phi */
@@ -357,7 +346,7 @@ void evolution::time_step_Spherical( grid::parameters &grid, gridfunction &phi, 
    */
   LOOP(1,Nx0Total) {
     /* Step 3.a: Compute a */
-    a.level_np1[j] = pointwise_Newton_method(j,grid,Phi.level_np1,Pi.level_np1,a.level_np1);
+    a.level_np1[j] = pointwise_Newton_method_Spherical(j,grid,Phi.level_np1,Pi.level_np1,a.level_np1);
 
     /* Step 3.b: Compute auxiliary quantities */
     const REAL b = a.level_np1[j] + a.level_np1[j-1];
@@ -386,10 +375,116 @@ void evolution::first_time_step_SinhSpherical( grid::parameters &grid, gridfunct
 /* Generic time step in SinhSpherical coordinates */
 void evolution::time_step_SinhSpherical( grid::parameters &grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha ) {
 
-}
+  DECLARE_GRID_PARAMETERS;
 
-inline REAL evolution::mass_aspect_ratio( const REAL r, const REAL a ) {
-  return( 0.5 * r * (1.0 - a) );
+  /* .---------------------------------------------------------.
+   * | This function performs an integration to the time level |
+   * | n+1 given the gridfunctions at the timelevels n and n-1 |
+   * .---------------------------------------------------------.
+   */
+  const int J             = Nx0Total-1;
+  const int Jm1           = J-1;
+  const int Jm2           = J-2;
+  const REAL dt_times_2   = 2.0 * dt;
+  const REAL half_inv_dx0 = 0.5 * inv_dx0; // This is 1.0/(2.0*dx0)
+  const REAL W_times_sinh_invW_over_A   = sinhW/A_over_sinh_inv_W;
+
+  /* .--------------------------------------------------------------.
+   * | Step 1: Apply inner boundary conditions to Phi, a, and alpha |
+   * .--------------------------------------------------------------.
+   */
+  Phi.level_np1[0]   = 0.0;
+  a.level_np1[0]     = 1.0;
+  alpha.level_np1[0] = 1.0;
+
+  /* .------------------------------.
+   * | Step 2: Integrate Phi and Pi |
+   * .------------------------------.
+   */
+  LOOP(1,Nx0Total-1) {
+    /* Step 2.a: Compute useful auxiliary variables */
+    const REAL sinh_x0_inv_W_jm1          = sinh( x[0][j-1] * inv_sinhW );
+    const REAL sinh_x0_inv_W_j            = sinh( x[0][j]   * inv_sinhW );
+    const REAL sinh_x0_inv_W_jp1          = sinh( x[0][j+1] * inv_sinhW );
+    const REAL cosh_x0_inv_W_j            = cosh( x[0][j]   * inv_sinhW );
+    const REAL alpha_over_a_jm1           = alpha.level_n[j-1]/a.level_n[j-1];
+    const REAL alpha_over_a_j_nm1         = alpha.level_nm1[j]/a.level_nm1[j];
+    const REAL alpha_over_a_j_n           = alpha.level_n[j]  /a.level_n[j];
+    const REAL alpha_over_a_jp1           = alpha.level_n[j+1]/a.level_n[j+1];
+    const REAL alpha_Pi_over_a_jm1        = alpha_over_a_jm1 * Pi.level_n[j-1];
+    const REAL alpha_Pi_over_a_j_nm1      = alpha_over_a_j_nm1 * Pi.level_nm1[j];
+    const REAL alpha_Pi_over_a_j_n        = alpha_over_a_j_n * Pi.level_n[j];
+    const REAL alpha_Pi_over_a_jp1        = alpha_over_a_jp1 * Pi.level_n[j+1];
+    const REAL alpha_Phi_shx02_over_a_jm1 = SQR(sinh_x0_inv_W_jm1) * alpha_over_a_jm1 * Phi.level_n[j-1];
+    const REAL alpha_Phi_shx02_over_a_jp1 = SQR(sinh_x0_inv_W_jp1) * alpha_over_a_jp1 * Phi.level_n[j+1];
+
+    /* Step 2.b: Compute the RHSs of Phi */
+    const REAL rhs_phi = 1.5 * alpha_Pi_over_a_j_n - 0.5 * alpha_Pi_over_a_j_nm1;
+    const REAL tmp0    = half_inv_dx0 * ( W_times_sinh_invW_over_A / cosh_x0_inv_W_j );
+    const REAL rhs_Phi = tmp0 * ( alpha_Pi_over_a_jp1 - alpha_Pi_over_a_jm1 );
+    const REAL rhs_Pi  = tmp0 / SQR(sinh_x0_inv_W_j) * ( alpha_Phi_shx02_over_a_jp1 - alpha_Phi_shx02_over_a_jm1 );
+
+    /* Step 2.c: Evolve Phi and Pi */
+    if( j==1 ) {
+      const REAL tmp0 = 3.0 * alpha.level_n[0] * Pi.level_n[0] / a.level_n[0];
+      const REAL tmp1 = alpha.level_nm1[0] * Pi.level_nm1[0] / a.level_nm1[0];
+      phi.level_np1[0] = phi.level_n[0] + 0.5 * dt * ( tmp0 - tmp1 );
+    }
+    phi.level_np1[j] = phi.level_n[j]   + dt * rhs_phi;
+    Phi.level_np1[j] = Phi.level_nm1[j] + dt_times_2 * rhs_Phi;
+    Pi.level_np1[j]  = Pi.level_nm1[j]  + dt_times_2 * rhs_Pi;
+  }
+  /* Step 2.d: Apply boundary conditions */
+  {
+    /* phi: Apply no-incoming radiation boundary condition */
+    const REAL inv_dt = 1.0/dt;
+    const REAL coeff  = 1.0 / ( 3.0*inv_dt + 2.0/x[0][J] + 3.0*inv_dx0 );
+    phi.level_np1[J]  = coeff * ( inv_dt * ( 4.0*phi.level_n[J] - phi.level_nm1[J] ) + inv_dx0 * ( 4.0*phi.level_np1[J-1] - phi.level_np1[J-2] ) );
+    /* Phi: Compute at outer boundary from phi */
+    Phi.level_np1[J] = half_inv_dx0 * ( 3.0 * phi.level_np1[J] - 4.0 * phi.level_np1[Jm1] + phi.level_np1[Jm2] );
+    /* Pi: Apply Neumann boundary conditions at the inner boundary */
+    Pi.level_np1[0] = -Pi.level_nm1[0] + Pi.level_nm1[1] + Pi.level_np1[1];
+    /* Pi: Compute from the evolution equation at the outer boundary */
+    const REAL sinh_x0_inv_W_Jm2          = sinh( x[0][J-2] * inv_sinhW );
+    const REAL sinh_x0_inv_W_Jm1          = sinh( x[0][J-1] * inv_sinhW );
+    const REAL sinh_x0_inv_W_J            = sinh( x[0][J]   * inv_sinhW );
+    const REAL cosh_x0_inv_W_J            = cosh( x[0][J]   * inv_sinhW );
+    const REAL alpha_over_a_Jm2           = alpha.level_n[Jm2]/a.level_n[Jm2];
+    const REAL alpha_over_a_Jm1           = alpha.level_n[Jm1]/a.level_n[Jm1];
+    const REAL alpha_over_a_J             = alpha.level_n[J]  /a.level_n[J];
+    const REAL alpha_Phi_shx02_over_a_Jm2 = SQR(sinh_x0_inv_W_Jm2) * alpha_over_a_Jm2 * Phi.level_n[Jm2];
+    const REAL alpha_Phi_shx02_over_a_Jm1 = SQR(sinh_x0_inv_W_Jm1) * alpha_over_a_Jm1 * Phi.level_n[Jm1];
+    const REAL alpha_Phi_shx02_over_a_J   = SQR(sinh_x0_inv_W_J  ) * alpha_over_a_J   * Phi.level_n[J];
+    const REAL coeff_Pi                   = half_inv_dx0 * ( W_times_sinh_invW_over_A / ( SQR(sinh_x0_inv_W_J) * cosh_x0_inv_W_J ) ) ;
+    const REAL rhs_Pi                     = coeff_Pi * ( 3.0 * alpha_Phi_shx02_over_a_J - 4.0 * alpha_Phi_shx02_over_a_Jm1 + alpha_Phi_shx02_over_a_Jm2 );
+    Pi.level_np1[J]                       = Pi.level_nm1[J] + dt_times_2 * rhs_Pi;
+  }
+
+  /* .-------------------------------.
+   * | Step 3: Integrate a and alpha |
+   * .-------------------------------.
+   */
+  LOOP(1,Nx0Total) {
+    /* Step 3.a: Compute a */
+    a.level_np1[j] = pointwise_Newton_method_SinhSpherical(j,grid,Phi.level_np1,Pi.level_np1,a.level_np1);
+
+    /* Step 3.b: Compute auxiliary quantities */
+    const REAL b = a.level_np1[j] + a.level_np1[j-1];
+    const REAL c = a.level_np1[j] - a.level_np1[j-1];
+    const REAL d = ( 1.0 - 0.25 * SQR(b) )/( sinhW * tanh(x[0][j]/sinhW) ) - inv_dx0 * c / b;
+
+    /* Step 3.c: Compute alpha */
+    alpha.level_np1[j] = alpha.level_np1[j-1]*( 1.0 - d*dx0 )/( 1.0 + d*dx0 );
+  }
+  /* Step 3.d: Now rescale alpha */
+  rescaling_of_the_lapse(grid,a.level_np1,alpha.level_np1);
+
+  /* .-------------------------.
+   * | Step 4: Update the time |
+   * .-------------------------.
+   */
+  grid.t += dt;
+  
 }
 
 void evolution::output_mass_aspect_ratio( const int which_level, const int n, const grid::parameters grid, const gridfunction a ) {

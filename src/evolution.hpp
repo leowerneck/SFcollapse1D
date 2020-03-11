@@ -48,12 +48,6 @@ namespace evolution {
   /* Generic time step in SinhSpherical coordinates prototype */
   void time_step_SinhSpherical( grid::parameters &grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha );
 
-  /* .---------------------------.
-   * | Compute mass-aspect ratio |
-   * .---------------------------.
-   */
-  inline REAL mass_aspect_ratio( const REAL, const REAL );
-
   /* Print mass_aspect_ratio */
   void output_mass_aspect_ratio( const int, const int, const grid::parameters, const gridfunction );
 
