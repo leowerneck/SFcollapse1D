@@ -89,8 +89,8 @@ REAL pointwise_Newton_method_SinhSpherical( const int j, grid::parameters grid, 
   const REAL PhiSqr    = SQR(avgPhi);
   const REAL PiSqr     = SQR(avgPi);
   const REAL midx0     = ( x[0][j] + x[0][j-1] ) / 2.0;
-  const REAL PhiPiTerm = 2.0 * M_PI * (SQR(sinhA) / sinhW) * sinh(midx0*inv_sinhW) * cosh(midx0*inv_sinhW) / SQR(sinh_inv_W) * ( PhiSqr + PiSqr );
-  const REAL half_invr = 0.5/( sinhW * tanh(x[0][j]) );
+  const REAL PhiPiTerm = 2.0 * M_PI * (SQR(sinhA) * inv_sinhW) * sinh(midx0*inv_sinhW) * cosh(midx0*inv_sinhW) / SQR(sinh_inv_W) * ( PhiSqr + PiSqr );
+  const REAL half_invr = 0.5/( sinhW * tanh(midx0*inv_sinhW) );
 
   /* Set Newton's guess */
   REAL A_old = log(a[j-1]);
@@ -125,5 +125,18 @@ REAL pointwise_Newton_method_SinhSpherical( const int j, grid::parameters grid, 
 
   /* Return the value of a */
   return( exp(A_new) );
+
+}
+
+REAL pointwise_Newton_method( const int j, grid::parameters grid, const std::vector<REAL> Phi, const std::vector<REAL> Pi, const std::vector<REAL> a ) {
+
+#if( COORD_SYSTEM == SPHERICAL )
+  return pointwise_Newton_method_Spherical(j,grid,Phi,Pi,a);
+#elif( COORD_SYSTEM == SINH_SPHERICAL )
+  return pointwise_Newton_method_SinhSpherical(j,grid,Phi,Pi,a);
+#else
+  cerr << "ERROR! Unknown coordinate system! Please check the macros.hpp file!\n";
+  exit(5);
+#endif
 
 }
