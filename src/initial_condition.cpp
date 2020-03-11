@@ -28,7 +28,8 @@
 #include "gridfunction.hpp"
 
 /* Function prototypes needed by this file */
-REAL pointwise_Newton_method( const int j, grid::parameters grid, const std::vector<REAL> Phi, const std::vector<REAL> Pi, const std::vector<REAL> a );
+REAL pointwise_Newton_method_Spherical( const int j, grid::parameters grid, const std::vector<REAL> Phi, const std::vector<REAL> Pi, const std::vector<REAL> a );
+REAL pointwise_Newton_method_SinhSpherical( const int j, grid::parameters grid, const std::vector<REAL> Phi, const std::vector<REAL> Pi, const std::vector<REAL> a );
 void rescaling_of_the_lapse( grid::parameters grid, const std::vector<REAL> a, std::vector<REAL> &alpha );
 
 void initial_condition( grid::parameters grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha ) {
@@ -49,7 +50,7 @@ void initial_condition( grid::parameters grid, gridfunction &phi, gridfunction &
 
     if( j>0 ) {
       /* Compute a */
-      a.level_nm1[j] = pointwise_Newton_method(j,grid,Phi.level_nm1,Pi.level_nm1,a.level_nm1);
+      a.level_nm1[j] = pointwise_Newton_method_Spherical(j,grid,Phi.level_nm1,Pi.level_nm1,a.level_nm1);
 
       /* Compute auxiliary quantities */
       const REAL b = a.level_nm1[j] + a.level_nm1[j-1];
