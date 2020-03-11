@@ -1,0 +1,606 @@
+% .---------------------------------------------------------.
+% | Copyright (c) 2020, Leonardo Werneck, leow155@gmail.com |
+% .---------------------------------------------------------.
+
+% Set document type, font size, and paper size
+\documentclass[a4paper,11pt]{article}
+
+% Load all necessary packages
+
+% Equation related packages
+\usepackage{amsmath,amssymb,xfrac}
+
+% Figure related packages
+\usepackage{graphicx,float,tikz}
+
+% Load geometry, which allow us to configure the margins of the pages
+\usepackage[left=1in,right=1in,top=0.8in,bottom=0.8in]{geometry}
+
+% Load setspace, which allow us to set the line spacing
+\usepackage{setspace}
+
+% Load biblatex, useful for managing the references and citations
+\usepackage[backend=biber,natbib=true,style=numeric,sorting=none]{biblatex}
+\addbibresource{SFcollapse1D.bib}
+
+% Load hyperref, for colorful links
+\usepackage[colorlinks=true,allcolors=blue,linktoc=page]{hyperref}
+
+% Load tcolorbox, for pretty boxes around important paragraphs
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable} % This allow us to spam the boxes over multiple pages
+
+% .------------------------.
+% | Beginning of shortcuts |
+% .------------------------.
+
+% Set useful shortcuts for greek letters and common math symbols
+\renewcommand{\a}{\alpha}
+\renewcommand{\b}{\beta}
+\renewcommand{\d}{\delta}
+\newcommand{\e}{\epsilon}
+\newcommand{\g}{\gamma}
+\newcommand{\s}{\sigma}
+\newcommand{\gt}{\tilde{\gamma}}
+\newcommand{\gDD}[2]{\g_{{#1}{#2}}}
+\newcommand{\gUU}[2]{\g^{{#1}{#2}}}
+\newcommand{\gtDD}[2]{\gt_{{#1}{#2}}}
+\newcommand{\gtUU}[2]{\gt^{{#1}{#2}}}
+\newcommand{\GDD}[2]{g_{{#1}{#2}}}
+\newcommand{\GUU}[2]{g^{{#1}{#2}}}
+\newcommand{\sqrtgdet}{\sqrt{\g}}
+\newcommand{\sqrtGdet}{\sqrt{-g}}
+\newcommand{\pd}{\partial}
+\newcommand{\pdD}[1]{\pd_{{#1}}}
+\newcommand{\pdU}[1]{\pd^{{#1}}}
+\newcommand{\nn}{\nonumber}
+\newcommand{\dt}{\Delta t}
+\newcommand{\dr}{\Delta r}
+\newcommand{\order}[2]{\mathcal{O}\lrpar{#1^{#2}}}
+\renewcommand{\H}{\mathcal{H}}
+\renewcommand{\L}{\mathcal{L}}
+\newcommand{\M}{\mathcal{M}}
+\renewcommand{\S}{\mathcal{S}}
+
+% Set shortcutss for (), [], {}, and ||
+\newcommand{\lrpar}[1]{\left( #1 \right)}
+\newcommand{\lrsquare}[1]{\left[ #1 \right]}
+\newcommand{\lrcurly}[1]{\left\{ #1 \right\}}
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\blrpar}[1]{\big( #1 \big)}
+\newcommand{\blrsquare}[1]{\big[ #1 \big]}
+\newcommand{\blrcurly}[1]{\big\{ #1 \big\}}
+\newcommand{\babs}[1]{\big| #1 \big|}
+
+% Useful shortcut to avoid typing "noindent" all over the place
+\newcommand{\n}{\noindent}
+
+% Set environment shortcuts
+\newcommand{\eq}[1]{
+  \begin{equation}
+    #1
+  \end{equation}
+}
+\newcommand{\spl}[1]{
+  \begin{split}
+    #1
+  \end{split}
+}
+\newcommand{\al}[1]{
+  \begin{align}
+    #1
+  \end{align}
+}
+\newcommand{\alat}[2]{
+  \begin{alignat}{#1}
+    #2
+  \end{alignat}
+}
+\newcommand{\ctr}[1]{
+  \begin{center}
+    #1
+  \end{center}
+}
+\renewcommand{\parbox}[2]{
+
+  \vspace*{0.25in}
+  
+  \begin{tcolorbox}[title=Box #1,colback=blue!5!white,colframe=gray!75!black]
+    #2
+  \end{tcolorbox}
+
+  \vspace*{0.25in}
+
+}
+\newcommand{\parboxbreak}[2]{
+  
+  \vspace*{0.25in}
+  
+  \begin{tcolorbox}[breakable, pad at break=1mm, before=\centering,title=Box #1,colback=blue!5!white,colframe=gray!75!black]
+    #2
+  \end{tcolorbox}
+
+  \vspace*{0.25in}
+
+}
+
+% .------------------------.
+% |    End of shortcuts    |
+% .------------------------.
+
+% Title, author, etc
+\title{Gravitational collapse of a massless scalar field}
+\author{Leonardo Werneck}
+\date{March, 2020}
+
+% .---------------------------.
+% | Beginning of the document |
+% .---------------------------.
+\begin{document}
+
+% Print the title
+\maketitle
+
+% Print the table of contents and list of figures
+\ctr{\rule{\textwidth}{1pt}}
+\tableofcontents
+\ctr{\rule{\textwidth}{1pt}}
+\listoffigures
+\ctr{\rule{\textwidth}{1pt}}
+
+\spacing{1.5}
+
+\section{Introduction}
+
+\section{Choptuik's original approach -- The ADM Equations}
+
+In 1993, Matt Choptuik performed numerical simulations of massless scalar fields minimally coupled to gravity and presented evidence for critical phenomena in this system~\cite{PhysRevLett.70.9}. He considered families of solutions $\S\lrsquare{p}$ with the property that a critical parameter value, $p^{\star}$, separates solutions containing black holes from those which do not. He also showed that the limit $p\to p^{\star}$ is \emph{universal} (i.e. independent of the type of initial condition), with structure appearing at arbitrarily small time scales. Furthermore, he showed that the masses of the black holes formed in this limit obey the power law $M_{\rm BH} \propto \abs{p-p^{\star}}^{\g}$, where $\g\approx0.37$ is a universal exponent.
+
+Our goal here is to present a thorough review of the techniques used by Choptuik in his seminal paper, guiding the reader through the steps required to write down a program that is able to reproduce his results. It is important, however, that the reader keep in mind that the techniques used by Choptuik are outdated and specialized to this specific problem, making it harder to generalize the final program to work with different problems. A better approach, which will use only hyperbolic equations, thus allowing the use of better integration techniques that are more easily generalized will be presented in the next section.
+
+We emphasize that the goal of this section is to discuss the \emph{numerical techniques} needed to solve the problem. This means we will not derive the equations used in detail, but we will present useful references.
+
+\subsection{The ADM decomposition of Einstein's field equations}
+
+Here we present the equations obtained when decomposing Einstein's equations into its time and spatial componenents, known as the \emph{Arnowitt-Deser-Misner (ADM) decomposition}~\cite{Arnowitt:1959ah}. Our notation will follow that of Baumgarte and Shapiro~\cite{Baumgarte:2010ndz}.
+
+Einstein's field equations are written in the form
+
+\eq{
+  R_{\mu\nu} - \frac{1}{2}\GDD{\mu}{\nu}R = 8\pi T_{\mu\nu}\ ,
+}
+
+\n where $\GDD{\mu}{\nu}$ is the spacetime metric, $R_{\mu\nu}$ is the Ricci tensor computed from $\GDD{\mu}{\nu}$, $R \equiv \GUU{\mu}{\nu}R_{\mu\nu}$ is the Ricci scalar, and $T_{\mu\nu}$ is the energy-momentum tensor. Note that we have chosen units such that $G_{\rm N}=1=c$, which are called \emph{geometrized units}.
+
+The decomposition of spacetime into space plus time consists of considering spatial hypersurfaces $\Sigma\lrpar{t}$ of constant time $t$ which are then evolved in forward in time. The 4-metric $\GDD{\mu}{\nu}$ is written as
+
+\eq{
+  \GDD{\mu}{\nu} =
+  \begin{pmatrix}
+    -\a^{2} + \b_{\ell}\b^{\ell} & \b_{i}\\
+    \b_{j} & \gDD{i}{j}
+  \end{pmatrix}\ ,
+}
+
+\n while the inverse 4-metric is written as
+
+\eq{
+  \GUU{\mu}{\nu} =
+  \begin{pmatrix}
+    -\a^{-2} & \a^{-2}\b^{i}\\
+    \a^{-2}\b^{j} & \gUU{i}{j} - \a^{-2}\b^{i}\b^{j}
+  \end{pmatrix}\ ,
+}
+
+\n where $\a$ is known as the \emph{lapse function}, $\b$ is known as the \emph{shift vector}, and $\gDD{i}{j}$ is the ADM 3-metric, with $\gUU{i}{j}$ its inverse.
+
+The lapse function measures the amount of proper time that elapses while moving from a hypersurface $\Sigma\lrpar{t}$ to a hypersurface $\Sigma\lrpar{t+dt}$, with $dt$ a given time step. The shift vector is responsible for ``correcting'' the spatial coordinates when moving from $\Sigma\lrpar{t}$ to $\Sigma\lrpar{t+dt}$. Given a point point $(X,Y,Z)$ at $\Sigma\lrpar{t}$, we integrate in time by moving in the normal direction towards the next hypersurface $\Sigma\lrpar{t+dt}$. However, there is no guarantee that we will arrive at the same spatial point $(X,Y,Z)$. The shift vector then corrects this, by translating the new point to $(X,Y,Z)$. Depending on the choice of folliation, however, this does not happen and therefore $\b^{i}=0$. The spatial 3-metric $\gDD{i}{j}$ lives only at the spatial hypersurfaces and have no time component. See figure~\ref{fig:adm_decomposition} for an illustration of the ADM decomposition.
+
+\begin{figure}[ht]
+\centering
+\tikz{
+	\node at (4.9,1) {$\Sigma(t+dt)$};
+	\node at (4.5,-1) {$\Sigma(t)$};
+	\draw[fill,lightgray,draw=black,fill opacity=0.5] (0,-2) to [bend left] (1,-1) to [bend right] (2,0) to (4,-1) to [bend left] (3,-2) to [bend right] (2,-3) to (0,-2);
+	\draw[fill,lightgray,draw=black,fill opacity=0.5] (0,0) to [bend left] (1,1) to [bend right] (2,2) to (4,1) to [bend left] (3,0) to [bend right] (2,-1) to (0,0);
+	\draw[->] (1.5,-1.0) -- (1.5,1.0);
+        \draw[->] (1.5,+1.0) -- (2.5,0.5);
+	\draw[->,dashed] (1.5,0) to [bend left] (-0.5,-0.5) node [left] {$\a dt \,n^{i}$};
+	\draw[dashed] (1.5,-1) -- (3.5,2) node [above right] {Line of constant $x^i=X^i$};
+	\draw[->,dashed] (2,0.75) to [bend right] (1,2) node [left] {$\b^i\, dt$};
+	\draw[->,dashed] (1.5,-1) to [bend right] (-0.5,-1.5) node [left] {Point $x^i = X^i$};
+	\draw[fill] (1.5,-1.0) circle [radius=0.05];
+        \draw[fill] (1.5,+1.0) circle [radius=0.05];
+	\draw[fill] (2.5,+0.5) circle [radius=0.05];
+}
+\caption[Illustration of the ADM decomposition.]{Illustration of the ADM decomposition. In the picture the roles of the lapse function, $\a$, and the shift vector, $\b^i$ are depicted, and $n^{i}$ is the unit vector normal to the hypersurface $\Sigma(t)$. The figure can be misleading, however, because the two surfaces, $\Sigma(t)$ and $\Sigma(t+dt)$, are drawn as exact copies of one another, while in general this is not the case.}
+\label{fig:adm_decomposition}
+\end{figure}
+
+The general form of the line element is then (cf. eq. (2.123) in~\cite{Baumgarte:2010ndz})
+
+\al{
+  ds^{2} &= -\alpha^{2}dt^{2} + \gDD{i}{j}\lrpar{dx^{i} + \b^{i}dt}\lrpar{dx^{j} + \b^{j}dt} \nn\\
+         &= \lrpar{-\a^{2} + \b_{\ell}\b^{\ell}}dt^{2} + 2\b_{i}dt\,dx^{i} + \gDD{i}{j}dx^{i}dx^{j}\ .
+}
+
+With the coordinate choices made above, we have that the \emph{Hamiltonian constraint} (conservation of energy), $\H$, is given by
+
+\eq{ \H \equiv ^{(3)}\!R + K^{2} - K_{ij}K^{ij} - 16\pi\rho = 0\ ,\label{eq:ADMH} }
+
+\n where $^{(3)}\!R$ is the Ricci scalar computed from $\gDD{i}{j}$, $K_{ij}$ is the extrinsic curvature of the spatial hypersurface $\Sigma$, $K\equiv \gUU{i}{j}K_{ij}$ is the trace of the extrinsic curvature, and $\rho\equiv n^{\mu}n^{\nu}T_{\mu\nu}$ is the energy density. The \emph{momentum constraints} (conservation of momentum), $\M$, are given by
+
+\eq{ \M_{i} \equiv D_{j}K^{j}_{\ i} - D_{i}K - 8\pi S_{i} = 0\ ,\label{eq:ADMM} }
+
+\noindent where $D_{i}$ are covariant derivatives compatible with $\gDD{i}{j}$ and $S_{i} \equiv - P^{\mu}_{\ i}n^{\nu}T_{\mu\nu}$ are \emph{momentum densities}, with $P^{\mu}_{\ \nu} \equiv \d^{\mu}_{\ \nu} + n^{\mu}n_{\nu}$ the operator which projects the spacetime components of a tensor onto the spatial hypersurface $\Sigma$.
+
+The evolution equations for the extrinsic curvature and the metric are given by
+
+\al{
+  \pd_{t} K_{ij} &= \b^{\ell}\pd_{\ell}K_{ij} + K_{i\ell}\pd_{j}\b^{\ell} + K_{j\ell}\pd_{i}\b^{\ell} - D_{i}D_{j}\a\nn\\
+                &+\a\lrpar{\,^{(3)}\!R_{ij} + K K_{ij} - 2K_{i\ell}K^{\ell}_{\ j}} + 4\pi\a\lrsquare{\g_{ij}\lrpar{S-\rho} -2S_{ij}}\ .\label{eq:ADMevoK}
+}
+
+\n and
+
+\eq{ \pd_{t}\g_{ij} = -2\a K_{ij} + D_{i}\b_{j} + D_{j}\b_{i}\ ,\label{eq:ADMevoG} }
+
+\n respectively. These 4 equations,~\eqref{eq:ADMH}-\eqref{eq:ADMevoG}, are the \emph{ADM equations}.
+
+\parboxbreak{1: The ADM equations}{
+
+  Given the 4-metric $\GDD{\mu}{\nu}$, the ADM equations are obtained by considering the decomposition
+
+  \eq{
+    \GDD{\mu}{\nu} =
+    \begin{pmatrix}
+      -\a^{2} + \b_{\ell}\b^{\ell} & \b_{i}\\
+      \b_{j} & \gDD{i}{j}
+    \end{pmatrix}\ ,
+    \quad
+    \GUU{\mu}{\nu} =
+    \begin{pmatrix}
+      -\a^{-2} & \a^{-2}\b^{i}\\
+      \a^{-2}\b^{j} & \gUU{i}{j} - \a^{-2}\b^{i}\b^{j}
+    \end{pmatrix}\ ,\nn
+  }
+
+  \n where $\a$ is the lapse function, $\b^{i}$ the shift vector, and $\gDD{i}{j}$ the physical spatial metric. With the choice of normal vector
+
+  \eq{ n_{\mu} = \lrpar{-\a,0,0,0}\ ,\quad n^{\mu} = \lrpar{\a^{-1},-\a^{-1}\b^{i}}\ ,\nn}
+
+  \n the ADM equations are written as two conservation equations (constraints) and two evolution equations. The evolution equations evolve the spatial metric and extrinsic curvature, $K_{ij}$, and are given by
+
+  \eq{ \pd_{t}\g_{ij} = -2\a K_{ij} + D_{i}\b_{j} + D_{j}\b_{i}\ ,\nn }
+
+  \n and
+
+  \al{
+    \pd_{t} K_{ij} &= \b^{\ell}\pd_{\ell}K_{ij} + K_{i\ell}\pd_{j}\b^{\ell} + K_{j\ell}\pd_{i}\b^{\ell} - D_{i}D_{j}\a\nn\\
+                  &+\a\lrpar{\,^{(3)}\!R_{ij} + K K_{ij} - 2K_{i\ell}K^{\ell}_{\ j}} + 4\pi\a\lrsquare{\g_{ij}\lrpar{S-\rho} -2S_{ij}}\ .\nn
+  }
+
+  The Hamiltonian constraint (conservation of energy) reads
+
+  \eq{ \H \equiv ^{(3)}\!R + K^{2} - K_{ij}K^{ij} - 16\pi\rho = 0\ ,\nn }
+
+  \n while the momentum constraints (conservation of momentum) reads
+
+  \eq{ \M_{i} \equiv D_{j}K^{j}_{\ i} - D_{i}K - 8\pi S_{i} = 0\ , }
+
+  \noindent where $\rho\equiv n^{\mu}n^{\nu}T_{\mu\nu}$ is the energy density and $S_{i} \equiv - P^{\mu}_{\ i}n^{\nu}T_{\mu\nu}$ are \emph{momentum densities}, with $P^{\mu}_{\ \nu} \equiv \d^{\mu}_{\ \nu} + n^{\mu}n_{\nu}$ the operator which projects the spacetime components of a tensor onto the spatial hypersurface.
+}
+
+\subsection{The scalar field evolution equations}
+
+The gravitational collapse of a massless scalar field is studied by studying the action
+
+\eq{S = \int d^{4}x \sqrtGdet \lrsquare{\frac{1}{16\pi}R - \frac{1}{2}\GUU{\mu}{\nu}\pd_{\mu}\phi\pd_{\nu}\phi}\ ,\label{eq:EKG}}
+
+\n where $\GUU{\mu}{\nu}$ is the inverse of the physical 4-metric $\GDD{\mu}{\nu}$, $g$ is the determinant of $\GDD{\mu}{\nu}$, and $\phi$ is a massless scalar field. The energy-momentum tensor for a massless scalar field is given by
+
+\eq{ T^{\phi}_{\mu\nu} = -\frac{2}{\sqrtGdet}\frac{\d\L_{\phi}}{\d\GUU{\mu}{\nu}} = \pd_{\mu}\phi\pd_{\nu}\phi - \frac{1}{2}\GDD{\mu}{\nu}\pd_{\a}\phi\pd^{\a}\phi\ , }
+
+\n where $\L_{\phi} = \frac{\sqrtGdet}{2}\GUU{\mu}{\nu}\pd_{\mu}\phi\pd_{\nu}\phi$ is the Lagrangian density of a massless scalar field. We now consider the most general spherically symmetric 4-metric in the polar/radial gauge, whose line element is given by
+
+\eq{ ds^{2} = -\a^{2}\lrpar{t,r}dt^{2} + a^{2}\lrpar{t,r}dr^{2} + r^{2}d\Omega^{2}\ , }
+
+\n where we have chosen to write $\gDD{r}{r} = a^{2}$. The coordinate $r$ measures proper surface area, meaning that a sphere of radius $R$ has proper area $4\pi R^{2}$. The Einstein-Klein-Gordon equation, which is obtained by varying action~\eqref{eq:EKG} with respect to $\phi$, then reads
+
+\eq{ \pd_{t}\lrpar{\frac{a}{\a}\pd_{t}\phi} = \frac{1}{r^{2}}\pd_{r}\lrpar{r^{2}\frac{\a}{a}\pd_{r}\phi}\ . }
+
+\n At this point, Choptuik introduces the two auxiliary fields
+
+\eq{ \Phi\lrpar{t,r} \equiv \pd_{r}\phi\lrpar{t,r}\ ,\ \Pi\lrpar{t,r} \equiv \frac{a\lrpar{t,r}}{\a\lrpar{t,r}}\pd_{t}\phi\lrpar{t,r}\ , }
+
+\n so that the Einstein-Klein-Gordon equation can be traded by two first-order (in time and space) partial differential equations
+
+\al{
+  \pd_{t}\Phi &= \pd_{r}\lrpar{\frac{\a}{a}\Pi}\ , \label{eq:chop1}\\
+  \pd_{t}\Pi  &= \frac{1}{r^{2}}\pd_{r}\lrpar{r^{2}\frac{\a}{a}\Phi} \label{eq:chop2}\ .
+}
+
+The energy density, $\rho = n^{\mu}n^{\nu}T^{\phi}_{\mu\nu} = \alpha^{2}T^{\phi}_{tt}$, is given by
+
+\eq{ \rho = \frac{\Phi^{2} + \Pi^{2}}{2a^{2}}\ .}
+
+\n In this coordinate system, $K = K^{r}_{\ r}$, and therefore the Hamiltonian constraint is reduced to
+
+\eq{ \H = {}^{(3)}\!R - 16\pi\rho\ . }
+
+\n Our gauge choice implies that the spatial Ricci scalar associated $\gDD{i}{j}$ is given by
+
+\eq{ ^{(3)}\!R = \frac{4}{ra^{2}}\lrpar{\frac{\pd_{r}a}{a} + \frac{a^{2}-1}{2r}}\ ,}
+
+\n which finally imply that the Hamiltonian constraint is given by
+
+\eq{ \H = \frac{4}{ra^{2}}\lrpar{\frac{\pd_{r}a}{a} + \frac{a^{2}-1}{2r}} - 8\pi\lrpar{\frac{\Phi^{2} + \Pi^{2}}{a^{2}}} \ .}
+
+\n Since we know that $\H=0$ \emph{analytically}, we can write the equation above as a constraint that must be satisfied at each hypersurface, namely
+
+\eq{ \frac{\pd_{r}a}{a} + \frac{a^{2}-1}{2r} = 2\pi r\lrpar{\Phi^{2} + \Pi^{2}}\ . \label{eq:chop3} }
+
+The last equation used by Choptuik follows from the \emph{polar slicing condition} $K^{\theta}_{\ \theta} = 0 = K^{\varphi}_{\ \varphi}$ for \emph{all} times. This implies that $\pd_{t}K_{\theta\theta} = 0$, which in turn implies the relation
+
+\eq{ \pd_{t}K_{\theta\theta} = -D_{\theta}D_{\theta}\a + \a\, ^{(3)}\!R_{\theta\theta} + 4\pi\a\lrsquare{r^{2}\lrpar{S-\rho} - 2S_{\theta\theta}} = 0\ ,}
+
+\n which finally imply\footnote{The following identities are useful to obtain this relation:
+
+  \eq{
+    S_{ii} = T^{\phi}_{ii}\ ,\ S = \frac{\lrpar{3\Pi^{2} - \Phi^{2}}}{2a^{2}}\ ,\ {}^{(3)}\!R_{\theta\theta} = \frac{r}{a^{3}}\pd_{r}a + \frac{a^{2}-1}{a^{2}}\ ,\ D_{\theta}D_{\theta}\a = \frac{r}{a^{2}}\pd_{r}\a\ .\nn
+  }
+}
+
+\eq{ \frac{\pd_{r}\a}{\a} - \frac{\pd_{r}a}{a} - \frac{a^{2}-1}{r} = 0\ . \label{eq:chop4}}
+
+Equations~\eqref{eq:chop1},~\eqref{eq:chop2},~\eqref{eq:chop3}, and~\eqref{eq:chop4} are equations (3)-(5) in Choptuik's original paper~\cite{PhysRevLett.70.9}.
+
+\parboxbreak{2: The EKG+ADM equations in the radial/polar gauge}{
+
+  The Einstein-Klein-Gordon equations in the radial/polar gauge,
+
+  \eq{ ds^{2} = -\a^{2}\lrpar{t,r}dt^{2} + a^{2}\lrpar{t,r}dr^{2} + r^{2}d\Omega^{2}\ , \nn}
+
+  \n are given by
+
+  \al{
+    \pd_{t}\Phi &= \pd_{r}\lrpar{\frac{\a}{a}\Pi}\ ,\nn\\
+    \pd_{t}\Pi  &= \frac{1}{r^{2}}\pd_{r}\lrpar{r^{2}\frac{\a}{a}\Phi}\ . \nn
+  }
+
+  \n The equations that allow us to evolve the lapse $\a$ and the $rr$-component of the spatial metric, $\gDD{r}{r} \equiv a^{2}$, are the Hamiltonian constraint
+
+  \eq{ \frac{\pd_{r}a}{a} + \frac{a^{2}-1}{2r} = 2\pi r\lrpar{\Phi^{2} + \Pi^{2}}\ , \nn }
+
+  \n and the polar slicing condition $K^{\theta}_{\ \theta} = 0 = K^{\varphi}_{\ \varphi}$, which imply that $\pd_{t}K_{\theta\theta} = 0$ and thus
+
+  \eq{ \frac{\pd_{r}\a}{\a} - \frac{\pd_{r}a}{a} - \frac{a^{2}-1}{r} = 0\ . \nn}
+  
+}
+
+\subsection{Numerical techniques}
+
+\begin{sloppypar}
+To solve the equations inside box 2 above, we will use \emph{centered, second-order accurate finite differences} to approximate the derivatives. For a given function $f$ at the point ${(t,r)=(n\cdot\dt,j\cdot\dr)}$, where $\dt$ and $\dr$ are the time and radial step sizes, respectively, we introduce the notation $f(n\cdot\dt,j\cdot\dr) \equiv f^{n}_{j}$. Then, the derivatives of $f$ with respect to $t$ and $r$ are approximated using
+\end{sloppypar}
+
+\eq{
+  \spl{
+    \lrpar{\pd_{r}f}^{n}_{j} &\approx \frac{f^{n}_{j+1} - f^{n}_{j-1}}{2\dr} + \order{\dr}{2}\ ,\\
+    \lrpar{\pd_{t}f}^{n}_{j} &\approx \frac{f^{n+1}_{j} - f^{n-1}_{j}}{2\dt} + \order{\dt}{2}\ .
+  }
+}
+
+\n Another common technique used is to consider derivatives at the \emph{cell-centered} points $n\pm\sfrac{1}{2}$ and $j\pm\sfrac{1}{2}$, for example
+
+\eq{
+  \spl{
+    \lrpar{\pd_{r}f}^{n+\sfrac{1}{2}}_{j+\sfrac{1}{2}} &\approx \frac{f^{n+\sfrac{1}{2}}_{j+1} - f^{n+\sfrac{1}{2}}_{j}}{\dr} + \order{\dr}{2}\ ,\\
+    \lrpar{\pd_{r}f}^{n-\sfrac{1}{2}}_{j-\sfrac{1}{2}} &\approx \frac{f^{n-\sfrac{1}{2}}_{j} - f^{n-\sfrac{1}{2}}_{j-1}}{\dr} + \order{\dr}{2}\ ,\\
+    \lrpar{\pd_{t}f}^{n+\sfrac{1}{2}}_{j+\sfrac{1}{2}} &\approx \frac{f^{n+1}_{j+\sfrac{1}{2}} - f^{n}_{j+\sfrac{1}{2}}}{\dt} + \order{\dt}{2}\ ,\\
+    \lrpar{\pd_{t}f}^{n-\sfrac{1}{2}}_{j-\sfrac{1}{2}} &\approx \frac{f^{n}_{j-\sfrac{1}{2}} - f^{n-1}_{j-\sfrac{1}{2}}}{\dt} + \order{\dt}{2}\ .
+  }
+}
+
+To second-order accuracy, we also consider the \emph{averaging} operations
+
+\eq{
+  \spl{
+    f^{n}_{j\pm\sfrac{1}{2}} &\approx \frac{1}{2}\lrpar{f^{n}_{j\pm1} + f^{n}_{j}} + \order{\dr}{2}\ ,\\
+    f^{n\pm\sfrac{1}{2}}_{j} &\approx \frac{1}{2}\lrpar{f^{n\pm1}_{j} + f^{n}_{j}} + \order{\dt}{2}\ .
+  }
+}
+
+We now begin the \emph{discretization} of the evolution equations inside box 2. The discretization of the EKG equations using finite differences is given by
+
+\al{
+  \frac{\Phi^{n+1}_{j} - \Phi^{n-1}_{j}}{2\dt} &= \frac{1}{2\dr}\lrsquare{\frac{\a^{n}_{j+1}}{a^{n}_{j+1}}\Pi^{n}_{j+1} - \frac{\a^{n}_{j-1}}{a^{n}_{j-1}}\Pi^{n}_{j-1}}\ ,\\
+  \frac{\Pi^{n+1}_{j}  - \Pi^{n-1}_{j}}{2\dt}  &= \frac{3}{r_{j+1}^{2} - r_{j-1}^{3}}\lrsquare{r^{2}_{j+1}\frac{\a^{n}_{j+1}}{a^{n}_{j+1}}\Pi^{n}_{j+1} - r^{2}_{i-1}\frac{\a^{n}_{j-1}}{a^{n}_{j-1}}\Pi^{n}_{j-1}}\ ,
+}
+
+\noindent where we have used the identity $r^{-2}\pd_{r} = 3\pd_{r^{3}}$ before discretizing the evolution equation for $\Pi$, in which case the step size associated with this derivative is $r^{3}_{j+1} - r^{3}_{j-1}$, where the exponent $3$ is understood to mean ``$r$ cubed'' and not ``at $n=3$''.
+
+The discretization of the polar slicing condition is also relatively simple. First, the equation is written as
+
+\eq{ \lrsquare{\frac{\pd_{r}\a}{\a} - \frac{\pd_{r}a}{a} - \frac{a^{2}-1}{r}}^{n+1}_{j+\sfrac{1}{2}} = 0\ .}
+
+\n Then, using our finite differences and averaging operators, we obtain
+
+\eq{
+  \frac{\a^{n+1}_{j+1}-\a^{n+1}_{j}}{\dr}+\frac{1}{2}\lrpar{\a^{n+1}_{j+1}+\a^{n+1}_{j}}\lrcurly{\frac{1-\lrsquare{\frac{1}{2}\lrpar{a^{n+1}_{j}+a^{n+1}_{j+1}}}^2}{r_{j+\sfrac{1}{2}}}-\frac{2\lrpar{a^{n+1}_{j+1}-a^{n+1}_{j}}}{\dr\lrpar{a^{n+1}_{j+1}+a^{n+1}_{j}}}}=0\ .
+}
+
+To obtain the discretization of the Hamiltonian constraint, we first introduce a new variable
+
+\eq{ A^{j}_{i} \equiv \ln a^{j}_{i}\ , }
+
+\n so that we have
+
+\al{
+\frac{A^{n+1}_{j+1}-A^{n+1}_{j}}{\dr}&+\frac{\exp\lrpar{A^{n+1}_{j+1}+A^{n+1}_{j}}-1}{2r_{j+\sfrac{1}{2}}}\nn\\
+&-2\pi r_{j+\sfrac{1}{2}}\lrcurly{\lrsquare{\frac{1}{2}\lrpar{\Phi^{n+1}_{j+1}+\Phi^{n+1}_{j}}}^2+\lrsquare{\frac{1}{2}\lrpar{\Pi^{n+1}_{j+1}+\Pi^{n+1}_{j}}}^2}=0\ .
+}
+
+\n This completes the discretization of the EKG+ADM system we are interested in evolving.
+
+\parboxbreak{3: The discretization of the EKG+ADM system of equations}{
+
+  The second-order accurate, both in time and space, discretization of the EKG+ADM system of equations, found in box 2, is
+
+  \al{
+    \frac{\Phi^{n+1}_{j} - \Phi^{n-1}_{j}}{2\dt} &= \frac{1}{2\dr}\lrsquare{\frac{\a^{n}_{j+1}}{a^{n}_{j+1}}\Pi^{n}_{j+1} - \frac{\a^{n}_{j-1}}{a^{n}_{j-1}}\Pi^{n}_{j-1}}\ ,\nn\\
+    \frac{\Pi^{n+1}_{j}  - \Pi^{n-1}_{j}}{2\dt}  &= \frac{3}{r_{j+1}^{2} - r_{j-1}^{3}}\lrsquare{r^{2}_{j+1}\frac{\a^{n}_{j+1}}{a^{n}_{j+1}}\Pi^{n}_{j+1} - r^{2}_{i-1}\frac{\a^{n}_{j-1}}{a^{n}_{j-1}}\Pi^{n}_{j-1}}\ ,\nn\\
+    \frac{A^{n+1}_{j+1}-A^{n+1}_{j}}{\dr}&+\frac{\exp\lrpar{A^{n+1}_{j+1}+A^{n+1}_{j}}-1}{2r_{j+\sfrac{1}{2}}}\nn\\
+    &-2\pi r_{j+\sfrac{1}{2}}\lrcurly{\lrsquare{\frac{1}{2}\lrpar{\Phi^{n+1}_{j+1}+\Phi^{n+1}_{j}}}^2+\lrsquare{\frac{1}{2}\lrpar{\Pi^{n+1}_{j+1}+\Pi^{n+1}_{j}}}^2}=0\ ,\nn\\
+    \frac{\a^{n+1}_{j+1}-\a^{n+1}_{j}}{\dr}&+\frac{1}{2}\lrpar{\a^{n+1}_{j+1}+\a^{n+1}_{j}}\lrcurly{\frac{1-\lrsquare{\frac{1}{2}\lrpar{a^{n+1}_{j}+a^{n+1}_{j+1}}}^2}{r_{j+\sfrac{1}{2}}}-\frac{2\lrpar{a^{n+1}_{j+1}-a^{n+1}_{j}}}{\dr\lrpar{a^{n+1}_{j+1}+a^{n+1}_{j}}}}=0\ .\nn
+  }
+  
+}
+
+\subsection{Structure of the evolution}
+
+The evolution of the EKG+ADM system of equations is relatively awkward since we are not allowed to use common (and simple) integrators that follow the \emph{method of lines}, such as RK4. The reason for this is that both the Hamiltonian constraint and the polar slicing conditions are \emph{elliptic} equations, while the EKG equations are \emph{hyperbolic equations}. Simply put, the EKG equations are equations that move $\Phi$ and $\Pi$ forward in time based on their values on previous time levels, while the Hamiltonian constraint and polar slicing condition solve for $a$ and $\a$, respectively, based on information on a \emph{single} time level. This complicates this, particularly because the Hamiltonian constraint is a non-linear equation from which we are trying to determine $A^{n+1}_{j+1}$. This means that the equation must be solved on every single gridpoint using a Newton-Raphson solver, for example, which considerably slows down the evolution and complicates the numerical algorithm. The polar slicing condition is not as difficult, it is simply a linear equation that must be solved for $\a^{n+1}_{j+1}$ in terms of other known quantities, but also contributes to making the integration more difficult.
+
+During the integration process, we have access to $\lrpar{\Phi,\Pi,a,\a}$ on all spatial points, on the time levels $n$ and $n-1$. This means that a typical integration step is carried out in the following way:
+
+\begin{enumerate}
+\item Integrate $\Phi$ to the time level $n+1$
+\item Integrate $\Pi$ to the time level $n+1$
+\item Solve the Hamiltonian constraint to find $A$ at the time level $n+1$; compute $a$ from $A$
+\item Solve the polar slicing condition to find $\a$ at the time level $n+1$
+\item Set $t_{\rm new} = (n+1)\dt$. If $t_{\rm new}<t_{\max}$, go to step 1
+\end{enumerate}
+
+The summary above ignores quite a few implementation details, such as when and how to apply boundary conditions. We will go over those over the following sections.
+
+\subsection{Inner and outer boundary conditions}
+
+\subsubsection{Inner boundary conditions}
+
+Let us first discuss inner boundary conditions, as these can be slightly more confusing to understand, specially since the arguments used by Choptuik are far more technical and obscure. Consider a function $f(t,r)$ which is spherically symmetric. Now what should be the behaviour of this function at $f(t,0)$? It is straightforward to see that, because of spherical symmetry,
+
+\eq{ f\lrpar{t,-\dr} = f\lrpar{t,+\dr}\ , }
+
+\n which can then be rewritten as
+
+\eq{ f\lrpar{t,+\dr} - f\lrpar{t,-\dr} = 0 \implies \left.\pd_{r}f(t,r)\right|_{r=0} = 0\ . }
+
+\n Notice that this is an \emph{inner} boundary condition, meaning that we are not really imposing anything, we are simply mapping the point $f\lrpar{t,-\dr}$ to another point in the grid, so that all points involved belong to the grid. Because we are imposing the boundary condition on the derivative of the fields, this is a \emph{Neumann boundary condition}. We will then deman that:
+
+\al{
+  \left.\pd_{r}\phi\right|_{r=0} = 0\ ,\\
+  \left.\pd_{r}\a\right|_{r=0} = 0\ .
+}
+
+\n The first of these conditions must be translated in terms of $\Phi$ and $\Pi$. We impose
+
+\eq{
+  \Phi(t,0) = 0\ ,\ \left.\pd_{r}\Pi\right|_{r=0} = 0\ .
+}
+
+For the metric quantity $a(t,r)$, on the other hand, we must impose a different kind of boundary condition. This boundary condition is a direct consequence of our radial gauge, which, as mentioned before, ensures that a sphere of radius $r$ has proper area $4\pi r^{2}$, and is given by
+
+\eq{ a(t,0) = 1\ . }
+
+\n This is a relatively strange boundary condition, which can be viewed as the so called ``elementary flatness condition'', which demands that the spacetime is free of conical singularities at the origin.
+
+\parbox{4: EKG+ADM -- Inner boundary conditions}{
+  For the EKG+ADM system, we apply the following \emph{inner} boundary conditions:
+  \al{
+    \left.\Phi\right|_{r=0} &= 0\ ,\nn\\
+    \left.\pd_{r}\Pi\right|_{r=0} &= 0\ ,\nn\\
+    \left.a\right|_{r=0} &= 1\ ,\nn\\
+    \left.\pd_{r}\a\right|_{r=0} &= 0\ .\nn
+  }
+}
+
+\subsubsection{Outer boundary conditions}
+
+The outer boundary of our computational domain, located at $r=r_{\max}$, with $r_{\max}$ a user specified parameter, has to be treated carefully because using our centered finite difference stencils would require using points \emph{outside} our grid. At this point, then, we will change the finite difference approximation to \emph{backwards} finite difference stencils, namely
+
+\eq{
+  \spl{
+    \lrpar{\partial_{r}f}^{n}_{j} = \frac{3f^{n}_{j} - 4f^{n}_{j-1} + f^{n}_{j-2}}{2\dr} + \order{\dr}{2}\ ,\\
+    \lrpar{\partial_{t}f}^{n}_{j} = \frac{3f^{n}_{j} - 4f^{n-1}_{j} + f^{n-2}_{j}}{2\dt} + \order{\dt}{2}\ .
+  }
+}
+
+For the scalar field, we will impose \emph{outgoing radiation boundary conditions}, which follow from the case where the scalar field is propagating without being coupled to gravity, i.e. the wave equation in spherical symmetry. The general solution to the spherically symmetric wave equation in spherical coordinates is
+
+\eq{ \phi(t,r) = \frac{F(t-r) + G(t+r)}{r}\ , }
+
+\n where $F(t-r)$ represents an \emph{outgoing} wave and $G(t+r)$ an \emph{ingoing} wave. We will demand that no extra radiation enters the computational domain at the outer boundary, which translates to the condition
+
+\eq{ \left.\blrpar{\pd_{t}\lrsquare{r\phi(t,r)} + \pd_{r}\lrsquare{r\phi(t,r)}}\right|_{r=r_{\max}} = 0\ , }
+
+\n at the outer boundary. This introduces a complication, since this condition cannot be written in terms of $\Phi$ and $\Pi$ alone. The easiest way to account for this is to impose the condition to $\phi$ itself, then compute $\Phi$ and $\Pi$ using their definitions. The discretization of this equation yields the outer boundary condition
+
+\eq{ \phi^{n+1}_{J} = \lrpar{\frac{3}{\dt} + \frac{2}{r_{J}} + \frac{3}{\dr}}^{-1}\lrsquare{\frac{4\phi^{n}_{J} - \phi^{n-1}_{J}}{\dt} + \frac{4\phi^{n+1}_{J-1} - \phi^{n-1}_{J-2}}{\dr}}\ ,}
+
+\n where the index $J$ corresponds to $r_{\max}$. Note that this is also a $\order{\dr^{2}+\dt}{2}$ approximation.
+
+The desired boundary condition for $\a$ is that $\lim_{r\to r_{\max}}\a\to 1$, i.e. asymptotic flatness. To obtain this, we must also consider our inner boundary condition $\left.\pd_{r}\a\right|_{r=0}=0$. Note that this condition can be interpretedd as implying that
+
+\eq{ \alpha(t,0) = C\ , }
+
+\n where $C$ is an arbitrary constant. We choose to set $C=1$ for simplicity, but this is not a physical boundary condition. The physical boundary condition is asymptotic flatness. In order to ensure that asymptotic flatness is enforced, we performe a \emph{rescaling of the lapse function} following Choptuik's prescription. First, notice that the ``evolution equation'' for the lapse function (i.e. the polar slicing condition) can be written in the form
+
+\eq{ \a^{n}_{j+1} = \a^{n}_{j}\lrpar{\frac{1-\dr d}{1+\dr d}} \ ,}
+
+\n where
+
+\eq{ d = \frac{1 - \frac{b^{2}}{4}}{r_{i}} - \frac{c}{b\dr}\ ,}
+
+\n and
+
+\eq{ b = a^{n}_{j+1} + a^{n}_{j}\quad \text{and}\quad c = a^{n}_{j+1} - a^{n}_{j}\ .}
+
+Notice, now, that the polar slicing condition is homogeneous in $\a$, meaning that if we multiply $\a$ \emph{on the entire hypersurface of constant time} by a constant, then the polar slicing condition is still satisfied. To ensure asymptotic flatness and that no signals propagate faster than the speed of light, we choose this constant to be
+
+\eq{ \kappa = \min_{0\leq j\leq J}\lrpar{\frac{a^{n}_{j}}{\a^{n}_{j}}}\ . }
+
+\n This rescaling typically sets $\a(t,r_{\max}) = a(t,r_{\max})$, which means that we are dealing with a metric that does not behave like the Schwarzschild metric, where we have $\a = a^{-1}$.
+
+\parbox{5: EKG+ADM -- Outer boundary conditions}{
+  For the EKG+ADM system, we apply the following \emph{outer} boundary conditions:
+  \al{
+    \phi^{n+1}_{J} &= \lrpar{\frac{3}{\dt} + \frac{2}{r_{J}} + \frac{3}{\dr}}^{-1}\lrsquare{\frac{4\phi^{n}_{J} - \phi^{n-1}_{J}}{\dt} + \frac{4\phi^{n+1}_{J-1} - \phi^{n-1}_{J-2}}{\dr}}\ ,\nn\\
+    \kappa &= \min_{0\leq j\leq J}\lrpar{\frac{a^{n+1}_{j}}{\a^{n+1}_{j}}}\ ,\nn\\
+    \a^{n+1}_{j} &\to \kappa\a^{n+1}_{j}\ .\nn
+  }
+}
+
+\subsection{Initial condition}
+
+The initial condition for the scalar field is
+
+\eq{
+  \spl{
+    \phi(0,r) &= \phi_{0}\exp\lrsquare{-\frac{\lrpar{r-r_{0}}^{2}}{\d^{2}}}\ ,\\
+    \pd_{t}\phi(0,r) &= 0\ .
+  }
+}
+
+\n Typically the parameters $r_{0}$ and $\d$ are fixed, while the parameter $\phi_{0}$, the amplitude of the initial pulse, varies on different runs of the code. This is the parameter $p$ we mentioned, for which we wish to find the critical value $p^{\star}=\phi_{\star}$ that separates solutions with black hole formation from those with total dispersion.
+
+In terms of $\Phi$ and $\Pi$, the inital conditions read
+
+\eq{
+  \spl{
+    \Phi(0,r) &= -2\frac{\lrpar{r-r_{0}}}{\d^{2}}\phi_{0}\exp\lrsquare{-\frac{\lrpar{r-r_{0}}^{2}}{\d^{2}}}\ ,\\
+    \Pi(0,r)  &= 0\ .
+  }
+}
+
+\n To obtain the initial values of $a$ and $\a$ we must solve the constraints.
+
+
+% Print the references on a new page
+\clearpage
+\spacing{1.0}
+\printbibliography
+
+\end{document}
+% .---------------------------.
+% |    End of the document    |
+% .---------------------------.
