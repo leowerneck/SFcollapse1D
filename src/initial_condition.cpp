@@ -55,7 +55,7 @@ void initial_condition( grid::parameters grid, gridfunction &phi, gridfunction &
       /* Compute auxiliary quantities */
       const REAL b = a.level_nm1[j] + a.level_nm1[j-1];
       const REAL c = a.level_nm1[j] - a.level_nm1[j-1];
-      const REAL midway_r = 0.5*( x[0][j] + x[0][j-1] );
+      const REAL midway_r = x[0][j] + x[0][j-1];
       const REAL d = ( 1.0 - 0.25 * SQR(b) )/midway_r - inv_dx0 * c / b;
 
       /* Compute alpha */

@@ -146,7 +146,7 @@ void evolution::first_time_step_Spherical( grid::parameters &grid, gridfunction 
     /* Step 1.c.ii: Compute auxiliary quantities */
     const REAL b = a.level_n[j] + a.level_n[j-1];
     const REAL c = a.level_n[j] - a.level_n[j-1];
-    const REAL midway_r = 0.5*( x[0][j] + x[0][j-1] );
+    const REAL midway_r = x[0][j] + x[0][j-1];
     const REAL d = ( 1.0 - 0.25 * SQR(b) )/midway_r - inv_dx0 * c / b;
 
     /* Step 1.c.iii: Compute alpha */
@@ -239,7 +239,7 @@ void evolution::first_time_step_Spherical( grid::parameters &grid, gridfunction 
     /* Step 2.c.ii: Compute auxiliary quantities */
     const REAL b = a.level_np1[j] + a.level_np1[j-1];
     const REAL c = a.level_np1[j] - a.level_np1[j-1];
-    const REAL midway_r = 0.5*( x[0][j] + x[0][j-1] );
+    const REAL midway_r = x[0][j] + x[0][j-1];
     const REAL d = ( 1.0 - 0.25 * SQR(b) )/midway_r - inv_dx0 * c / b;
 
     /* Step 2.c.iii: Compute alpha */
@@ -353,7 +353,7 @@ void evolution::time_step_Spherical( grid::parameters &grid, gridfunction &phi, 
     /* Step 3.b: Compute auxiliary quantities */
     const REAL b = a.level_np1[j] + a.level_np1[j-1];
     const REAL c = a.level_np1[j] - a.level_np1[j-1];
-    const REAL midway_r = 0.5*( x[0][j] + x[0][j-1] );
+    const REAL midway_r = x[0][j] + x[0][j-1];
     const REAL d = ( 1.0 - 0.25 * SQR(b) )/midway_r - inv_dx0 * c / b;
 
     /* Step 3.c: Compute alpha */
