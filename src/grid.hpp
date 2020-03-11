@@ -53,7 +53,7 @@ namespace grid {
     /* Inverse spatial step sizes squared */
     REAL inv_dx0_sqrd;
     /* Sinh Spherical coordinate system variables */
-    REAL sinhA, sinhW, inv_sinhW, inv_sinh_inv_W, A_times_inv_sinh_inv_W;
+    REAL sinhA, sinhW, inv_sinhW, sinh_inv_W, A_over_sinh_inv_W;
     std::vector< REAL > r_ito_x0;
 
     /* .-----------------.

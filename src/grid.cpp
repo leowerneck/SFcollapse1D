@@ -69,12 +69,12 @@ void grid::parameters::initialize_parameters(char *argv[]) {
 #if( COORD_SYSTEM == SPHERICAL )
   x0_max = fabs(atof(argv[2]));
 #elif( COORD_SYSTEM == SINH_SPHERICAL )
-  x0_max = 1.0;
-  sinhA  = fabs(atof(argv[2]));
-  sinhW  = fabs(atof(argv[4]));
-  inv_sinhW = 1.0/sinhW;
-  inv_sinh_inv_W = sinh(inv_sinhW);
-  A_times_inv_sinh_inv_W = sinhA * inv_sinh_inv_W;
+  x0_max            = 1.0;
+  sinhA             = fabs(atof(argv[2]));
+  sinhW             = fabs(atof(argv[4]));
+  inv_sinhW         = 1.0/sinhW;
+  sinh_inv_W        = sinh(inv_sinhW);
+  A_over_sinh_inv_W = sinhA / sinh_inv_W;
 #endif
   x0_min = 0.0;
 
@@ -115,7 +115,7 @@ void grid::parameters::initialize_parameters(char *argv[]) {
 #if( COORD_SYSTEM == SPHERICAL )
   r_ito_x0 = x[0];
 #elif( COORD_SYSTEM == SINH_SPHERICAL )
-  LOOP(0,Nx0Total) r_ito_x0[j] = A_times_inv_sinh_inv_W * sinh( x[0][j] * inv_sinhW );
+  LOOP(0,Nx0Total) r_ito_x0[j] = A_over_sinh_inv_W * sinh( x[0][j] * inv_sinhW );
 #endif
 
   /* .--------------------------------.
