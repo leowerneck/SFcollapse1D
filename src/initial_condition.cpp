@@ -38,7 +38,7 @@ void initial_condition( grid::parameters grid, gridfunction &phi, gridfunction &
 
   LOOP(0,Nx0Total) {
     /* Set some useful auxiliary variables */
-    const REAL r = x[0][j];
+    const REAL r = r_ito_x0[j];
     const REAL factor = (r-R0)/SQR(DELTA);
     const REAL expfactor = (r-R0)*factor;
     const REAL exp_rmr0_over_deltasqrd = exp(-expfactor);
@@ -55,7 +55,8 @@ void initial_condition( grid::parameters grid, gridfunction &phi, gridfunction &
       /* Compute auxiliary quantities */
       const REAL b = a.level_nm1[j] + a.level_nm1[j-1];
       const REAL c = a.level_nm1[j] - a.level_nm1[j-1];
-      const REAL d = ( 1.0 - 0.25 * SQR(b) )/r - inv_dx0 * c / b;
+      const REAL midway_r = 0.5*( x[0][j] + x[0][j-1] );
+      const REAL d = ( 1.0 - 0.25 * SQR(b) )/midway_r - inv_dx0 * c / b;
 
       /* Compute alpha */
       alpha.level_nm1[j] = alpha.level_nm1[j-1]*( 1.0 - d*dx0 )/( 1.0 + d*dx0 );

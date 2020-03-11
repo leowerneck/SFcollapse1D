@@ -146,7 +146,8 @@ void evolution::first_time_step_Spherical( grid::parameters &grid, gridfunction 
     /* Step 1.c.ii: Compute auxiliary quantities */
     const REAL b = a.level_n[j] + a.level_n[j-1];
     const REAL c = a.level_n[j] - a.level_n[j-1];
-    const REAL d = ( 1.0 - 0.25 * SQR(b) )/x[0][j] - inv_dx0 * c / b;
+    const REAL midway_r = 0.5*( x[0][j] + x[0][j-1] );
+    const REAL d = ( 1.0 - 0.25 * SQR(b) )/midway_r - inv_dx0 * c / b;
 
     /* Step 1.c.iii: Compute alpha */
     alpha.level_n[j] = alpha.level_n[j-1]*( 1.0 - d*dx0 )/( 1.0 + d*dx0 );
@@ -238,7 +239,8 @@ void evolution::first_time_step_Spherical( grid::parameters &grid, gridfunction 
     /* Step 2.c.ii: Compute auxiliary quantities */
     const REAL b = a.level_np1[j] + a.level_np1[j-1];
     const REAL c = a.level_np1[j] - a.level_np1[j-1];
-    const REAL d = ( 1.0 - 0.25 * SQR(b) )/x[0][j] - inv_dx0 * c / b;
+    const REAL midway_r = 0.5*( x[0][j] + x[0][j-1] );
+    const REAL d = ( 1.0 - 0.25 * SQR(b) )/midway_r - inv_dx0 * c / b;
 
     /* Step 2.c.iii: Compute alpha */
     alpha.level_np1[j] = alpha.level_np1[j-1]*( 1.0 - d*dx0 )/( 1.0 + d*dx0 );
@@ -351,7 +353,8 @@ void evolution::time_step_Spherical( grid::parameters &grid, gridfunction &phi, 
     /* Step 3.b: Compute auxiliary quantities */
     const REAL b = a.level_np1[j] + a.level_np1[j-1];
     const REAL c = a.level_np1[j] - a.level_np1[j-1];
-    const REAL d = ( 1.0 - 0.25 * SQR(b) )/x[0][j] - inv_dx0 * c / b;
+    const REAL midway_r = 0.5*( x[0][j] + x[0][j-1] );
+    const REAL d = ( 1.0 - 0.25 * SQR(b) )/midway_r - inv_dx0 * c / b;
 
     /* Step 3.c: Compute alpha */
     alpha.level_np1[j] = alpha.level_np1[j-1]*( 1.0 - d*dx0 )/( 1.0 + d*dx0 );
@@ -497,7 +500,7 @@ void evolution::output_mass_aspect_ratio( const int which_level, const int n, co
   LOOP(0,Nx0Total) {
     const REAL r_local = r_ito_x0[j];
     const REAL a_local = (which_level == -1) * a.level_nm1[j] + (which_level == 0) * a.level_n[j] + (which_level == 1) * a.level_np1[j];
-    outfile << scientific << x[0][j] << " " << r_ito_x0[j]  << " " << 0.5 * r_local * ( 1.0 - 1.0/a_local ) << endl;
+    outfile << scientific << x[0][j] << " " << r_ito_x0[j]  << " " << 0.5 * r_local * ( 1.0 - 1.0/SQR(a_local) ) << endl;
     
   }
   outfile.close();

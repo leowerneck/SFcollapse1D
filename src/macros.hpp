@@ -51,7 +51,7 @@
 #define NGHOSTS0 NGHOSTS
 
 /* Scalar field collapse parameters */
-#define PHI0  (0.01)
+#define PHI0  (0.1)
 #define R0    (20.0)
 #define DELTA (5.0)
 
