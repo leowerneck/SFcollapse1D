@@ -23,6 +23,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <chrono>
 #include "macros.hpp"
 #include "grid.hpp"
 #include "gridfunction.hpp"
@@ -54,7 +55,9 @@ int main( int argc, char *argv[] ) {
     exit(1);
   }
 #endif
-    
+
+  /* Start the timer */
+  auto start_time = std::chrono::high_resolution_clock::now();
 
   /* Set the grid of the program */
   grid::parameters grid(argv);
@@ -98,7 +101,7 @@ int main( int argc, char *argv[] ) {
     evolution::time_step( grid, phi, Phi, Pi, a, alpha );
 
     /* Print information to the user */
-    if( n%10 == 0 ) {
+    if( n%100 == 0 ) {
       phi.output_to_file(grid,"scalarfield",1,n);
       Phi.output_to_file(grid,"Phi",1,n);
       Pi.output_to_file(grid,"Pi",1,n);
@@ -113,6 +116,10 @@ int main( int argc, char *argv[] ) {
     Pi.shift_timelevels(2);
     a.shift_timelevels(2);
     alpha.shift_timelevels(2);
+
+    if( n%100 ) {
+      INTEGRATION_INFO;
+    }
     
   }
   
