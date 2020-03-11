@@ -73,27 +73,27 @@
  * modified, since we must then append "grid." to the
  * variable name, otherwise it won't be updated properly.
  */
-#define DECLARE_GRID_PARAMETERS	              					                  \
-  const int DIM                            __attribute__((unused)) = grid.DIM;		          \
-  const int Nx0                            __attribute__((unused)) = grid.Nx0;		          \
-  const int Ngz0                           __attribute__((unused)) = grid.Ngz0;		          \
-  const int Nx0Total                       __attribute__((unused)) = grid.Nx0Total;	          \
-  const int Nt                             __attribute__((unused)) = grid.Nt;		          \
-  const REAL x0_min                        __attribute__((unused)) = grid.x0_min;	          \
-  const REAL x0_max                        __attribute__((unused)) = grid.x0_max;	          \
-  const REAL dx0                           __attribute__((unused)) = grid.dx0;		          \
-  const REAL dt                            __attribute__((unused)) = grid.dt;		          \
-  const REAL inv_dx0                       __attribute__((unused)) = grid.inv_dx0;	          \
-  const REAL inv_dx0_sqrd                  __attribute__((unused)) = grid.inv_dx0_sqrd;	          \
-  const REAL t_initial                     __attribute__((unused)) = grid.t_initial;	          \
-  const REAL t_final                       __attribute__((unused)) = grid.t_final;	          \
-  const REAL t                             __attribute__((unused)) = grid.t;		          \
-  const REAL sinhA                         __attribute__((unused)) = grid.sinhA;		  \
-  const REAL sinhW                         __attribute__((unused)) = grid.sinhW;		  \
-  const REAL inv_sinhW                     __attribute__((unused)) = grid.inv_sinhW;              \
-  const REAL inv_sinh_inv_W                __attribute__((unused)) = grid.inv_sinh_inv_W;         \
-  const REAL A_times_inv_sinh_inv_W        __attribute__((unused)) = grid.A_times_inv_sinh_inv_W; \
-  const std::vector<REAL> r_ito_x0         __attribute__((unused)) = grid.r_ito_x0;               \
+#define DECLARE_GRID_PARAMETERS	              					             \
+  const int DIM                            __attribute__((unused)) = grid.DIM;		     \
+  const int Nx0                            __attribute__((unused)) = grid.Nx0;		     \
+  const int Ngz0                           __attribute__((unused)) = grid.Ngz0;		     \
+  const int Nx0Total                       __attribute__((unused)) = grid.Nx0Total;	     \
+  const int Nt                             __attribute__((unused)) = grid.Nt;		     \
+  const REAL x0_min                        __attribute__((unused)) = grid.x0_min;	     \
+  const REAL x0_max                        __attribute__((unused)) = grid.x0_max;	     \
+  const REAL dx0                           __attribute__((unused)) = grid.dx0;		     \
+  const REAL dt                            __attribute__((unused)) = grid.dt;		     \
+  const REAL inv_dx0                       __attribute__((unused)) = grid.inv_dx0;	     \
+  const REAL inv_dx0_sqrd                  __attribute__((unused)) = grid.inv_dx0_sqrd;	     \
+  const REAL t_initial                     __attribute__((unused)) = grid.t_initial;	     \
+  const REAL t_final                       __attribute__((unused)) = grid.t_final;	     \
+  const REAL t                             __attribute__((unused)) = grid.t;		     \
+  const REAL sinhA                         __attribute__((unused)) = grid.sinhA;	     \
+  const REAL sinhW                         __attribute__((unused)) = grid.sinhW;	     \
+  const REAL inv_sinhW                     __attribute__((unused)) = grid.inv_sinhW;         \
+  const REAL sinh_inv_W                    __attribute__((unused)) = grid.sinh_inv_W;        \
+  const REAL A_over_sinh_inv_W             __attribute__((unused)) = grid.A_over_sinh_inv_W; \
+  const std::vector<REAL> r_ito_x0         __attribute__((unused)) = grid.r_ito_x0;          \
   const std::vector< std::vector<REAL> > x __attribute__((unused)) = grid.x;
 
 /* Set the LOOP macro */
