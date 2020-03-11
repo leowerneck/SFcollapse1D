@@ -28,7 +28,7 @@
 /* Set the coordinate system */
 #define SPHERICAL      (0)
 #define SINH_SPHERICAL (1)
-#define COORD_SYSTEM SPHERICAL
+#define COORD_SYSTEM SINH_SPHERICAL
 
 /* Set cell or vertex centered grid macros */
 #define CELL_CENTERED (0)
@@ -102,4 +102,13 @@
 /* Set the LOOP macro */
 #define LOOP(jmin,jmax) for(int j=jmin;j<jmax;j++)
 
+/* Information macro */
+#define INTEGRATION_INFO					                                             \
+  auto current_time = std::chrono::high_resolution_clock::now();                                             \
+  auto elapsed_time = std::chrono::duration_cast<std::chrono::seconds>( current_time - start_time ).count(); \
+  REAL time_elapsed = (REAL)elapsed_time;                                                                    \
+  REAL time_left    = ((REAL)grid.Nt/(REAL)n - 1.0) * time_elapsed;		                             \
+  std::cout.precision(3);                                                                                    \
+  std::cout << "(SFcollapse1D INFO) Elapsed time: " << time_elapsed << " seconds | ETA: " << time_left << " seconds\r";
+  
 #endif // __MACROS__
