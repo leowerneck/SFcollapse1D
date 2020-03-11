@@ -89,4 +89,4 @@ clean:
 	rm -rf $(OBJ_PATHS) SFcollapse1D
 
 realclean:
-	rm -rf *.gif $(OBJ_PATHS) SFcollapse1D out/*.dat out/ obj/
+	rm -rf $(OBJ_PATHS) SFcollapse1D out/*.dat animations/*.gif out/ obj/
