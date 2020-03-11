@@ -31,7 +31,7 @@ OBJ_DIR = ./obj
 CXX = g++
 
 # Set the C++ compiler flags
-CXXFLAGS = -Wall -ffast-math
+CXXFLAGS = -Wall -Ofast -ffast-math -march=native
 
 # Set the objects - When a new source file is added to the code,
 # an object with the same base name must be added to the list below
