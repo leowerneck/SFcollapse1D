@@ -128,7 +128,14 @@ void grid::parameters::initialize_parameters(char *argv[]) {
   t         = t_initial;
 
   /* Set dt based on CFL factor and min(dx,dy,dz) */
-  dt = CFL_FACTOR * dx0;
+#if( COORD_SYSTEM == SPHERICAL )
+  const REAL ds_min = dx0;
+#elif( COORD_SYSTEM == SINH_SPHERICAL )
+  const REAL ds_min = r_ito_x0[1] - r_ito_x0[0];
+#else
+  cerr << "ERROR! Unknown coordinate system! Check the macros.hpp file!\n";
+#endif
+  dt = CFL_FACTOR * ds_min;
 
   /* Set Nt; add 0.5 because C++ rounds down */
   Nt = (int)(t_final/dt + 0.5);
