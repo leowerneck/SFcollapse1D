@@ -18,13 +18,13 @@
 # | along with this program.  If not, see <https://www.gnu.org/licenses/>.|
 # .-----------------------------------------------------------------------.
 
-set term gif enhanced animate delay 10 size 900,600
+set term gif enhanced animate delay 20 size 900,600
 set output sprintf("%s.gif",which_var)
 set encoding utf8
 
 if ( which_var eq 'scalarfield' ) {
-  ymin  = -0.04
-  ymax  = +0.04
+  ymin  = -0.4
+  ymax  = +0.4
   label = "phi(t,r)"
 }
 if( which_var eq 'Phi' ) {
@@ -39,29 +39,32 @@ if( which_var eq 'Pi' ) {
 }
 if( which_var eq 'a' ) {
   ymin = 0.9999
-  ymax = 1.002
-  set ytics (1.0, 1.0005,1.001,1.0015,1.002)
+  ymax = 1.005
   label = "a(t,r)"
 }
 if( which_var eq 'alpha' ) {
-  ymin = 0.980
-  ymax = 1.010
+  ymin = 0.0
+  ymax = 1.2
   label = "alpha(t,r)"
 }
 if( which_var eq 'mass' ) {
   ymin = 0.0
-  ymax = 0.006
+  ymax = 0.5
   label = "Mass(t,r)"
 }
 
-set xrange [0:50]
+set xrange [0.0:5.0]
 set yrange [ymin:ymax]
 set grid
 unset key
 set xlabel "r"
 set ylabel label
 
-do for[i=0:120] {
-  filename = sprintf("../out/%s_%04d.dat",which_var,10*i)
-  plot filename using 1:3 w l lw 2 lc rgb 'blue'
+last_file_number  = 9400
+output_multiplier = 200
+number_of_files   = last_file_number/output_multiplier
+
+do for[i=0:number_of_files] {
+  filename = sprintf("../out/%s_%05d.dat",which_var,i*output_multiplier)
+  plot filename using 2:3 w l lw 2 lc rgb 'blue'
 }
