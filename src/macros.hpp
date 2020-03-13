@@ -51,12 +51,12 @@
 #define NGHOSTS0 NGHOSTS
 
 /* Scalar field collapse parameters */
-#define PHI0_EXAMPLE_WEAK_FIELD (0.01)
-#define PHI0_EXAMPLE_INTR_FIELD (0.37)
-#define PHI0_EXAMPLE_STRG_FIELD (0.10)
-#define PHI0  PHI0_EXAMPLE_WEAK_FIELD
-#define R0    (20.0)
-#define DELTA (5.0)
+#define PHI0_EXAMPLE_WEAK_FIELD (0.010)
+#define PHI0_EXAMPLE_INTR_FIELD (0.053)
+#define PHI0_EXAMPLE_STRG_FIELD (0.400)
+#define PHI0  PHI0_EXAMPLE_STRG_FIELD
+#define R0    (0.0)
+#define DELTA (1.0)
 
 /* Square macro */
 #define SQR(x) ( (x)*(x) )
@@ -109,6 +109,6 @@
   REAL time_elapsed = (REAL)elapsed_time;                                                                    \
   REAL time_left    = ((REAL)grid.Nt/(REAL)n - 1.0) * time_elapsed;		                             \
   std::cout.precision(3);                                                                                    \
-  std::cout << "(SFcollapse1D INFO) Elapsed time: " << time_elapsed << " seconds | ETA: " << time_left << " seconds\r";
+  std::cout << "(SFcollapse1D INFO) " << "Iter " << n << "/" << grid.Nt << " | t = " << n*grid.dt << " |  Runtime: " << time_elapsed << " seconds | ETA: " << time_left << " seconds\r";
   
 #endif // __MACROS__
