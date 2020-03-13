@@ -44,12 +44,14 @@ void initial_condition( grid::parameters grid, gridfunction &phi, gridfunction &
     const REAL expfactor = (r-R0)*factor;
     const REAL exp_rmr0_over_deltasqrd = exp(-expfactor);
 
-    /* Set the initial condition for Phi and Pi */
+    /* Set the initial condition for phi and Pi */
     phi.level_nm1[j] = PHI0*exp_rmr0_over_deltasqrd;
-    Phi.level_nm1[j] = -2.0*factor*PHI0*exp_rmr0_over_deltasqrd;
     Pi.level_nm1[j]  = 0.0;
 
     if( j>0 ) {
+      /* Set the initial condition for Phi */
+      Phi.level_nm1[j] = -2.0*factor*PHI0*exp_rmr0_over_deltasqrd;
+      
       /* Compute a */
       a.level_nm1[j] = pointwise_Newton_method(j,grid,Phi.level_nm1,Pi.level_nm1,a.level_nm1);
 
@@ -70,6 +72,8 @@ void initial_condition( grid::parameters grid, gridfunction &phi, gridfunction &
       alpha.level_nm1[j] = alpha.level_nm1[j-1]*( 1.0 - d*dx0 )/( 1.0 + d*dx0 );
     }
     else {
+      /* If at inner boundary, impose Phi = 0 */
+      Phi.level_nm1[j] = 0.0;
       /* If at inner boundary, impose a = 1 */
       a.level_nm1[j] = 1.0;
       /* If at inner boundary, impose alpha = 1 */

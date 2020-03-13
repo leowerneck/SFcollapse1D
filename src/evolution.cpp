@@ -210,7 +210,7 @@ void evolution::first_time_step_Spherical( grid::parameters &grid, gridfunction 
     /* Phi: Compute at outer boundary from phi */
     Phi.level_np1[J] = half_inv_dx0 * ( 3.0 * phi.level_np1[J] - 4.0 * phi.level_np1[Jm1] + phi.level_np1[Jm2] );
     /* Pi: Apply Neumann boundary conditions at the inner boundary */
-    Pi.level_np1[0] = -Pi.level_nm1[0] + Pi.level_nm1[1] + Pi.level_np1[1];
+    Pi.level_np1[0] = -Pi.level_n[0] + Pi.level_n[1] + Pi.level_np1[1];
     /* Pi: Compute from the evolution equation at the outer boundary */
     const REAL r_sqr_Jm2               = SQR(x[0][Jm2]);
     const REAL r_cbd_Jm2               = r_sqr_Jm2 * x[0][Jm2];
@@ -324,7 +324,7 @@ void evolution::time_step_Spherical( grid::parameters &grid, gridfunction &phi, 
     /* Phi: Compute at outer boundary from phi */
     Phi.level_np1[J] = half_inv_dx0 * ( 3.0 * phi.level_np1[J] - 4.0 * phi.level_np1[Jm1] + phi.level_np1[Jm2] );
     /* Pi: Apply Neumann boundary conditions at the inner boundary */
-    Pi.level_np1[0] = -Pi.level_nm1[0] + Pi.level_nm1[1] + Pi.level_np1[1];
+    Pi.level_np1[0] = -Pi.level_n[0] + Pi.level_n[1] + Pi.level_np1[1];
     /* Pi: Compute from the evolution equation at the outer boundary */
     const REAL r_sqr_Jm2               = SQR(x[0][Jm2]);
     const REAL r_cbd_Jm2               = r_sqr_Jm2 * x[0][Jm2];
@@ -554,7 +554,7 @@ void evolution::first_time_step_SinhSpherical( grid::parameters &grid, gridfunct
     /* Phi: Compute at outer boundary from phi */
     Phi.level_np1[J] = half_inv_dx0 * tmp7 * ( 3.0 * phi.level_np1[J] - 4.0 * phi.level_np1[Jm1] + phi.level_np1[Jm2] );
     /* Pi: Apply Neumann boundary conditions at the inner boundary */
-    Pi.level_np1[0] = -Pi.level_nm1[0] + Pi.level_nm1[1] + Pi.level_np1[1];
+    Pi.level_np1[0] = -Pi.level_n[0] + Pi.level_n[1] + Pi.level_np1[1];
     /* Pi: Compute from the evolution equation at the outer boundary */
     const REAL sinh_x0_inv_W_Jm2          = sinh( x[0][J-2] * inv_sinhW );
     const REAL sinh_x0_inv_W_Jm1          = sinh( x[0][J-1] * inv_sinhW );
@@ -680,7 +680,7 @@ void evolution::time_step_SinhSpherical( grid::parameters &grid, gridfunction &p
     /* Phi: Compute at outer boundary from phi */
     Phi.level_np1[J] = half_inv_dx0 * tmp7 * ( 3.0 * phi.level_np1[J] - 4.0 * phi.level_np1[Jm1] + phi.level_np1[Jm2] );
     /* Pi: Apply Neumann boundary conditions at the inner boundary */
-    Pi.level_np1[0] = -Pi.level_nm1[0] + Pi.level_nm1[1] + Pi.level_np1[1];
+    Pi.level_np1[0] = -Pi.level_n[0] + Pi.level_n[1] + Pi.level_np1[1];
     /* Pi: Compute from the evolution equation at the outer boundary */
     const REAL sinh_x0_inv_W_Jm2          = sinh( x[0][J-2] * inv_sinhW );
     const REAL sinh_x0_inv_W_Jm1          = sinh( x[0][J-1] * inv_sinhW );
@@ -735,7 +735,8 @@ void evolution::output_mass_aspect_ratio( const int which_level, const int n, co
   LOOP(0,Nx0Total) {
     const REAL r_local = r_ito_x0[j];
     const REAL a_local = (which_level == -1) * a.level_nm1[j] + (which_level == 0) * a.level_n[j] + (which_level == 1) * a.level_np1[j];
-    outfile << scientific << x[0][j] << " " << r_ito_x0[j]  << " " << 0.5 * r_local * ( 1.0 - 1.0/SQR(a_local) ) << endl;
+    const REAL m_local = 0.5 * r_local * ( 1.0 - 1.0/(SQR(a_local)) );
+    outfile << scientific << x[0][j] << " " << r_ito_x0[j]  << " " << m_local << endl;
     
   }
   outfile.close();
