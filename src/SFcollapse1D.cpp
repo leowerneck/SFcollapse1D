@@ -101,7 +101,7 @@ int main( int argc, char *argv[] ) {
     evolution::time_step( grid, phi, Phi, Pi, a, alpha );
 
     /* Print information to the user */
-    if( n%100 == 0 ) {
+    if( n%200 == 0 ) {
       phi.output_to_file(grid,"scalarfield",1,n);
       Phi.output_to_file(grid,"Phi",1,n);
       Pi.output_to_file(grid,"Pi",1,n);
