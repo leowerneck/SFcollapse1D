@@ -17,20 +17,79 @@
 # | You should have received a copy of the GNU General Public License     |
 # | along with this program.  If not, see <https://www.gnu.org/licenses/>.|
 # .-----------------------------------------------------------------------.
-#
-# This is a simple make file that compiles the documentation
-all: doc
 
-doc: SFcollapse1D.tex SFcollapse1D.bib
-	@echo "Compiling the documentation... \c"
-	@cp resources/*.eps .
-	@pdflatex SFcollapse1D.tex > /dev/null
-	@biber    SFcollapse1D     > /dev/null
-	@pdflatex SFcollapse1D.tex > /dev/null
-	@pdflatex SFcollapse1D.tex > /dev/null
-	@echo "cleaning up... \c"
-	@rm -rf *.log *.gz *.aux *.out *.bbl *.bcf *.blg *.xml *.toc *.lof *-converted-to.pdf *.eps
-	@echo "done!"
+set term epslatex
+set output "origin_problem.tex"
 
-clean:
-	rm -rf *.log *.gz *.aux *.out *.bbl *.bcf *.blg *.xml *.toc *.lof *.pdf
+set multiplot layout 3,1 margins 0.1,0.98,0.1,0.98 spacing 0,0
+
+set xtics font ",6pt"
+set ytics font ",6pt"
+
+# Plot number 1:
+# .---.
+# | x |
+# .---.
+# |   |
+# .---.
+# |   |
+# .---.
+# Basic setup
+set grid
+unset key
+# Configure the x axis
+set xrange [-0.2:1.2]
+unset xlabel
+set xtics (0,0.2,0.4,0.6,0.8,1.0)
+set xtics format '%.1f'
+# Configure the y axis
+set ytics format '%.2e'
+# Generate the plot
+filename = "Phi_weak.dat"
+plot filename using 2:3 w l lw 2 lc rgb "blue"
+
+# Plot number 2:
+# .---.
+# |   |
+# .---.
+# | x |
+# .---.
+# |   |
+# .---.
+# Basic setup
+set grid
+unset key
+# Configure the x axis
+set xrange [-0.2:1.2]
+unset xlabel
+set xtics (0,0.2,0.4,0.6,0.8,1.0)
+set xtics format '%.1f'
+# Configure the y axis
+set ytics format '%.2e'
+# Generate the plot
+filename = "Phi_inter.dat"
+plot filename using 2:3 w l lw 2 lc rgb "blue"
+
+# Plot number 3:
+# .---.
+# |   |
+# .---.
+# |   |
+# .---.
+# | x |
+# .---.
+# Basic setup
+set grid
+unset key
+# Configure the x axis
+set xrange [-0.2:1.2]
+unset xlabel
+set xtics (0,0.2,0.4,0.6,0.8,1.0)
+set xtics format '%.1f'
+# Configure the y axis
+set ytics format '%.2e'
+# Generate the plot
+filename = "Phi_strong.dat"
+plot filename using 2:3 w l lw 2 lc rgb "blue"
+
+unset multiplot

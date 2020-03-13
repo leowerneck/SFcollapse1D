@@ -34,6 +34,9 @@
 % | Beginning of shortcuts |
 % .------------------------.
 
+% Code name shortcut
+\newcommand{\sfcol}{\texttt{SFcollapse1D}{}}
+
 % Set useful shortcuts for greek letters and common math symbols
 \renewcommand{\a}{\alpha}
 \renewcommand{\b}{\beta}
@@ -457,6 +460,57 @@ To obtain the discretization of the Hamiltonian constraint, we first introduce a
   
 }
 
+\subsubsection{SinhSpherical coordinates}
+
+We also set up the program in a way that will allow us to push the outer boundary, located at $r=r_{\max}$, a lot further out, so that we do not need to worry about spurious reflections from it. This is done by the change of variables
+
+\eq{ r = A\frac{\sinh\lrpar{\frac{x}{w}}}{\sinh\lrpar{\frac{1}{w}}}\ ,\label{eq:sinhspherical}}
+
+\n where $A$ and $w$ are free parameters and $x\in[0,1]$. This new coordinate system will henceforth be called \emph{SinhSpherical coordinates}. Note that $A$ corresponds to $r_{\max}$, since for $x=1$ we have $r=A$. The parameters $w$ increases the density of the resolution for small values of $r$. Note that while the grid structure in the $r$-coordinate is \emph{non-uniform}, being more densily sampled around $r=0$ and less densily sampled around $r=r_{\max}$, it is \emph{uniformly} sampled in the $x$-coordinate. The grid structure is illustrated in figure~\ref{fig:grid_sph_sinh}.
+
+\begin{figure}[ht]
+  \centering
+  \tikz{
+    % Draw the 0 and r_max lines
+    \draw[dashed] (0.0,2.3) -- (0.0,-0.5) node [below] {$0$};
+    
+    % Grid #1: x-coordinate
+    \draw[->] (0,2.0) -- (9,2.0) node [right] {$x$};
+    \foreach \a in {1,...,8} {
+      \draw (\a,1.9) node [below] {$x_{\a}$} -- (\a,2.1);
+    }
+
+    % Grid #2: r-coordinate, w=0.7
+    \draw[->] (0.0,1.0) -- (9.0,1.0) node [right] {$r_{w=0.5}$};
+    \foreach \a in {1,...,8} {
+      \draw ({8.0*sinh(\a/8.0/0.5)/sinh(1.0/0.5)},0.9) node [below] {$r_{\a}$} -- ({8.0*sinh(\a/8.0/0.5)/sinh(1.0/0.5)},1.1);
+    }
+
+    % Grid #3: r-coordinate, w=0.3
+    \draw[->] (0,0.0) -- (9,0.0) node [right] {$r_{w=0.3}$};
+    \foreach \a in {1,...,8} {
+      \draw ({8.0*sinh(\a/8.0/0.3)/sinh(1.0/0.3)},-0.1) node [below] {$r_{\a}$} -- ({8.0*sinh(\a/8.0/0.3)/sinh(1.0/0.3)},0.1);
+    }
+  }
+  \caption[Illustration of SinhSpherical grids.]{Illustration of the grid structure for SinhSpherical coordinates. The top axis corresponds to the $x$-coordinate, which is uniformily sampled in the interval $[0,1]$. The middle and bottom axis present the corresponding $r$-coordinate when the values $w=0.5$ and $w=0.3$, respectively, are plugged into equation~\eqref{eq:sinhspherical}. We emphasize that the grid is \emph{not} uniformily sampled in the $r$-coordinate, as we can clearly see in the figure, since $\dr_{j}\equiv r_{j}-r_{j-1} < \dr_{j+1}$.}
+  \label{fig:grid_sph_sinh}
+\end{figure}
+
+Since our equations are not covariant under the change of coordinates~\eqref{eq:sinhspherical}, we must adjust them appropriately. For example, we see that
+
+\eq{ dr = \frac{A}{w}\frac{\cosh\!\lrpar{\frac{x}{w}}}{\sinh\!\lrpar{\frac{1}{w}}}dx \implies \pd_{r} = \frac{w}{A}\frac{\sinh\!\lrpar{\frac{1}{w}}}{\cosh\!\lrpar{\frac{x}{w}}} \pd_{x}\ ,}
+
+\n so that the evolution equations now become
+
+\al{
+  \pd_{t}\Phi &= \frac{w}{A}\frac{\sinh\!\lrpar{\frac{1}{w}}}{\cosh\!\lrpar{\frac{x}{w}}} \pd_{x}\lrpar{\frac{\a}{a}\Pi}\ ,\\
+  \pd_{t}\Pi  &= \frac{w}{A}\frac{\sinh\!\lrpar{\frac{1}{w}}}{\sinh^{2}\!\lrpar{\frac{x}{w}}\cosh\!\lrpar{\frac{x}{w}}} \pd_{x}\lrsquare{\sinh^{2}\!\lrpar{\frac{x}{w}}\frac{\a}{a}\Phi}\ ,\\
+  \frac{\pd_{x}\a}{\a} &- \frac{\pd_{x} a}{a} - \frac{a^{2}-1}{w\tanh\!\lrpar{\frac{x}{w}}} = 0\ ,\\
+  \frac{\pd_{x} a}{a} &+ \frac{a^{2}-1}{2w\tanh\!\lrpar{\frac{x}{w}}} = 2\pi\frac{A^{2}}{w\sinh^{2}\!\lrpar{\frac{1}{w}}}\sinh\!\lrpar{\frac{x}{w}}\cosh\!\lrpar{\frac{x}{w}}\lrpar{\Phi^{2} + \Pi^{2}}\ .
+}
+
+\n The discretization techniques used for the system above are identical to the ones in Spherical coordinates and will not be repeated here.
+
 \subsection{Structure of the evolution}
 
 The evolution of the EKG+ADM system of equations is relatively awkward since we are not allowed to use common (and simple) integrators that follow the \emph{method of lines}, such as RK4. The reason for this is that both the Hamiltonian constraint and the polar slicing conditions are \emph{elliptic} equations, while the EKG equations are \emph{hyperbolic equations}. Simply put, the EKG equations are equations that move $\Phi$ and $\Pi$ forward in time based on their values on previous time levels, while the Hamiltonian constraint and polar slicing condition solve for $a$ and $\a$, respectively, based on information on a \emph{single} time level. This complicates this, particularly because the Hamiltonian constraint is a non-linear equation from which we are trying to determine $A^{n+1}_{j+1}$. This means that the equation must be solved on every single gridpoint using a Newton-Raphson solver, for example, which considerably slows down the evolution and complicates the numerical algorithm. The polar slicing condition is not as difficult, it is simply a linear equation that must be solved for $\a^{n+1}_{j+1}$ in terms of other known quantities, but also contributes to making the integration more difficult.
@@ -485,7 +539,7 @@ Let us first discuss inner boundary conditions, as these can be slightly more co
 
 \eq{ f\lrpar{t,+\dr} - f\lrpar{t,-\dr} = 0 \implies \left.\pd_{r}f(t,r)\right|_{r=0} = 0\ . }
 
-\n Notice that this is an \emph{inner} boundary condition, meaning that we are not really imposing anything, we are simply mapping the point $f\lrpar{t,-\dr}$ to another point in the grid, so that all points involved belong to the grid. Because we are imposing the boundary condition on the derivative of the fields, this is a \emph{Neumann boundary condition}. We will then deman that:
+\n Notice that this is an \emph{inner} boundary condition, meaning that we are not really imposing anything, we are simply mapping the point $f\lrpar{t,-\dr}$ to another point in the grid, so that all points involved belong to the grid. Because we are imposing the boundary condition on the derivative of the fields, this is a \emph{Neumann boundary condition}. We will then demand that:
 
 \al{
   \left.\pd_{r}\phi\right|_{r=0} = 0\ ,\\
@@ -593,6 +647,136 @@ In terms of $\Phi$ and $\Pi$, the inital conditions read
 }
 
 \n To obtain the initial values of $a$ and $\a$ we must solve the constraints.
+
+\subsection{Results}
+
+\subsubsection{The weak, intermediate, and strong regimes}
+
+In this section we present results from three different runs in the so-called three different ``field regimes'': the \emph{weak}, \emph{intermediate}, and \emph{strong} field regimes. We note here that these are \emph{not} production runs, with the grid being very underesolved and therefore a lot of matter escaping the black hole interior in the strong regime. These runs were performed for the sake of illustrating the three different scenarios, not to obtain accurate results.
+
+Since our choice is to keep $r_{0}=20$ and $\delta=5$ fixed throught the different runs, the parameter $p$ is identified with $\phi_{0}$, as previously mentioned. To obtain results in each of the regimes, all we need to do then is vary the value of $\phi_{0}$. Although we are evolving the set of variables $\lrpar{\phi,\Phi,\Pi,a,\a}$, our approach will be to present only three quantities: the scalar field $\phi(t,r)$, the lapse function $\a(t,r)$, and the \emph{mass-aspect function}, $M(t,r)$, which is defined in analogy to the Schwarzschild metric
+
+\eq{a^{2}(t,r) \equiv \frac{1}{1 - \frac{2M(t,r)}{r}} \implies M(t,r) = \frac{r}{2}\lrsquare{1 - \frac{1}{a^{2}(t,r)}}\ .}
+
+The weak field regime is obtained by setting $\phi_{0}$ to a small value. In the run whose results are presented in figures~\ref{fig:phi_weak},~\ref{fig:alpha_weak}, and~\ref{fig:mass_weak}, we have set $\phi_{0}=0.01$. In this regime, the metric quantities $\a$ and $a$ differ at most $\sim2\%$ from flat space, the deviation being more prominent for the lapse than the radial metric. Because of this, the backreaction from the geometry on the scalar field is negligible and we see it propagating as if it was not coupled to gravity at all, i.e. just a simple scalar wave in spherical coordinates.
+
+\begin{figure}[ht]
+  \centering
+  \input{resources/scalarfield_weak.tex}
+  \caption[Weak field results for the scalar field $\phi(t,r)$.]{Weak field results for the scalar field $\phi(t,r)$. The parameters of the run are $\phi_{0}=0.01$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, and $w=0.3$.}
+  \label{fig:phi_weak}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \input{resources/alpha_weak.tex}
+  \caption[Weak field results for the lapse function $\a(t,r)$.]{Weak field results for the lapse function $\a(t,r)$. The parameters of the run are $\phi_{0}=0.01$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, and $w=0.3$.}
+  \label{fig:alpha_weak}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \input{resources/mass_weak.tex}
+  \caption[Weak field results for the mass-aspect function $M(t,r)$.]{Weak field results for the mass-aspect function $M(t,r)$. The parameters of the run are $\phi_{0}=0.01$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, and $w=0.3$.}
+  \label{fig:mass_weak}
+\end{figure}
+
+For the intermediate field results we have set $\phi=0.053$. This regime is characterized by total dispersion (no black hole formation), as in the weak field regime, but the scalar field has enough energy to cause nonnegligible curvature of the geometry, which is enough to affect the propagation of the scalar field. The intermediate field regime results are presented in figures~\ref{fig:phi_inter},~\ref{fig:alpha_inter}, and~\ref{fig:mass_inter}.
+
+\begin{figure}[ht]
+  \centering
+  \input{resources/scalarfield_inter.tex}
+  \caption[Intermediate field results for the scalar field $\phi(t,r)$.]{Intermediate field results for the scalar field $\phi(t,r)$. The parameters of the run are $\phi_{0}=0.053$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, and $w=0.3$.}
+  \label{fig:phi_inter}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \input{resources/alpha_inter.tex}
+  \caption[Intermediate field results for the lapse function $\a(t,r)$.]{Intermediate field results for the lapse function $\a(t,r)$. The parameters of the run are $\phi_{0}=0.053$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, and $w=0.3$.}
+  \label{fig:alpha_inter}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \input{resources/mass_inter.tex}
+  \caption[Intermediate field results for the mass-aspect function $M(t,r)$.]{Intermediate field results for the mass-aspect function $M(t,r)$. The parameters of the run are $\phi_{0}=0.053$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, and $w=0.3$.}
+  \label{fig:mass_inter}
+\end{figure}
+
+For the strong field results we have set $\phi=0.1$. This regime is characterized by total collapse, meaning that the scalar field energy is strong enough to curve spacetime to the point where a singularity emerges. If enough resolution is used, it is possible to see that (almost) no energy leaves the ``horizon'' after the scalar field has collapsed. However, our illustrative run has been performed with a very low resolution ($N_{r}=600$), which causes \emph{a lot} of energy to escape the horizon if we keep the simulation running for too long.
+
+The lapse function goes to zero\footnote{In the actual code the lapse reaches a very small value, below $10^{-3}$ for example, which is enough for us to characterize black hole formation.} in this regime, which is a statement that around that region there is virtually no proper time being elapsed between one hypersurface of constant time and the next. This is known as the \emph{freezing of the lapse function}, and is a very useful feature to measure black hole formation.
+
+The strong field regime results are presented in figures~\ref{fig:phi_strong},~\ref{fig:alpha_strong}, and~\ref{fig:mass_strong}. Figure~\ref{fig:phi_strong} shows clearly that no time is passing for the scalar field after it collapses, since its evolution gets frozen. The freezing of the lapse function is evident in figure~\ref{fig:alpha_strong}, while the mass of the black hole formed (in code units) can be seen as the plateau of the function $m(t,r)$ in figure~\ref{fig:mass_strong}.
+
+\begin{figure}[ht]
+  \centering
+  \input{resources/scalarfield_strong.tex}
+  \caption[Old strong field results for the scalar field $\phi(t,r)$.]{Strong field results for the scalar field $\phi(t,r)$. The parameters of the run are $\phi_{0}=0.1$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, and $w=0.3$.}
+  \label{fig:phi_strong}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \input{resources/alpha_strong.tex}
+  \caption[Old strong field results for the lapse function $\a(t,r)$.]{Strong field results for the lapse function $\a(t,r)$. The parameters of the run are $\phi_{0}=0.1$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, and $w=0.3$.}
+  \label{fig:alpha_strong}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \input{resources/mass_strong.tex}
+  \caption[Old strong field results for the mass-aspect function $M(t,r)$.]{Strong field results for the mass-aspect function $M(t,r)$. The parameters of the run are $\phi_{0}=0.1$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, and $w=0.3$.}
+  \label{fig:mass_strong}
+\end{figure}
+
+\subsubsection{Improved initial conditions}
+
+The parameters used to obtain the results of the previous subsection have been inspired by Matt Choptuik's PhD thesis~\cite{Choptuik_1986} and his original work~\cite{PhysRevLett.70.9}. However, as pointed out by Thomas Baumgarte~\cite{Baumgarte_private}, the initial condition we set in the previous cases are ill-defined at the origin, as illustrated in figure~\ref{fig:origin_problem}. The derivative of the scalar field, $\Phi=\pd_{r}\phi$, does not go smoothly to zero at the origin, but has a ``kink'' instead, which is a result of our choice of boundary conditions.
+
+\begin{figure}[ht]
+  \centering
+  \input{resources/origin_problem.tex}
+  \caption[Problem with the initial condition at the origin.]{This figures shows the problem with the initial condition set by Choptuik in his original studies. There is a kink in the first derivative of the scalar field at the origin, namely the variable $\Phi$.}
+  \label{fig:origin_problem}
+\end{figure}
+
+Baumgarte has proposed a fix which he has already used himself in his studies of gravitational collapse of massless scalarfields~\cite{Baumgarte_2018}. It is a very simple fix, which consists of changing the parameters $r_{0}$ and $\delta$ appropriately. The simplest choice, which is the one Baumgarte usually adopts, is $r_{0}=0$ and $\d=1$, which then results in the initial conditions
+
+\al{
+  \phi(0,r) &= \phi_{0}\exp\lrpar{-r^{2}}\ ,\\
+  \Phi(0,r) &= -2r\phi_{0}\exp\lrpar{-r^{2}}\ ,\\
+  \Pi(0,r) &= 0\ .
+}
+
+\n Note that this condition guarantees that $\Phi$ is both zero and smooth at the origin.
+
+Because we have changed the values of $r_{0}$ and $\d$, the values of $\phi_{0}$ that result in gravitational collapse also change. To show results using the new initial conditions, we perform a higher resolution run, with $N_{r}=6000$ and $\phi_{0}=0.4$, showing that gravitational collapse again occurs and a black hole is formed. These results are shown in figures~\ref{fig:phi_strong},~\ref{fig:alpha_strong}, and~\ref{fig:mass_strong}.
+
+\begin{figure}[ht]
+  \centering
+  \input{resources/scalarfield_strong.tex}
+  \caption[New strong field results for the scalar field $\phi(t,r)$.]{Strong field results for the scalar field $\phi(t,r)$. The parameters of the run are $\phi_{0}=0.4$, $r_{0}=0$, $\delta=1$, $r_{\max}=50$, and $w=0.3$. Note that the figure only shows the region $r\in[0,5]$.}
+  \label{fig:phi_strong}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \input{resources/alpha_strong.tex}
+  \caption[New strong field results for the lapse function $\a(t,r)$.]{Strong field results for the lapse function $\a(t,r)$. The parameters of the run are $\phi_{0}=0.4$, $r_{0}=0$, $\delta=1$, $r_{\max}=50$, and $w=0.3$. Note that the figure only shows the region $r\in[0,5]$.}
+  \label{fig:alpha_strong}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \input{resources/mass_strong.tex}
+  \caption[New strong field results for the mass-aspect function $M(t,r)$.]{Strong field results for the mass-aspect function $M(t,r)$. The parameters of the run are $\phi_{0}=0.4$, $r_{0}=0$, $\delta=1$, $r_{\max}=50$, and $w=0.3$. Note that the figure only shows the region $r\in[0,5]$.}
+  \label{fig:mass_strong}
+\end{figure}
+
+\subsubsection{Critical phenomena}
+
 
 
 % Print the references on a new page
