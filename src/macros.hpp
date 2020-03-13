@@ -109,6 +109,6 @@
   REAL time_elapsed = (REAL)elapsed_time;                                                                    \
   REAL time_left    = ((REAL)grid.Nt/(REAL)n - 1.0) * time_elapsed;		                             \
   std::cout.precision(3);                                                                                    \
-  std::cout << "(SFcollapse1D INFO) " << "Iter " << n << "/" << grid.Nt << " | t = " << n*grid.dt << " |  Runtime: " << time_elapsed << " seconds | ETA: " << time_left << " seconds\r";
+  std::cout << "\r(SFcollapse1D INFO) " << "Iter " << n << "/" << grid.Nt << " | t = " << n*grid.dt << " |  Runtime: " << time_elapsed << " seconds | ETA: " << time_left << " seconds\r" << std::flush;
   
 #endif // __MACROS__
