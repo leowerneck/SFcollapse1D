@@ -117,7 +117,7 @@ int main( int argc, char *argv[] ) {
     a.shift_timelevels(2);
     alpha.shift_timelevels(2);
 
-    if( n%100 == 0 ) {
+    if( n%20 == 0 ) {
       INTEGRATION_INFO;
     }
     
