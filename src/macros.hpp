@@ -19,8 +19,8 @@
  * .-----------------------------------------------------------------------.
  */
 
-#ifndef __MACROS__
-#define __MACROS__
+#ifndef __MACROS_HPP__
+#define __MACROS_HPP__
 
 /* Set the REAL variable type */
 #define REAL double
@@ -43,6 +43,15 @@
 
 /* Set CFL factor */
 #define CFL_FACTOR (0.5)
+
+/* Various error codes */
+#define SPHERICAL_USAGE_ERROR        (1)
+#define SINH_SPHERICAL_USAGE_ERROR   (2)
+#define GRID_STRUCTURE_ERROR         (3)
+#define COORD_SYSTEM_ERROR           (4)
+#define GRIDFUNCTION_TIMELEVEL_ERROR (5)
+#define BISECTION_INTERVAL_ERROR     (6)
+#define BISECTION_CONVERGENCE_ERROR  (7)
 
 /* Set ghostzones. The default is the same
  * number of ghostzones in every direction
@@ -111,4 +120,4 @@
   std::cout.precision(3);                                                                                    \
   std::cout << "\r(SFcollapse1D INFO) " << "Iter " << n << "/" << grid.Nt << " | t = " << n*grid.dt << " |  Runtime: " << time_elapsed << " seconds | ETA: " << time_left << " seconds" << std::flush;
   
-#endif // __MACROS__
+#endif // __MACROS_HPP__
