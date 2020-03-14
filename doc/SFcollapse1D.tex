@@ -10,6 +10,9 @@
 % Equation related packages
 \usepackage{amsmath,amssymb,xfrac}
 
+% Pseudocode package
+\usepackage[linesnumbered,lined,boxed]{algorithm2e}
+
 % Figure related packages
 \usepackage{graphicx,float,tikz}
 
@@ -600,13 +603,13 @@ The desired boundary condition for $\a$ is that $\lim_{r\to r_{\max}}\a\to 1$, i
 
 \eq{ \alpha(t,0) = C\ , }
 
-\n where $C$ is an arbitrary constant. We choose to set $C=1$ for simplicity, but this is not a physical boundary condition. The physical boundary condition is asymptotic flatness. In order to ensure that asymptotic flatness is enforced, we performe a \emph{rescaling of the lapse function} following Choptuik's prescription. First, notice that the ``evolution equation'' for the lapse function (i.e. the polar slicing condition) can be written in the form
+\n where $C$ is an arbitrary constant. We choose to set $C=1$ for simplicity, but this is not a physical boundary condition. The physical boundary condition is asymptotic flatness. In order to ensure that asymptotic flatness is enforced, we perform a \emph{rescaling of the lapse function} following Choptuik's prescription. First, notice that the ``evolution equation'' for the lapse function (i.e. the polar slicing condition) can be written in the form
 
 \eq{ \a^{n}_{j+1} = \a^{n}_{j}\lrpar{\frac{1-\dr d}{1+\dr d}} \ ,}
 
 \n where
 
-\eq{ d = \frac{1 - \frac{b^{2}}{4}}{r_{i}} - \frac{c}{b\dr}\ ,}
+\eq{ d = \frac{1 - \frac{b^{2}}{4}}{r_{j+\sfrac{1}{2}}} - \frac{c}{b\dr}\ ,}
 
 \n and
 
@@ -636,6 +639,7 @@ The initial condition for the scalar field is
     \phi(0,r) &= \phi_{0}\exp\lrsquare{-\frac{\lrpar{r-r_{0}}^{2}}{\d^{2}}}\ ,\\
     \pd_{t}\phi(0,r) &= 0\ .
   }
+  \label{eq:initial_condition_1}
 }
 
 \n Typically the parameters $r_{0}$ and $\d$ are fixed, while the parameter $\phi_{0}$, the amplitude of the initial pulse, varies on different runs of the code. This is the parameter $p$ we mentioned, for which we wish to find the critical value $p^{\star}=\phi_{\star}$ that separates solutions with black hole formation from those with total dispersion.
@@ -647,9 +651,73 @@ In terms of $\Phi$ and $\Pi$, the inital conditions read
     \Phi(0,r) &= -2\frac{\lrpar{r-r_{0}}}{\d^{2}}\phi_{0}\exp\lrsquare{-\frac{\lrpar{r-r_{0}}^{2}}{\d^{2}}}\ ,\\
     \Pi(0,r)  &= 0\ .
   }
+  \label{eq:initial_condition_2}
 }
 
 \n To obtain the initial values of $a$ and $\a$ we must solve the constraints.
+
+\subsection{The {\tt SFcollapse1D} code}
+
+Here is what {\tt SFcollapse1D} does in pseudocode:
+
+\begin{algorithm}[H]
+  \scriptsize
+  \SetAlgoVlined
+  \Begin(\emph{Initial condition}){
+    Set the initial condition for $\phi^{0}_{j}$, $\Phi^{0}_{j}$, and $\Pi^{0}_{j}$\;
+    Impose inner boundary conditions to $\Phi^{0}_{0}$, $a^{0}_{0}$, and $\a^{0}_{0}$\;
+    Solve the Hamiltonian constraint to determine $a^{0}_{j}$\;
+    Solve the polar slicing condition to determine $\a^{0}_{j}$\;
+    Perform the rescaling of the lapse function\;
+  }
+  \Begin(\emph{Initial data}){
+    Apply inner boundary conditions to set $\Phi^{\sfrac{1}{2}}_{0}$, $a^{\sfrac{1}{2}}_{0}$, and $\a^{\sfrac{1}{2}}_{0}$\;
+    \For{$j=1$ \KwTo $N_{r}-1$}{
+      \lIf{ $j=1$ }{start by computing $\phi^{\sfrac{1}{2}}_{0}$}
+      Perform a half-step integration, compute $\phi^{\sfrac{1}{2}}_{j}$, $\Phi^{\sfrac{1}{2}}_{j}$, and $\Pi^{\sfrac{1}{2}}_{j}$\;
+    }
+    Apply outgoing radiation boundary conditions to $\phi^{\sfrac{1}{2}}_{N_{r}}$\;
+    Apply inner boundary conditions to find $\Pi^{\sfrac{1}{2}}_{0}$\;
+    Compute $\Phi^{\sfrac{1}{2}}_{N_{r}}$ and $\Pi^{\sfrac{1}{2}}_{N_{r}}$\;
+    \For{$j=0$ \KwTo $N_{r}$}{
+      Solve the Hamiltonian constraint to determine $a^{\sfrac{1}{2}}_{j}$\;
+      Solve the polar slicing condition to determine $\a^{\sfrac{1}{2}}_{j}$\;
+    }
+    Perform the rescaling of the lapse function\;
+    Apply inner boundary conditions to set $\Phi^{1}_{0}$, $a^{1}_{0}$, and $\a^{1}_{0}$\;
+    \For{$j=1$ \KwTo $N_{r}-1$}{
+      \lIf{ $j=1$ }{start by computing $\phi^{1}_{0}$}
+      Perform a single-step integration, compute $\phi^{1}_{j}$, $\Phi^{1}_{j}$, and $\Pi^{1}_{j}$\;
+    }
+    Apply outgoing radiation boundary conditions to $\phi^{1}_{N_{r}}$\;
+    Apply inner boundary conditions to find $\Pi^{1}_{0}$\;
+    Compute $\Phi^{1}_{N_{r}}$ and $\Pi^{1}_{N_{r}}$\;
+    \For{$j=0$ \KwTo $N_{r}$}{
+      Solve the Hamiltonian constraint to determine $a^{1}_{j}$\;
+      Solve the polar slicing condition to determine $\a^{1}_{j}$\;
+    }
+    Perform the rescaling of the lapse function\;
+  }
+  \Begin(\emph{Evolution}){
+    \For{$n=2$ \KwTo $N_{t}$}{
+      Apply inner boundary conditions to set $\Phi^{n}_{0}$, $a^{n}_{0}$, and $\a^{n}_{0}$\;
+      \For{$j=1$ \KwTo $N_{r}-1$}{
+        \lIf{ $j=1$ }{start by computing $\phi^{n}_{0}$}
+        Compute $\phi^{n}_{j}$, $\Phi^{n}_{j}$, and $\Pi^{n}_{j}$\;
+      }
+      Apply outgoing radiation boundary conditions to $\phi^{n}_{N_{r}}$\;
+      Apply inner boundary conditions to find $\Pi^{n}_{0}$\;
+      Compute $\Phi^{n}_{N_{r}}$ and $\Pi^{n}_{N_{r}}$\;
+      \For{$j=1$ \KwTo $N_{r}$}{
+        Solve the Hamiltonian constraint to determine $a^{n}_{j}$\;
+        Solve the polar slicing condition to determine $\a^{n}_{j}$\;
+      }
+      Perform the rescaling of the lapse function\;
+    }
+  }
+  \caption{The {\tt SFcollapse1D} program's pseudocode.}
+  \label{alg:SFcollapse1D}  
+\end{algorithm}
 
 \subsection{Results}
 
@@ -747,10 +815,13 @@ The parameters used to obtain the results of the previous subsection have been i
 
 Baumgarte has proposed a fix which he has already used himself in his studies of gravitational collapse of massless scalarfields~\cite{Baumgarte_2018}. It is a very simple fix, which consists of changing the parameters $r_{0}$ and $\delta$ appropriately. The simplest choice, which is the one Baumgarte usually adopts, is $r_{0}=0$ and $\d=1$, which then results in the initial conditions
 
-\al{
-  \phi(0,r) &= \phi_{0}\exp\lrpar{-r^{2}}\ ,\\
-  \Phi(0,r) &= -2r\phi_{0}\exp\lrpar{-r^{2}}\ ,\\
-  \Pi(0,r) &= 0\ .
+\eq{
+  \spl{
+    \phi(0,r) &= \phi_{0}\exp\lrpar{-r^{2}}\ ,\\
+    \Phi(0,r) &= -2r\phi_{0}\exp\lrpar{-r^{2}}\ ,\\
+    \Pi(0,r) &= 0\ .
+  }
+  \label{eq:initial_condition_new}
 }
 
 \n Note that this condition guarantees that $\Phi$ is both zero and smooth at the origin.
