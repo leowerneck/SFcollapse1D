@@ -83,6 +83,7 @@ void evolution::first_time_step_Spherical( grid::parameters &grid, gridfunction 
    * | Step 1.b: Integrate phi, Phi, and Pi |
    * .--------------------------------------.
    */
+#pragma omp parallel for
   LOOP(1,Nx0Total-1) {
     /* Step 1.b.i: Compute useful auxiliary variables */
     const REAL r_sqr_jm1               = SQR(x[0][j-1]);
@@ -138,6 +139,7 @@ void evolution::first_time_step_Spherical( grid::parameters &grid, gridfunction 
    * | Step 1.c: Integrate a and alpha |
    * .---------------------------------.
    */
+  // TODO: can this be parallelized in some way? Maybe SIMD?
   LOOP(1,Nx0Total) {
     /* Step 1.c.i: Compute a */
     a.level_n[j] = pointwise_Newton_method(j,grid,Phi.level_n,Pi.level_n,a.level_n);
@@ -176,6 +178,7 @@ void evolution::first_time_step_Spherical( grid::parameters &grid, gridfunction 
    * | Step 2.b: Integrate phi, Phi, and Pi |
    * .--------------------------------------.
    */
+#pragma omp parallel for
   LOOP(1,Nx0Total-1) {
     /* Step 2.b.i: Compute useful auxiliary variables */
     const REAL r_sqr_jm1               = SQR(x[0][j-1]);
@@ -231,6 +234,7 @@ void evolution::first_time_step_Spherical( grid::parameters &grid, gridfunction 
    * | Step 2.c: Integrate a and alpha |
    * .---------------------------------.
    */
+  // TODO: can this be parallelized in some way? Maybe SIMD?
   LOOP(1,Nx0Total) {
     /* Step 2.c.i: Compute a */
     a.level_np1[j] = pointwise_Newton_method(j,grid,Phi.level_np1,Pi.level_np1,a.level_np1);
@@ -283,6 +287,7 @@ void evolution::time_step_Spherical( grid::parameters &grid, gridfunction &phi, 
    * | Step 2: Integrate Phi and Pi |
    * .------------------------------.
    */
+#pragma omp parallel for
   LOOP(1,Nx0Total-1) {
     /* Step 2.a: Compute useful auxiliary variables */
     const REAL r_sqr_jm1               = SQR(x[0][j-1]);
@@ -345,6 +350,7 @@ void evolution::time_step_Spherical( grid::parameters &grid, gridfunction &phi, 
    * | Step 3: Integrate a and alpha |
    * .-------------------------------.
    */
+  // TODO: can this be parallelized in some way? Maybe SIMD?
   LOOP(1,Nx0Total) {
     /* Step 3.a: Compute a */
     a.level_np1[j] = pointwise_Newton_method(j,grid,Phi.level_np1,Pi.level_np1,a.level_np1);
@@ -402,6 +408,7 @@ void evolution::first_time_step_SinhSpherical( grid::parameters &grid, gridfunct
    * | Step 1.b: Integrate Phi and Pi |
    * .--------------------------------.
    */
+#pragma omp parallel for
   LOOP(1,Nx0Total-1) {
     /* Step 1.b.i: Compute useful auxiliary variables */
     const REAL sinh_x0_inv_W_jm1          = sinh( x[0][j-1] * inv_sinhW );
@@ -464,6 +471,7 @@ void evolution::first_time_step_SinhSpherical( grid::parameters &grid, gridfunct
    * | Step 1.c: Integrate a and alpha |
    * .---------------------------------.
    */
+  // TODO: can this be parallelized in some way? Maybe SIMD?
   LOOP(1,Nx0Total) {
     /* Step 1.c.i: Compute a */
     a.level_n[j] = pointwise_Newton_method(j,grid,Phi.level_n,Pi.level_n,a.level_n);
@@ -502,6 +510,7 @@ void evolution::first_time_step_SinhSpherical( grid::parameters &grid, gridfunct
    * | Step 2.b: Integrate Phi and Pi |
    * .--------------------------------.
    */
+#pragma omp parallel for
   LOOP(1,Nx0Total-1) {
     /* Step 2.b.i: Compute useful auxiliary variables */
     const REAL sinh_x0_inv_W_jm1          = sinh( x[0][j-1] * inv_sinhW );
@@ -575,6 +584,7 @@ void evolution::first_time_step_SinhSpherical( grid::parameters &grid, gridfunct
    * | Step 2.c: Integrate a and alpha |
    * .---------------------------------.
    */
+  // TODO: can this be parallelized in some way? Maybe SIMD?
   LOOP(1,Nx0Total) {
     /* Step 2.c.i: Compute a */
     a.level_np1[j] = pointwise_Newton_method(j,grid,Phi.level_np1,Pi.level_np1,a.level_np1);
@@ -628,6 +638,7 @@ void evolution::time_step_SinhSpherical( grid::parameters &grid, gridfunction &p
    * | Step 2: Integrate Phi and Pi |
    * .------------------------------.
    */
+#pragma omp parallel for
   LOOP(1,Nx0Total-1) {
     /* Step 2.a: Compute useful auxiliary variables */
     const REAL sinh_x0_inv_W_jm1          = sinh( x[0][j-1] * inv_sinhW );
@@ -701,6 +712,7 @@ void evolution::time_step_SinhSpherical( grid::parameters &grid, gridfunction &p
    * | Step 3: Integrate a and alpha |
    * .-------------------------------.
    */
+  // TODO: can this be parallelized in some way? Maybe SIMD?
   LOOP(1,Nx0Total) {
     /* Step 3.a: Compute a */
     a.level_np1[j] = pointwise_Newton_method(j,grid,Phi.level_np1,Pi.level_np1,a.level_np1);

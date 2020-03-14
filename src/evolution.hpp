@@ -19,6 +19,9 @@
  * .-----------------------------------------------------------------------.
  */
 
+#ifndef __EVOLUTION_HPP__
+#define __EVOLUTION_HPP__
+
 /* Basic includes */
 #include <cmath>
 #include <vector>
@@ -52,3 +55,5 @@ namespace evolution {
   void output_mass_aspect_ratio( const int, const int, const grid::parameters, const gridfunction );
 
 }
+
+#endif // __EVOLUTION_HPP__

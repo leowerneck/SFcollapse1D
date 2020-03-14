@@ -19,8 +19,8 @@
  * .-----------------------------------------------------------------------.
  */
 
-#ifndef __GRID__
-#define __GRID__
+#ifndef __GRID_HPP__
+#define __GRID_HPP__
 
 #include <vector>
 #include "macros.hpp"
@@ -97,4 +97,4 @@ namespace grid {
 
 }
 
-#endif // __GRID__
+#endif // __GRID_HPP__

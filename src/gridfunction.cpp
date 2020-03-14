@@ -60,8 +60,7 @@ void gridfunction::shift_timelevels( const int which_levels ) {
     level_n = level_np1;
   }
   else{
-    cerr << "ERROR! Unknown value of which_level inside shift_timelevels!\n";
-    exit(5);
+    utilities::SFcollapse1D_error( GRIDFUNCTION_TIMELEVEL_ERROR );
   }
 
 }

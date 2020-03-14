@@ -19,8 +19,8 @@
  * .-----------------------------------------------------------------------.
  */
 
-#ifndef __GRIDFUNCTION__
-#define __GRIDFUNCTION__
+#ifndef __GRIDFUNCTION_HPP__
+#define __GRIDFUNCTION_HPP__
 
 /* Basic includes */
 #include <vector>
@@ -69,4 +69,4 @@ private:
   void initialize_gridfunction( const grid::parameters );
 };
 
-#endif // __GRIDFUNCTION__
+#endif // __GRIDFUNCTION_HPP__

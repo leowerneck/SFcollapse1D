@@ -106,8 +106,7 @@ void grid::parameters::initialize_parameters(char *argv[]) {
   LOOP(0,Nx0Total) x[0][j] = x0_min + (j-Ngz0)*dx0;
 
 #else
-  cerr << "ERROR: Unknown grid structure. Please check the macros.hpp file.\n";
-  exit(5);
+  utilities::SFcollapse1D_error(GRID_STRUCTURE_ERROR);
 #endif
 
   /* Populate r in terms of x0 */
@@ -133,7 +132,7 @@ void grid::parameters::initialize_parameters(char *argv[]) {
 #elif( COORD_SYSTEM == SINH_SPHERICAL )
   const REAL ds_min = r_ito_x0[1] - r_ito_x0[0];
 #else
-  cerr << "ERROR! Unknown coordinate system! Check the macros.hpp file!\n";
+  utilities::SFcollapse1D_error(COORD_SYSTEM_ERROR);
 #endif
   dt = CFL_FACTOR * ds_min;
 
