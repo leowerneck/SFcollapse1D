@@ -62,9 +62,6 @@ void initial_condition( grid::parameters grid, gridfunction &phi, gridfunction &
       const REAL midway_r = 0.5 * (x[0][j] + x[0][j-1]);
 #elif( COORD_SYSTEM == SINH_SPHERICAL )
       const REAL midway_r = sinhW * tanh( inv_sinhW * 0.5 * (x[0][j] + x[0][j-1]) );
-#else
-      cerr << "ERROR! Unknown coordinate system! Check the macros.hpp file!\n";
-      exit(5);
 #endif
       const REAL d = ( 1.0 - 0.25 * SQR(b) )/( 2.0 * midway_r ) - inv_dx0 * c / b;
 
