@@ -25,6 +25,7 @@
 #include <cmath>
 #include <chrono>
 #include "macros.hpp"
+#include "utilities.hpp"
 #include "grid.hpp"
 #include "gridfunction.hpp"
 #include "evolution.hpp"
@@ -41,19 +42,9 @@ int main( int argc, char *argv[] ) {
 
   /* Check correct usage */
 #if( COORD_SYSTEM == SPHERICAL )
-  if( argc != 4 ) {
-    cerr << "ERROR: Incorrect usage of the program!\n";
-    cerr << "Spherical coordinates selected.\n";
-    cerr << "Correct usage is: ./SFcollapse1D Nx Domain_size t_final" << endl;
-    exit(1);
-  }
+  if( argc != 4 ) utilities::SFcollapse1D_error(SPHERICAL_USAGE_ERROR);
 #elif( COORD_SYSTEM == SINH_SPHERICAL )
-  if( argc != 5 ) {
-    cerr << "ERROR: Incorrect usage of the program!\n";
-    cerr << "SinhSpherical coordinates selected.\n";
-    cerr << "Correct usage is: ./SFcollapse1D Nx Domain_size t_final sinhW" << endl;
-    exit(1);
-  }
+  if( argc != 5 ) utilities::SFcollapse1D_error(SINH_SPHERICAL_USAGE_ERROR);
 #endif
 
   /* Start the timer */
@@ -61,6 +52,45 @@ int main( int argc, char *argv[] ) {
 
   /* Set the grid of the program */
   grid::parameters grid(argv);
+
+  /* Compute information about the run to share with the user */
+  const REAL rmax = grid.r_ito_x0[grid.Nx0-1];
+  int Nr_bet_01 = 0, Nr_bet_05 = 0;
+  LOOP(0,grid.Nx0Total) {
+    const REAL rlocal = grid.r_ito_x0[j];
+    if( rlocal < 1.0 ) Nr_bet_01++; // Counts points for which 0<r<1
+    if( rlocal < 5.0 ) Nr_bet_05++; // Counts points for which 0<r<5
+  }
+  
+  /* Print information about the run to the user */
+  cout << "\n";
+  cout << ".------------------------." << endl;
+  cout << "| Parameters of this run |" << endl;
+  cout << ".------------------------." << endl;
+#if( COORD_SYSTEM == SPHERICAL )
+  cout << "Coordinate system: Spherical" << endl;
+#elif( COORD_SYSTEM == SINH_SPHERICAL )
+  cout << "Coordinate system: SinhSpherical" << endl;
+#endif
+  cout << "Initial condition information:\n";
+  cout << "phi_{0}    = " << PHI0          << endl;
+  cout << "r_{0}      = " << R0            << endl;
+  cout << "delta      = " << DELTA         << endl;
+  cout << "\nRadial grid information:\n";
+  cout << "N_{r}      = " << grid.Nx0      << endl;
+  cout << "r_{max}    = " << rmax          << endl;
+#if( COORD_SYSTEM == SINH_SPHERICAL )
+  cout << "sinhA      = " << grid.sinhA    << endl;
+  cout << "sinhW      = " << grid.sinhW    << endl;
+#endif
+  cout << "Points in 0<r<1: " << Nr_bet_01 << endl;;
+  cout << "Points in 0<r<5: " << Nr_bet_05 << endl;;
+  cout << "\nTime evolution information:\n";
+  cout << "N_{t}      = " << grid.Nt       << endl;
+  cout << "t_{final}  = " << grid.t_final  << endl;
+  cout << "dt         = " << grid.dt       << endl;
+  cout << "CFL factor = " << CFL_FACTOR    << endl;
+  cout << "\n";
 
   /* Declare all needed gridfunctions */
   gridfunction phi(grid), Phi(grid), Pi(grid), a(grid), alpha(grid);
