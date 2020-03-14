@@ -51,8 +51,8 @@
 #define NGHOSTS0 NGHOSTS
 
 /* Scalar field collapse parameters */
-#define PHI0_EXAMPLE_WEAK_FIELD (0.010)
-#define PHI0_EXAMPLE_INTR_FIELD (0.053)
+#define PHI0_EXAMPLE_WEAK_FIELD (0.100)
+#define PHI0_EXAMPLE_INTR_FIELD (0.300)
 #define PHI0_EXAMPLE_STRG_FIELD (0.400)
 #define PHI0  PHI0_EXAMPLE_STRG_FIELD
 #define R0    (0.0)
@@ -109,6 +109,6 @@
   REAL time_elapsed = (REAL)elapsed_time;                                                                    \
   REAL time_left    = ((REAL)grid.Nt/(REAL)n - 1.0) * time_elapsed;		                             \
   std::cout.precision(3);                                                                                    \
-  std::cout << "\r(SFcollapse1D INFO) " << "Iter " << n << "/" << grid.Nt << " | t = " << n*grid.dt << " |  Runtime: " << time_elapsed << " seconds | ETA: " << time_left << " seconds\r" << std::flush;
+  std::cout << "\r(SFcollapse1D INFO) " << "Iter " << n << "/" << grid.Nt << " | t = " << n*grid.dt << " |  Runtime: " << time_elapsed << " seconds | ETA: " << time_left << " seconds" << std::flush;
   
 #endif // __MACROS__
