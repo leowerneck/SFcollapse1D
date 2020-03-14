@@ -123,7 +123,7 @@ set ytics ymin_tic,increment,ymax_tic
 set ytics format tic_format
 # Generate the plot
 set label 1 '$t = 0$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
-filename = sprintf("../out/%s_00000.dat",which_var)
+filename = sprintf("../out/%s_000000.dat",which_var)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 # Plot number 2:
@@ -148,8 +148,8 @@ unset ylabel
 set ytics ymin_tic,increment,ymax_tic
 set ytics format ''
 # Generate the plot
-set label 1 '$t = 0.2\times10^{4}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
-filename = sprintf("../out/%s_02000.dat",which_var)
+set label 1 '$t = 1.1\times10^{5}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
+filename = sprintf("../out/%s_011000.dat",which_var)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 # Plot number 3:
@@ -174,8 +174,8 @@ unset ylabel
 set ytics ymin_tic,increment,ymax_tic
 set ytics format ''
 # Generate the plot
-set label 1 '$t = 0.4\times10^{4}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
-filename = sprintf("../out/%s_04000.dat",which_var)
+set label 1 '$t = 2.2\times10^{5}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
+filename = sprintf("../out/%s_022000.dat",which_var)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 # Plot number 4:
@@ -200,8 +200,8 @@ set ylabel label
 set ytics ymin_tic,increment,ymax_tic
 set ytics format tic_format
 # Generate the plot
-set label 1 '$t = 0.6\times10^{4}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
-filename = sprintf("../out/%s_06000.dat",which_var)
+set label 1 '$t = 3.3\times10^{5}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
+filename = sprintf("../out/%s_033000.dat",which_var)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 # Plot number 5:
@@ -226,8 +226,8 @@ unset ylabel
 set ytics ymin_tic,increment,ymax_tic
 set ytics format ''
 # Generate the plot
-set label 1 '$t = 0.8\times10^{4}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
-filename = sprintf("../out/%s_08000.dat",which_var)
+set label 1 '$t = 4.4\times10^{5}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
+filename = sprintf("../out/%s_044000.dat",which_var)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 # Plot number 6:
@@ -252,8 +252,8 @@ unset ylabel
 set ytics ymin_tic,increment,ymax_tic
 set ytics format ''
 # Generate the plot
-set label 1 '$t = 1.0\times10^{4}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
-filename = sprintf("../out/%s_10000.dat",which_var)
+set label 1 '$t = 5.5\times10^{5}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
+filename = sprintf("../out/%s_055000.dat",which_var)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 # Plot number 7:
@@ -278,8 +278,8 @@ set ylabel label
 set ytics ymin_tic,increment,ymax_tic
 set ytics format tic_format
 # Generate the plot
-set label 1 '$t = 1.3\times10^{4}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
-filename = sprintf("../out/%s_13000.dat",which_var)
+set label 1 '$t = 6.6\times10^{5}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
+filename = sprintf("../out/%s_066000.dat",which_var)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 # Plot number 8:
@@ -304,8 +304,8 @@ unset ylabel
 set ytics ymin_tic,increment,ymax_tic
 set ytics format ''
 # Generate the plot
-set label 1 '$t = 1.6\times10^{4}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font "0,6pt"
-filename = sprintf("../out/%s_16000.dat",which_var)
+set label 1 '$t = 7.7\times10^{5}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font "0,6pt"
+filename = sprintf("../out/%s_077000.dat",which_var)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 # Plot number 9:
@@ -330,8 +330,8 @@ unset ylabel
 set ytics ymin_tic,increment,ymax_tic
 set ytics format ''
 # Generate the plot
-set label 1 '$t = 1.9\times10^{4}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font "0,6pt"
-filename = sprintf("../out/%s_19000.dat",which_var)
+set label 1 '$t = 8.8\times10^{5}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font "0,6pt"
+filename = sprintf("../out/%s_088000.dat",which_var)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 unset multiplot
