@@ -50,47 +50,11 @@ int main( int argc, char *argv[] ) {
   /* Start the timer */
   auto start_time = std::chrono::high_resolution_clock::now();
 
-  /* Set the grid of the program */
+  /* Construct the base grid */
   grid::parameters grid(argv);
-
-  /* Compute information about the run to share with the user */
-  const REAL rmax = grid.r_ito_x0[grid.Nx0-1];
-  int Nr_bet_01 = 0, Nr_bet_05 = 0;
-  LOOP(0,grid.Nx0Total) {
-    const REAL rlocal = grid.r_ito_x0[j];
-    if( rlocal < 1.0 ) Nr_bet_01++; // Counts points for which 0<r<1
-    if( rlocal < 5.0 ) Nr_bet_05++; // Counts points for which 0<r<5
-  }
   
   /* Print information about the run to the user */
-  cout << "\n";
-  cout << ".------------------------." << endl;
-  cout << "| Parameters of this run |" << endl;
-  cout << ".------------------------." << endl;
-#if( COORD_SYSTEM == SPHERICAL )
-  cout << "Coordinate system: Spherical" << endl;
-#elif( COORD_SYSTEM == SINH_SPHERICAL )
-  cout << "Coordinate system: SinhSpherical" << endl;
-#endif
-  cout << "Initial condition information:\n";
-  cout << "phi_{0}    = " << PHI0          << endl;
-  cout << "r_{0}      = " << R0            << endl;
-  cout << "delta      = " << DELTA         << endl;
-  cout << "\nRadial grid information:\n";
-  cout << "N_{r}      = " << grid.Nx0      << endl;
-  cout << "r_{max}    = " << rmax          << endl;
-#if( COORD_SYSTEM == SINH_SPHERICAL )
-  cout << "sinhA      = " << grid.sinhA    << endl;
-  cout << "sinhW      = " << grid.sinhW    << endl;
-#endif
-  cout << "Points in 0<r<1: " << Nr_bet_01 << endl;;
-  cout << "Points in 0<r<5: " << Nr_bet_05 << endl;;
-  cout << "\nTime evolution information:\n";
-  cout << "N_{t}      = " << grid.Nt       << endl;
-  cout << "t_{final}  = " << grid.t_final  << endl;
-  cout << "dt         = " << grid.dt       << endl;
-  cout << "CFL factor = " << CFL_FACTOR    << endl;
-  cout << "\n";
+  utilities::parameter_information(grid);
 
   /* Declare all needed gridfunctions */
   gridfunction phi(grid), Phi(grid), Pi(grid), a(grid), alpha(grid);
@@ -130,8 +94,10 @@ int main( int argc, char *argv[] ) {
     /* Perform an integration step */
     evolution::time_step( grid, phi, Phi, Pi, a, alpha );
 
+    if( n%NAN_CHECKER_CHECKPOINT == 0 ) utilities::NaN_checker( n, grid, phi, Phi, Pi, a, alpha );
+
     /* Print information to the user */
-    if( n%200 == 0 ) {
+    if( n%OUTPUT_CHECKPOINT == 0 ) {
       phi.output_to_file(grid,"scalarfield",1,n);
       Phi.output_to_file(grid,"Phi",1,n);
       Pi.output_to_file(grid,"Pi",1,n);
@@ -147,11 +113,11 @@ int main( int argc, char *argv[] ) {
     a.shift_timelevels(2);
     alpha.shift_timelevels(2);
 
-    if( n%20 == 0 ) {
-      INTEGRATION_INFO;
-    }
+    if( n%INFORMATION_CHECKPOINT == 0 ) INTEGRATION_INFO;
     
   }
+
+  cout << "(SFcollapse1D) Program terminated without errors!\n";
   
   return 0;
 
