@@ -52,6 +52,7 @@
 #define GRIDFUNCTION_TIMELEVEL_ERROR (5)
 #define BISECTION_INTERVAL_ERROR     (6)
 #define BISECTION_CONVERGENCE_ERROR  (7)
+#define NAN_ERROR                    (8)
 
 /* Set ghostzones. The default is the same
  * number of ghostzones in every direction
@@ -77,6 +78,14 @@
 #define NEWTON_TOL      (1e-7)
 #define NEWTON_MAX_ITER (100)
 
+/* Regridding parameters */
+#define MAX_REGRID_LEVELS (20)
+
+/* Checkpoints */
+#define OUTPUT_CHECKPOINT      (200)
+#define NAN_CHECKER_CHECKPOINT (20)
+#define INFORMATION_CHECKPOINT (20)
+
 /* Set the declare grid parameters macro. This macro
  * is useful so that we don't need to keep appending
  * "grid." to the variables inside the grid_parameters
@@ -85,39 +94,43 @@
  * modified, since we must then append "grid." to the
  * variable name, otherwise it won't be updated properly.
  */
-#define DECLARE_GRID_PARAMETERS	              					             \
-  const int DIM                            __attribute__((unused)) = grid.DIM;		     \
-  const int Nx0                            __attribute__((unused)) = grid.Nx0;		     \
-  const int Ngz0                           __attribute__((unused)) = grid.Ngz0;		     \
-  const int Nx0Total                       __attribute__((unused)) = grid.Nx0Total;	     \
-  const int Nt                             __attribute__((unused)) = grid.Nt;		     \
-  const REAL x0_min                        __attribute__((unused)) = grid.x0_min;	     \
-  const REAL x0_max                        __attribute__((unused)) = grid.x0_max;	     \
-  const REAL dx0                           __attribute__((unused)) = grid.dx0;		     \
-  const REAL dt                            __attribute__((unused)) = grid.dt;		     \
-  const REAL inv_dx0                       __attribute__((unused)) = grid.inv_dx0;	     \
-  const REAL inv_dx0_sqrd                  __attribute__((unused)) = grid.inv_dx0_sqrd;	     \
-  const REAL t_initial                     __attribute__((unused)) = grid.t_initial;	     \
-  const REAL t_final                       __attribute__((unused)) = grid.t_final;	     \
-  const REAL t                             __attribute__((unused)) = grid.t;		     \
-  const REAL sinhA                         __attribute__((unused)) = grid.sinhA;	     \
-  const REAL sinhW                         __attribute__((unused)) = grid.sinhW;	     \
-  const REAL inv_sinhW                     __attribute__((unused)) = grid.inv_sinhW;         \
-  const REAL sinh_inv_W                    __attribute__((unused)) = grid.sinh_inv_W;        \
-  const REAL A_over_sinh_inv_W             __attribute__((unused)) = grid.A_over_sinh_inv_W; \
-  const std::vector<REAL> r_ito_x0         __attribute__((unused)) = grid.r_ito_x0;          \
+#define DECLARE_GRID_PARAMETERS                                                                 \
+  const int DIM                            __attribute__((unused)) = grid.DIM;                  \
+  const int Nx0                            __attribute__((unused)) = grid.Nx0;                  \
+  const int Ngz0                           __attribute__((unused)) = grid.Ngz0;                 \
+  const int Nx0Total                       __attribute__((unused)) = grid.Nx0Total;             \
+  const int Nt                             __attribute__((unused)) = grid.Nt;                   \
+  const int current_regrid_level           __attribute__((unused)) = grid.current_regrid_level; \
+  const int max_regrid_levels              __attribute__((unused)) = grid.max_regrid_levels;    \
+  const REAL x0_min                        __attribute__((unused)) = grid.x0_min;               \
+  const REAL x0_max                        __attribute__((unused)) = grid.x0_max;               \
+  const REAL dx0                           __attribute__((unused)) = grid.dx0;                  \
+  const REAL dt                            __attribute__((unused)) = grid.dt;                   \
+  const REAL inv_dx0                       __attribute__((unused)) = grid.inv_dx0;              \
+  const REAL inv_dx0_sqrd                  __attribute__((unused)) = grid.inv_dx0_sqrd;         \
+  const REAL t_initial                     __attribute__((unused)) = grid.t_initial;            \
+  const REAL t_final                       __attribute__((unused)) = grid.t_final;              \
+  const REAL t                             __attribute__((unused)) = grid.t;                    \
+  const REAL sinhA                         __attribute__((unused)) = grid.sinhA;                \
+  const REAL sinhW                         __attribute__((unused)) = grid.sinhW;                \
+  const REAL inv_sinhW                     __attribute__((unused)) = grid.inv_sinhW;            \
+  const REAL sinh_inv_W                    __attribute__((unused)) = grid.sinh_inv_W;           \
+  const REAL A_over_sinh_inv_W             __attribute__((unused)) = grid.A_over_sinh_inv_W;    \
+  const std::vector<REAL> r_ito_x0         __attribute__((unused)) = grid.r_ito_x0;             \
   const std::vector< std::vector<REAL> > x __attribute__((unused)) = grid.x;
 
 /* Set the LOOP macro */
 #define LOOP(jmin,jmax) for(int j=jmin;j<jmax;j++)
 
 /* Information macro */
-#define INTEGRATION_INFO					                                             \
-  auto current_time = std::chrono::high_resolution_clock::now();                                             \
-  auto elapsed_time = std::chrono::duration_cast<std::chrono::seconds>( current_time - start_time ).count(); \
-  REAL time_elapsed = (REAL)elapsed_time;                                                                    \
-  REAL time_left    = ((REAL)grid.Nt/(REAL)n - 1.0) * time_elapsed;		                             \
-  std::cout.precision(3);                                                                                    \
-  std::cout << "\r(SFcollapse1D INFO) " << "Iter " << n << "/" << grid.Nt << " | t = " << n*grid.dt << " |  Runtime: " << time_elapsed << " seconds | ETA: " << time_left << " seconds" << std::flush;
+#define INTEGRATION_INFO					                                               \
+  {                                                                                                            \
+    auto current_time = std::chrono::high_resolution_clock::now();                                             \
+    auto elapsed_time = std::chrono::duration_cast<std::chrono::seconds>( current_time - start_time ).count(); \
+    REAL time_elapsed = (REAL)elapsed_time;                                                                    \
+    REAL time_left    = ((REAL)grid.Nt/(REAL)n - 1.0) * time_elapsed;		                               \
+    std::cout.precision(3);                                                                                    \
+    std::cout << "\r(SFcollapse1D INFO) " << "Iter " << n << "/" << grid.Nt << " | t = " << n*grid.dt << " |  Runtime: " << time_elapsed << " seconds | ETA: " << time_left << " seconds" << std::flush; \
+  }
   
 #endif // __MACROS_HPP__
