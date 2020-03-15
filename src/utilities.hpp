@@ -31,11 +31,8 @@ namespace utilities {
   /* Lagrange interpolator */
   REAL Lagrange_interpolator( const int, const std::vector<REAL>, const std::vector<REAL>, const REAL );
 
-  /* Lagrange basis polynomials*/
-  void Lagrange_basis_polynomials( const int, const REAL, const std::vector<REAL>, std::vector<REAL> & );
-
   /* Bisection index finder */
-  int Bisection_index_finder( const std::vector<REAL>, const REAL );
+  int bisection_index_finder( const std::vector<REAL>, const REAL );
 
   /* Various error messages for SFcollapse1D */
   void SFcollapse1D_error( const int );

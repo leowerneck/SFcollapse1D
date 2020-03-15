@@ -35,37 +35,47 @@ REAL utilities::Lagrange_interpolator( const int interp_stencil_size, const vect
    * It follows closely the discussion in: https://en.wikipedia.org/wiki/Lagrange_polynomial
    *
    * We get as inputs the values { x_i } and the function values { y_i = y(x_i) }. We then
-   * want to compute the value of the function y_star = y(x_star).
-   *
-   * First find the appropriate indices to use in the interpolation */
-  int size_of_x    = x.size();
-  int idx_min = utilities::Bisection_index_finder( x, x_star ) - interp_stencil_size/2;
+   * want to compute the value of the function y_star = y(x_star), assuming that x_star is
+   * inside the interval [x_{0},x_{max}].
+   */
 
-  /* At this point idx_min holds the integer for which | x[idx_min] - x_star | is minimal.
-   * We now want to perform the interpolation. Ideally, we will choose points on both sides
-   * of idx_min so that we can bracket the value for interpolation. 
+  /* .------------------------------------------.
+   * | Step 1: Find the appropriate array index |
+   * .------------------------------------------.
    *
-   * Make sure we are within the bounds of the array x */
+   * Step 1.a: Set the size of x and bisect the closest value of x_star from x */
+  int size_of_x = x.size();
+  int idx_min   = utilities::bisection_index_finder( x, x_star ) - interp_stencil_size/2;
+
+  /* Step 2.b: At this point idx_min holds the integer for which | x[idx_min] - x_star |
+   *           is minimal. We now want to perform the interpolation. Ideally, we will
+   *           choose points on both sides of idx_min so that we can bracket the value
+   *           for interpolation. To this end, we need to make sure we are within the 
+   *           bounds of the array x.
+   */
   while( idx_min < 0 ) idx_min++;
   while( idx_min + interp_stencil_size > size_of_x ) idx_min--;
   int idx_max = idx_min + interp_stencil_size;
 
-  /* Then compute the Lagrange basis polynomials */
+  /* .------------------------------------------------.
+   * | Step 2: Compute the Lagrange basis polynomials |
+   * .------------------------------------------------.
+   */
   vector<REAL> l_j_of_x_star(interp_stencil_size);
-  REAL numer = 1.0;
-  REAL denom = 1.0;
   for(int j=idx_min;j<idx_max;j++) {
+    REAL numer = 1.0;
+    REAL denom = 1.0;
     for(int m=idx_min;m<idx_max;m++) {
       numer *= ( (m == j) ? 1.0 : x_star - x[m] ); // If m=j, multiply by 1
       denom *= ( (m == j) ? 1.0 : x[j]   - x[m] ); // If m=j, multiply by 1
-      cout << x_star << " " << x[m] << " | " << x[j] << " " << x[m] << endl;
     }
-    cout << "numer = " << numer << endl;
-    cout << "denom = " << denom << endl;
     l_j_of_x_star[j] = numer/denom;
   }
 
-  /* Perform the interpolation */
+  /* .-----------------------------------.
+   * | Step 3: Perform the interpolation |
+   * .-----------------------------------.
+   */
   REAL y_star = 0.0;
   LOOP(0,interp_stencil_size) {
     y_star += y[idx_min + j] * l_j_of_x_star[j];
@@ -75,7 +85,7 @@ REAL utilities::Lagrange_interpolator( const int interp_stencil_size, const vect
   
 }
 /* Bisection index finder */
-int utilities::Bisection_index_finder( const vector<REAL> x, const REAL x_star ) {
+int utilities::bisection_index_finder( const vector<REAL> x, const REAL x_star ) {
 
   /* Set the size of x */
   int size_of_x = x.size();
@@ -87,8 +97,6 @@ int utilities::Bisection_index_finder( const vector<REAL> x, const REAL x_star )
   /* Find x1 and x2 */
   REAL x1 = x_star - x[j1];
   REAL x2 = x_star - x[j2];
-
-  cout << j1 << " " << j2 << " | " << x1 << " " << x2 << endl;
 
   /* Check if x_star is indeed inside the interval [x1,x2] */
   if( x1*x2 >= 0 ) utilities::SFcollapse1D_error(BISECTION_INTERVAL_ERROR);
@@ -122,6 +130,11 @@ int utilities::Bisection_index_finder( const vector<REAL> x, const REAL x_star )
 
   /* If we reach this point, then the algorithm failed. Return an error */
   utilities::SFcollapse1D_error(BISECTION_CONVERGENCE_ERROR);
+
+  /* This is added to get rid of a compiler warning, but the
+   * function is never able to actually reach this point
+   */
+  return BISECTION_CONVERGENCE_ERROR;
 
 }
 
