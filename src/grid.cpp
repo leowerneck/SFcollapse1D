@@ -139,6 +139,10 @@ void grid::parameters::initialize_parameters(char *argv[]) {
   /* Set Nt; add 0.5 because C++ rounds down */
   Nt = (int)(t_final/dt + 0.5);
 
+  /* Initialize regrid variables */
+  current_regrid_level = 0;
+  max_regrid_levels    = MAX_REGRID_LEVELS;
+
 }
 
 /* .--------------------------------------.

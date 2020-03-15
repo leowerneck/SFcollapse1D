@@ -55,6 +55,8 @@ namespace grid {
     /* Sinh Spherical coordinate system variables */
     REAL sinhA, sinhW, inv_sinhW, sinh_inv_W, A_over_sinh_inv_W;
     std::vector< REAL > r_ito_x0;
+    /* Regridding parameters */
+    int current_regrid_level, max_regrid_levels;
 
     /* .-----------------.
      * | Time Parameters |
