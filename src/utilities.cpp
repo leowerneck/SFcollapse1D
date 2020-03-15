@@ -21,9 +21,11 @@
 
 /* Basic includes */
 #include <iostream>
+#include <fstream>
 #include <cmath>
 #include <vector>
 #include "macros.hpp"
+#include "grid.hpp"
 #include "utilities.hpp"
 
 using namespace std;
@@ -138,48 +140,141 @@ int utilities::bisection_index_finder( const vector<REAL> x, const REAL x_star )
 
 }
 
+/* Print parameter information to the user and to file */
+void utilities::parameter_information( grid::parameters grid ) {
+
+  DECLARE_GRID_PARAMETERS;
+
+  /* Compute information about the run to share with the user */
+  const REAL rmax = r_ito_x0[Nx0-1];
+  int Nr_bet_01 = 0, Nr_bet_05 = 0;
+  LOOP(0,Nx0Total) {
+    const REAL rlocal = r_ito_x0[j];
+    if( rlocal < 1.0 ) Nr_bet_01++; // Counts points for which 0<r<1
+    if( rlocal < 5.0 ) Nr_bet_05++; // Counts points for which 0<r<5
+  }
+
+  /* Trick based on Nawaz's answer in Stackoverflow. This avoids code duplication.
+   * Source: https://stackoverflow.com/questions/10150468/how-to-redirect-cin-and-cout-to-files
+   */
+  ofstream fileout("out_parameters.txt"); // Set fileout with the name of the output file
+  auto *coutbuf = cout.rdbuf();           // Save current cout buf
+  int iter = 0;
+  
+  while( iter < 2 ) {
+    
+    if( iter == 1 ) cout.rdbuf(fileout.rdbuf()); // Redirect cout to the file opened by fileout
+    
+    cout << "\n";
+    cout << ".------------------------."       << endl;
+    cout << "| Parameters of this run |"       << endl;
+    cout << ".------------------------."       << endl;
+#if( COORD_SYSTEM == SPHERICAL )
+    cout << "Coordinate system: Spherical"     << endl;
+#elif( COORD_SYSTEM == SINH_SPHERICAL )
+    cout << "Coordinate system: SinhSpherical" << endl;
+#endif
+    cout << "Initial condition information:"   << endl;
+    cout << "phi_{0}    = " << PHI0            << endl;
+    cout << "r_{0}      = " << R0              << endl;
+    cout << "delta      = " << DELTA           << endl;
+    cout << "\nRadial grid information:"       << endl;
+    cout << "N_{r}      = " << Nx0             << endl;
+    cout << "r_{max}    = " << rmax            << endl;
+#if( COORD_SYSTEM == SINH_SPHERICAL )
+    cout << "sinhA      = " << sinhA           << endl;
+    cout << "sinhW      = " << sinhW           << endl;
+#endif
+    cout << "Points in 0<r<1: " << Nr_bet_01   << endl;
+    cout << "Points in 0<r<5: " << Nr_bet_05   << endl;
+    cout << "\nTime evolution information:"    << endl;
+    cout << "N_{t}      = " << Nt              << endl;
+    cout << "t_{final}  = " << t_final         << endl;
+    cout << "dt         = " << dt              << endl;
+    cout << "CFL factor = " << CFL_FACTOR      << endl;
+    cout << "\n";
+
+    if( iter == 1 ) cout.rdbuf(coutbuf); // Reset to standard output again
+
+    iter++;
+
+  }
+
+}
+
+/* NaN checker: verifies the gridfunctions still have valid values */
+void utilities::NaN_checker( const int n, grid::parameters grid, gridfunction phi, gridfunction Phi, gridfunction Pi, gridfunction a, gridfunction alpha ) {
+
+  DECLARE_GRID_PARAMETERS;
+
+  /* Loop over gridfunctions and check for NaN's */
+  LOOP(0,Nx0Total) {
+    if( isnan( phi.level_np1[j] ) || isnan( Phi.level_np1[j] ) || isnan( Pi.level_np1[j] ) || isnan( a.level_np1[j] ) || isnan( alpha.level_np1[j] ) ) {
+      cerr << "(NaN_checker) Iteration: " << n
+	   << " | time = " << t
+	   << " | j = "    << j
+	   << endl;
+      utilities::SFcollapse1D_error( NAN_ERROR );
+    }
+  }
+
+}
+
 /* Various errors that may occur during execution */
 void utilities::SFcollapse1D_error( const int error ) {
 
   switch (error) {
 
     case SPHERICAL_USAGE_ERROR:
-      cerr << "(SFcollapse1D) ERROR: Incorrect usage of the program!\n";
-      cerr << "(SFcollapse1D) Spherical coordinates selected.\n";
-      cerr << "(SFcollapse1D) Correct usage is: ./SFcollapse1D Nx Domain_size t_final\n";
+      cerr << "(SFcollapse1D ERROR) Incorrect usage of the program!\n";
+      cerr << "(SFcollapse1D INFO) Spherical coordinates selected.\n";
+      cerr << "(SFcollapse1D INFO) Correct usage is: ./SFcollapse1D Nx Domain_size t_final\n";
+      cerr << "(SFcollapse1D INFO) Terminating the program...\n";
       exit(SPHERICAL_USAGE_ERROR);
       break;
 
     case SINH_SPHERICAL_USAGE_ERROR:
-      cerr << "(SFcollapse1D) ERROR: Incorrect usage of the program!\n";
-      cerr << "(SFcollapse1D) SinhSpherical coordinates selected.\n";
-      cerr << "(SFcollapse1D) Correct usage is: ./SFcollapse1D Nx Domain_size t_final sinhW\n";
+      cerr << "(SFcollapse1D ERROR) Incorrect usage of the program!\n";
+      cerr << "(SFcollapse1D INFO) SinhSpherical coordinates selected.\n";
+      cerr << "(SFcollapse1D INFO) Correct usage is: ./SFcollapse1D Nx Domain_size t_final sinhW\n";
+      cerr << "(SFcollapse1D INFO) Terminating the program...\n";
       exit(SINH_SPHERICAL_USAGE_ERROR);
       break;
 
     case GRID_STRUCTURE_ERROR:
-      cerr << "(initialize_parameters) ERROR: Unknown grid structure! Please check the macros.hpp file.\n";
+      cerr << "(initialize_parameters ERROR) Unknown grid structure! Please check the macros.hpp file.\n";
+      cerr << "(SFcollapse1D INFO) Terminating the program...\n";
       exit(GRID_STRUCTURE_ERROR);
       break;
 
     case COORD_SYSTEM_ERROR:
-      cerr << "(initialize_parameters) ERROR: Unknown coordinate system! Please check the macros.hpp file!\n";
+      cerr << "(initialize_parameters ERROR) Unknown coordinate system! Please check the macros.hpp file!\n";
+      cerr << "(SFcollapse1D INFO) Terminating the program...\n";
       exit(COORD_SYSTEM_ERROR);
       break;
 
     case GRIDFUNCTION_TIMELEVEL_ERROR:
-      cerr << "(shift_timelevels) ERROR: Unknown value of which_level inside shift_timelevels!\n";
+      cerr << "(shift_timelevels ERROR) Unknown value of which_level inside shift_timelevels!\n";
+      cerr << "(SFcollapse1D INFO) Terminating the program...\n";
       exit(GRIDFUNCTION_TIMELEVEL_ERROR);
       break;
 
     case BISECTION_INTERVAL_ERROR:
-      cerr << "(Bisection_index_finder) ERROR: bad interval!\n";
+      cerr << "(Bisection_index_finder ERROR) Bad interval!\n";
+      cerr << "(SFcollapse1D INFO) Terminating the program...\n";
       exit(BISECTION_INTERVAL_ERROR);
       break;
 
     case BISECTION_CONVERGENCE_ERROR:
-      cerr << "(Bisection_index_finder) ERROR: did not converge!\n";
+      cerr << "(Bisection_index_finder ERROR) Did not converge!\n";
+      cerr << "(SFcollapse1D INFO) Terminating the program...\n";
       exit(BISECTION_CONVERGENCE_ERROR);
+      break;
+
+    case NAN_ERROR:
+      cerr << "(NaN_checker ERROR) NaN found!\n";
+      cerr << "(SFcollapse1D INFO) Terminating the program...\n";
+      exit(NAN_ERROR);
       break;
 
   }

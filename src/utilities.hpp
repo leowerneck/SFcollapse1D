@@ -25,14 +25,24 @@
 /* Basic includes */
 #include <vector>
 #include "macros.hpp"
+#include "grid.hpp"
+#include "gridfunction.hpp"
 
 namespace utilities {
+
+  /* NaN checker function ) */
+  void NaN_checker( const int n, grid::parameters grid, gridfunction phi, gridfunction Phi, gridfunction Pi, gridfunction a, gridfunction alpha );
+  /* Regridding function */
+  void regrid( grid::parameters &grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha );
 
   /* Lagrange interpolator */
   REAL Lagrange_interpolator( const int, const std::vector<REAL>, const std::vector<REAL>, const REAL );
 
   /* Bisection index finder */
   int bisection_index_finder( const std::vector<REAL>, const REAL );
+
+  /* Printing useful grid information to the user */
+  void parameter_information( grid::parameters grid );
 
   /* Various error messages for SFcollapse1D */
   void SFcollapse1D_error( const int );
