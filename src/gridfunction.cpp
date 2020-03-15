@@ -25,6 +25,7 @@
 #include <string>
 #include "grid.hpp"
 #include "gridfunction.hpp"
+#include "utilities.hpp"
 
 using namespace std;
 
