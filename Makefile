@@ -31,7 +31,7 @@ OBJ_DIR = ./obj
 CXX = g++
 
 # Set the C++ compiler flags
-CXXFLAGS = -Wall -Ofast -ffast-math -march=native -fopenmp
+CXXFLAGS = -Wall -O2 -march=native -fopenmp
 
 # Set the objects - When a new source file is added to the code,
 # an object with the same base name must be added to the list below
@@ -41,7 +41,8 @@ OBJECTS = SFcollapse1D.o      \
           initial_condition.o \
           lapse_rescaling.o   \
           newton_raphson.o    \
-          evolution.o
+          evolution.o         \
+          utilities.o
 
 # Set the objects path - When a new source file is added to the code,
 # an object with the same base name must be added to the list below
@@ -51,7 +52,8 @@ OBJ_PATHS = $(OBJ_DIR)/SFcollapse1D.o      \
             $(OBJ_DIR)/initial_condition.o \
             $(OBJ_DIR)/lapse_rescaling.o   \
             $(OBJ_DIR)/newton_raphson.o    \
-            $(OBJ_DIR)/evolution.o
+            $(OBJ_DIR)/evolution.o         \
+            $(OBJ_DIR)/utilities.o
 
 all: SFcollapse1D
 
@@ -79,6 +81,9 @@ newton_raphson.o: $(SRC_DIR)/newton_raphson.cpp $(SRC_DIR)/macros.hpp $(SRC_DIR)
 evolution.o: $(SRC_DIR)/evolution.cpp $(SRC_DIR)/macros.hpp $(SRC_DIR)/grid.hpp $(SRC_DIR)/gridfunction.hpp obj_dir
 	$(CXX) $(CXXFLAGS) -o $(OBJ_DIR)/evolution.o -c $(SRC_DIR)/evolution.cpp
 
+utilities.o: $(SRC_DIR)/utilities.cpp $(SRC_DIR)/utilities.hpp $(SRC_DIR)/macros.hpp $(SRC_DIR)/grid.hpp obj_dir
+	$(CXX) $(CXXFLAGS) -o $(OBJ_DIR)/utilities.o -c $(SRC_DIR)/utilities.cpp
+
 obj_dir:
 	mkdir -p obj
 
@@ -89,4 +94,4 @@ clean:
 	rm -rf $(OBJ_PATHS) SFcollapse1D
 
 realclean:
-	rm -rf $(OBJ_PATHS) SFcollapse1D out/*.dat animations/*.gif out/ obj/
+	rm -rf $(OBJ_PATHS) SFcollapse1D *.txt out/*.dat animations/*.gif out/ obj/
