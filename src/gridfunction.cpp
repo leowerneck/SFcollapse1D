@@ -42,12 +42,12 @@ using namespace std;
  * The value of size in our program is typically
  * grid.NxTotal (See simulation_parameters.hpp).
  */
-void gridfunction::initialize_gridfunction( const grid::parameters grid ) {
+void gridfunction::initialize_gridfunction( const int N ) {
 
   /* Resize the gridfunction to size and initialize them to zero */
-  level_np1.resize(grid.Nx0Total,0.0);
-  level_n.resize(  grid.Nx0Total,0.0);
-  level_nm1.resize(grid.Nx0Total,0.0);
+  level_np1.resize(N,0.0);
+  level_n.resize(  N,0.0);
+  level_nm1.resize(N,0.0);
 
 }
 

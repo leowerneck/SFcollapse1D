@@ -72,7 +72,7 @@ REAL pointwise_Newton_method_Spherical( const int j, grid::parameters grid, cons
   } while( ( fabs(A_new - A_old) > NEWTON_TOL ) && ( iter <= NEWTON_MAX_ITER ) );
 
   /* Check for convergence */
-  if( iter > NEWTON_MAX_ITER ) cerr << "WARNING: Newton's method did not converge to a root! j = " << j << " | iter = " << iter << endl;
+  if( iter > NEWTON_MAX_ITER ) cerr << "\n(pointwise_Newton_method WARNING) Newton's method did not converge to a root! j = " << j << " | iter = " << iter << endl;
 
   /* Return the value of a */
   return( exp(A_new) );
@@ -121,7 +121,7 @@ REAL pointwise_Newton_method_SinhSpherical( const int j, grid::parameters grid, 
   } while( ( fabs(A_new - A_old) > NEWTON_TOL ) && ( iter <= NEWTON_MAX_ITER ) );
 
   /* Check for convergence */
-  if( iter > NEWTON_MAX_ITER ) cerr << "WARNING: Newton's method did not converge to a root! j = " << j << " | iter = " << iter << endl;
+  if( iter > NEWTON_MAX_ITER ) cerr << "\n(pointwise_Newton_method WARNING) Newton's method did not converge to a root! j = " << j << " | iter = " << iter << endl;
 
   /* Return the value of a */
   return( exp(A_new) );

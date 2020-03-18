@@ -50,42 +50,17 @@ bool utilities::check_regrid_criterion( const grid::parameters grid, const vecto
    *     Phys. Rev. D 98 084012, 2018. ArXiV: https://arxiv.org/abs/1807.10342
    */
   LOOP(0,Nx0Total) {
-    /* First, compute phi_{x} and phi_{xx} */
-    REAL phi_x, phi_xx;
+    REAL phi_rr;
     if( (j != 0) && (j != Nx0Total-1) ) {
-      phi_x  = inv_dx0*0.5  * ( phi[j+1] - phi[j-1] );
-      phi_xx = inv_dx0_sqrd * ( phi[j+1] - 2.0*phi[j] + phi[j-1] );
+      phi_rr = inv_dr_sqrd * ( phi[j+1] - 2.0*phi[j] + phi[j-1] );
     }
     else if( j==0 ) {
-      phi_x  = inv_dx0*0.5  * ( -3.0*phi[j] + 4.0*phi[j+1] - phi[j+2] );
-      phi_xx = inv_dx0_sqrd * ( 2.0*phi[j] - 5.0*phi[j+1] + 4.0*phi[j+2] - phi[j+3] );
+      phi_rr = inv_dr_sqrd * ( 2.0*phi[j] - 5.0*phi[j+1] + 4.0*phi[j+2] - phi[j+3] );
     }
     else {
-      phi_x  = inv_dx0*0.5  * ( 3.0*phi[j] - 4.0*phi[j-1] + phi[j-2] );
-      phi_xx = inv_dx0_sqrd * ( 2.0*phi[j] - 5.0*phi[j-1] + 4.0*phi[j-2] - phi[j-3] );
+      phi_rr = inv_dr_sqrd * ( 2.0*phi[j] - 5.0*phi[j-1] + 4.0*phi[j-2] - phi[j-3] );
     }
-    /* Then, compute phi_{rr}. We know that
-     *
-     * r = A sinh( x/w ) / sinh( 1/w )
-     *
-     * which implies
-     *
-     * => dr = [ (A/w) cosh( x/w ) / sinh( 1/w ) ] dx
-     *
-     * => pd_{r} = [ (w/A) sinh( 1/w ) / cosh( x/w ) ] pd_{x}
-     *
-     * => pd_{rr} = pd_{r} ( pd_{r} )
-     *
-     * => pd_{rr} = ( (w/A) sinh(1/w) )^{2} ( 1/cosh(x/w) ) pd_{x} [ ( 1/cosh(x/w) ) pd_{x} )
-     *
-     * => pd_{rr} = ( (w/A) sinh(1/w) )^{2} ( 1/cosh(x/w) )^{2} [ pd_{xx} - tanh(x/w)/w pd_{x} )
-     */
-    const REAL tmp0   = cosh( x[0][j] * inv_sinhW );
-    const REAL tmp1   = tanh( x[0][j] * inv_sinhW ) * inv_sinhW;
-    const REAL tmp2   = 1.0 / SQR(tmp0);
-    const REAL tmp3   = SQR(sinhW) / SQR(A_over_sinh_inv_W);
-    const REAL phi_rr = tmp3 * tmp2 * ( phi_xx - tmp1 * phi_x );
-    const REAL l      = 1.0 / sqrt( abs(phi_rr) );
+    const REAL l = 1.0 / sqrt( abs(phi_rr) );
 
     /* If the criterion is met, return true */
     if( l < 25*ds_min ) return true;
@@ -283,14 +258,9 @@ void utilities::regrid( grid::parameters &grid, gridfunction &phi, gridfunction 
   grid.x[0]     = x_new;
   grid.r_ito_x0 = r_star;
   grid.ds_min   = grid.r_ito_x0[1] - grid.r_ito_x0[0];
-  grid.dt       = CFL_FACTOR * grid.ds_min;
-  grid.Nt       = (int)grid.t_final/grid.dt;
 #if( COORD_SYSTEM == SINH_SPHERICAL )
-  grid.sinhA             = sinhA_new;
-  grid.sinhW             = sinhW_new;
-  grid.inv_sinhW         = 1.0/grid.sinhW;
-  grid.sinh_inv_W        = sinh(grid.inv_sinhW);
-  grid.A_over_sinh_inv_W = grid.sinhA / grid.sinh_inv_W;
+  grid.sinhA    = x0_max_new;
+  grid.sinhW    = sinhW_new;
 #endif
   grid.current_regrid_level++;
 
@@ -387,7 +357,7 @@ int utilities::bisection_index_finder( const vector<REAL> x, const REAL x_star )
 
   /* Check if x_star is indeed inside the interval [x1,x2] */
   if( x1*x2 >= 0 ) {
-    cerr << "\n(bisection_index_finder ERROR) j1 = " << j1 << " | j2 = " << j2 << endl;
+    cerr << "(bisection_index_finder ERROR) j1 = " << j1 << " | j2 = " << j2 << endl;
     cerr << "(bisection_index_finder ERROR) x1 = " << x1 << " | x2 = " << x2 << " | x_star = " << x_star << endl;
     utilities::SFcollapse1D_error(BISECTION_INTERVAL_ERROR);
   }
@@ -446,14 +416,7 @@ void utilities::parameter_information( grid::parameters grid ) {
   /* Trick based on Nawaz's answer in Stackoverflow. This avoids code duplication.
    * Source: https://stackoverflow.com/questions/10150468/how-to-redirect-cin-and-cout-to-files
    */
-  ofstream fileout; // Set fileout with the name of the output file
-  if( t==0 ) {
-    fileout.open("out_parameters.txt");
-  }
-  else {
-    fileout.open("out_parameters.txt",ios_base::app);
-  }
-
+  ofstream fileout("out_parameters.txt"); // Set fileout with the name of the output file
   auto *coutbuf = cout.rdbuf();           // Save current cout buf
   int iter = 0;
   
@@ -462,17 +425,9 @@ void utilities::parameter_information( grid::parameters grid ) {
     if( iter == 1 ) cout.rdbuf(fileout.rdbuf()); // Redirect cout to the file opened by fileout
     
     cout << "\n";
-    if( t == 0 ) {
-      cout << ".------------------------."       << endl;
-      cout << "| Parameters of this run |"       << endl;
-      cout << ".------------------------."       << endl;
-    }
-    else {
-      cout << ".----------------."             << endl;
-      cout << "| New parameters |"             << endl;
-      cout << ".----------------."             << endl;
-      cout << "Regrid level: " << current_regrid_level << endl;
-    }
+    cout << ".------------------------."       << endl;
+    cout << "| Parameters of this run |"       << endl;
+    cout << ".------------------------."       << endl;
 #if( COORD_SYSTEM == SPHERICAL )
     cout << "Coordinate system: Spherical"     << endl;
 #elif( COORD_SYSTEM == SINH_SPHERICAL )
@@ -514,7 +469,7 @@ void utilities::NaN_checker( const int n, grid::parameters grid, gridfunction ph
   /* Loop over gridfunctions and check for NaN's */
   LOOP(0,Nx0Total) {
     if( isnan( phi.level_np1[j] ) || isnan( Phi.level_np1[j] ) || isnan( Pi.level_np1[j] ) || isnan( a.level_np1[j] ) || isnan( alpha.level_np1[j] ) ) {
-      cerr << "\n(NaN_checker) Iteration: " << n
+      cerr << "(NaN_checker) Iteration: " << n
 	   << " | time = " << t
 	   << " | j = "    << j
 	   << endl;
@@ -588,5 +543,56 @@ void utilities::SFcollapse1D_error( const int error ) {
       break;
 
   }
+
+}
+
+/* Symmetric 3x3 matrix inverter */
+void utilities::invert_3x3_symmetric_matrix__compute_det( const REAL M[3][3], REAL &detM, REAL &invM[3][3] ) {
+
+  /* Compute the determinant of M */
+  detM = M[0][0] * M[1][1] * M[2][2] + 2.0*M[0][1] * M[1][2] * M[0][2]
+       - M[0][2] * M[1][1] * M[0][2] - M[0][1] * M[0][1] * M[2][2] - M[0][0] * M[1][2] * M[1][2];
+
+  if( detM == 0 ) utilities::SFcollapse1D_error(SINGULAR_MATRIX_ERROR);
+
+  const REAL inv_detM = 1.0/detM;
+
+  /* Compute the inverse of M */
+  invM[0][0] = inv_detM * ( M[1][1] * M[2][2] - M[1][2] * M[1][2] );
+  invM[0][1] = inv_detM * ( M[0][2] * M[1][2] - M[0][1] * M[2][2] );
+  invM[0][2] = inv_detM * ( M[0][1] * M[1][2] - M[0][2] * M[1][1] );
+  invM[1][1] = inv_detM * ( M[0][0] * M[2][2] - M[0][2] * M[0][2] );
+  invM[1][2] = inv_detM * ( M[0][2] * M[0][1] - M[0][0] * M[1][2] );
+  invM[2][2] = inv_detM * ( M[0][0] * M[1][1] - M[0][1] * M[0][1] );
+
+  /* The inverse of a symmetric matrix is also symmetric */
+  invM[1][0] = invM[0][1];
+  invM[2][0] = invM[0][2];
+  invM[2][1] = invM[1][2];
+
+}
+
+/* Symmetric 3x3 matrix inverter */
+void utilities::invert_3x3_matrix__compute_det( const REAL M[3][3], REAL &detM, REAL &invM[3][3] ) {
+
+  /* Compute the determinant of M */
+  detM = M[0][0] * M[1][1] * M[2][2] + M[0][1] * M[1][2] * M[2][0] + M[1][0] * M[2][1] * M[0][2]
+       - M[0][2] * M[1][1] * M[0][2] - M[0][1] * M[1][0] * M[2][2] - M[0][0] * M[1][2] * M[2][1];
+
+
+  if( detM == 0 ) utilities::SFcollapse1D_error(SINGULAR_MATRIX_ERROR);
+
+  const REAL inv_detM = 1.0/detM;
+  
+  /* Compute the inverse of M */
+  invM[0][0] = inv_detM * ( M[1][1] * M[2][2] - M[1][2] * M[2][1] );
+  invM[0][1] = inv_detM * ( M[0][2] * M[2][1] - M[0][1] * M[2][2] );
+  invM[0][2] = inv_detM * ( M[0][1] * M[1][2] - M[0][2] * M[1][1] );
+  invM[1][0] = inv_detM * ( M[1][2] * M[2][0] - M[1][0] * M[2][2] );
+  invM[1][1] = inv_detM * ( M[0][0] * M[2][2] - M[0][2] * M[2][0] );
+  invM[1][2] = inv_detM * ( M[0][2] * M[1][0] - M[0][0] * M[1][2] );
+  invM[2][0] = inv_detM * ( M[1][0] * M[2][1] - M[1][1] * M[2][0] );
+  invM[2][1] = inv_detM * ( M[0][1] * M[2][0] - M[0][0] * M[2][1] );
+  invM[2][2] = inv_detM * ( M[0][0] * M[1][1] - M[0][1] * M[1][0] );
 
 }

@@ -19,54 +19,44 @@
  * .-----------------------------------------------------------------------.
  */
 
-#ifndef __GRIDFUNCTION_HPP__
-#define __GRIDFUNCTION_HPP__
+#ifndef __BSSN__
+#define __BSSN__
 
-/* Basic includes */
-#include <vector>
-#include <string>
 #include "macros.hpp"
-#include "grid.hpp"
+#include "gridfunction.hpp"
 
-/* Define the gridfunction class */
-class gridfunction {
-public:
-  /* .--------------------.
-   * | Gridfunction array |
-   * .--------------------.
-   *
-   * We need three time levels
-   */
-  std::vector<REAL> level_np1;
-  std::vector<REAL> level_n;
-  std::vector<REAL> level_nm1;
+namespace BSSN {
+
+  class tensors {
+  public:
+    /* alpha and beta^{i} */
+    REAL alpha, betaU[3];
     
-  /* .-----------------.
-   * | The constructor |
-   * .-----------------.
-   */
-  gridfunction( const int N ) {
-    initialize_gridfunction(N);
-  }
+    /* \bar\gamma_{ij} , det(gamma_{ij}), and \bar\gamma^{ij} */
+    REAL gammabarDD[3][3], gammabarUU[3][3], gammaDET;
 
-  /* .--------------------------------.
-   * | The shift time levels function |
-   * .--------------------------------.
-   */
-  void shift_timelevels( const int );
+    /* Derivative of the metric */
+    REAL gammabarDD_dD[3][3][3];
 
-  /* .----------------------.
-   * | Output level to file |
-   * .----------------------.
-   */
-  void output_to_file( const grid::parameters, const std::string, const int, const int );
+    /* Christoffel symbols, Gammabar^{k}_{ij} */
+    REAL GammabadUDD[3][3][3];
 
-private:
-  /* .---------------------------------------.
-   * | The initialize_gridfunctions function |
-   * .---------------------------------------.
-   */
-  void initialize_gridfunction( const int );
-};
+    /* A_{ij} and A^{ij} */
+    REAL AbarDD[3][3], AbarUU[3][3];
 
-#endif // __GRIDFUNCTION_HPP__
+    /* K_{ij} and K^{ij} */
+    REAL KDD[3][3], KUU[3][3], trK;
+
+    /* Constructor */
+    tensors( const int i0, const int i1, const int i2, const gridfunctions in_gfs ) {
+      compute_BSSN_tensors_from_gridfunctions( i0, i1, i2, in_gfs );
+    }
+
+  private:
+    /* Initializer function */
+    void compute_BSSN_tensors_from_gridfunctions( const int i0, const int i1, const int i2, const gridfunctions in_gfs );
+  };
+
+}
+
+#endif // __BSSN__

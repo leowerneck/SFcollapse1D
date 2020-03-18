@@ -44,10 +44,10 @@ namespace grid {
     int Nx0Total;
     /* Domain size */
     REAL x0_min,x0_max;
-    /* Spatial step sizes */
-    REAL dx0;
     /* Vector of vectors for x0,x1,x2 */
     std::vector< std::vector<REAL> > x;
+    /* Step sizes */
+    REAL dx0, ds_min;
     /* Inverse spatial step sizes */
     REAL inv_dx0;
     /* Inverse spatial step sizes squared */
@@ -85,6 +85,19 @@ namespace grid {
     void initialize_parameters(char *argv[]);
   };
 
+  /* Set functions to compute x(r) and r(x). Note that
+   * we choose to overload the functions that compute
+   * these quantities with multiple definitions, one
+   * that works for Spherical coordinates and one that
+   * works for SinhSpherical coordinates. There is no
+   * confusion because the function call is clearly
+   * different.
+   */
+  REAL compute_x_of_r( const REAL r );
+  REAL compute_r_of_x( const REAL x );
+  REAL compute_x_of_r( const REAL r, const REAL A, const REAL w );
+  REAL compute_r_of_x( const REAL x, const REAL A, const REAL w );
+  
   /* .-----------------------------.
    * | The compute_xyz_Cartesian() |
    * .-----------------------------.

@@ -50,14 +50,14 @@ void grid::parameters::initialize_parameters(char *argv[]) {
    *
    * Set DIM */
   DIM = 1;
-  /* Read in Nx0,Nx1,Nx2 */
-  Nx0 = atoi(argv[1]);
-  /* Set Ngzx,Ngzy,Ngzz */
+  /* Read in Nx0 */
+  Nx0 = atoi(argv[1])+1;
+  /* Set Ngz0 */
   Ngz0 = NGHOSTS0;
   /* Set Nx0Total */
   Nx0Total = Nx0 + 2*Ngz0;
 
-  /* For Spherical coordinates, we set the following values:
+  /* For Spherical/SinhSpherical coordinates, we set the following values:
    * .----------.--------------.---------------------.
    * | Variable |    Value     | Physical Coordinate |
    * .----------.--------------.---------------------.
@@ -79,7 +79,7 @@ void grid::parameters::initialize_parameters(char *argv[]) {
   x0_min = 0.0;
 
   /* Set dx0,dx1,dx2 */
-  dx0 = (x0_max - x0_min)/((REAL)Nx0);
+  dx0 = (x0_max - x0_min)/((REAL)Nx0-1.0);
   /* Set inv_dx0,inv_dx1,inv_dx2 */
   inv_dx0 = 1.0/dx0;
   /* Set inv_dx0_sqrd,inv_dx1_sqrd,inv_dx2_sqrd */
@@ -126,14 +126,8 @@ void grid::parameters::initialize_parameters(char *argv[]) {
   t_final   = atof(argv[3]);
   t         = t_initial;
 
-  /* Set dt based on CFL factor and min(dx,dy,dz) */
-#if( COORD_SYSTEM == SPHERICAL )
-  const REAL ds_min = dx0;
-#elif( COORD_SYSTEM == SINH_SPHERICAL )
-  const REAL ds_min = r_ito_x0[1] - r_ito_x0[0];
-#else
-  utilities::SFcollapse1D_error(COORD_SYSTEM_ERROR);
-#endif
+  /* Set dt based on CFL factor and min(dr_{j}) */
+  ds_min = r_ito_x0[1] - r_ito_x0[0];
   dt = CFL_FACTOR * ds_min;
 
   /* Set Nt; add 0.5 because C++ rounds down */
@@ -143,6 +137,22 @@ void grid::parameters::initialize_parameters(char *argv[]) {
   current_regrid_level = 0;
   max_regrid_levels    = MAX_REGRID_LEVELS;
 
+}
+
+/* Spherical coordinates: x(r) and r(x) */
+REAL grid::compute_x_of_r( const REAL r ) {
+  return r;
+}
+REAL grid::compute_r_of_x( const REAL x ) {
+  return x;
+}
+
+/* SinhSpherical coordinates: x(r) and r(x) */
+REAL grid::compute_x_of_r( const REAL r, const REAL A, const REAL w ) {
+  return( w * asinh( sinh( 1.0/w ) / A * r ) );
+}
+REAL grid::compute_r_of_x( const REAL x, const REAL A, const REAL w ) {
+  return( A * sinh(x/w) / sinh(1.0/w) );
 }
 
 /* .--------------------------------------.

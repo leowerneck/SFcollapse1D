@@ -18,7 +18,7 @@
 # | along with this program.  If not, see <https://www.gnu.org/licenses/>.|
 # .-----------------------------------------------------------------------.
 
-set term gif enhanced animate delay 20 size 900,600
+set term gif enhanced animate delay 10 size 900,600
 set output sprintf("%s.gif",which_var)
 set encoding utf8
 
@@ -60,11 +60,11 @@ unset key
 set xlabel "r"
 set ylabel label
 
-last_file_number  = 9400
+last_file_number  = 27600/2
 output_multiplier = 200
 number_of_files   = last_file_number/output_multiplier
 
 do for[i=0:number_of_files] {
-  filename = sprintf("../out/%s_%05d.dat",which_var,i*output_multiplier)
+  filename = sprintf("../out/cfl_05/%s_%05d.dat",which_var,i*output_multiplier)
   plot filename using 2:3 w l lw 2 lc rgb 'blue'
 }

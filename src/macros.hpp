@@ -35,12 +35,6 @@
 #define VERT_CENTERED (1)
 #define GRID_STRUCTURE VERT_CENTERED
 
-/* Set gridpoint distribution */
-#define UNIFORM_GRID (0)
-#define LOG_FIX_GRID (1)
-#define SINHSPH_GRID (2)
-#define GRIDPOINT_DISTRIBUTION UNIFORM_GRID
-
 /* Set CFL factor */
 #define CFL_FACTOR (0.5)
 
@@ -49,10 +43,11 @@
 #define SINH_SPHERICAL_USAGE_ERROR   (2)
 #define GRID_STRUCTURE_ERROR         (3)
 #define COORD_SYSTEM_ERROR           (4)
-#define GRIDFUNCTION_TIMELEVEL_ERROR (5)
-#define BISECTION_INTERVAL_ERROR     (6)
-#define BISECTION_CONVERGENCE_ERROR  (7)
-#define NAN_ERROR                    (8)
+#define REGRIDDING_OPTION_ERROR      (5)
+#define GRIDFUNCTION_TIMELEVEL_ERROR (6)
+#define BISECTION_INTERVAL_ERROR     (7)
+#define BISECTION_CONVERGENCE_ERROR  (8)
+#define NAN_ERROR                    (9)
 
 /* Set ghostzones. The default is the same
  * number of ghostzones in every direction
@@ -79,12 +74,19 @@
 #define NEWTON_MAX_ITER (100)
 
 /* Regridding parameters */
-#define MAX_REGRID_LEVELS (20)
+#define REGRID_RADIAL_POINTS       (1)
+#define REGRID_OUTER_BOUNDARY      (2)
+#define REGRID_POINT_DENSITY       (3)
+#define REGRID_OPTION              REGRID_POINT_DENSITY
+#define REGRID_FACTOR              (0.9) // Should be < 1 for options 2 and 3, and > 1 for option 1
+#define MAX_REGRID_LEVELS          (10)
+#define REGRID_INTERP_STENCIL_SIZE (4)
 
 /* Checkpoints */
-#define OUTPUT_CHECKPOINT      (200)
-#define NAN_CHECKER_CHECKPOINT (20)
-#define INFORMATION_CHECKPOINT (20)
+#define OUTPUT_CHECKPOINT         (200)
+#define REGRID_CHECKER_CHECKPOINT (20)
+#define NAN_CHECKER_CHECKPOINT    (20)
+#define INFORMATION_CHECKPOINT    (50)
 
 /* Set the declare grid parameters macro. This macro
  * is useful so that we don't need to keep appending
@@ -105,6 +107,7 @@
   const REAL x0_min                        __attribute__((unused)) = grid.x0_min;               \
   const REAL x0_max                        __attribute__((unused)) = grid.x0_max;               \
   const REAL dx0                           __attribute__((unused)) = grid.dx0;                  \
+  const REAL ds_min                        __attribute__((unused)) = grid.ds_min;               \
   const REAL dt                            __attribute__((unused)) = grid.dt;                   \
   const REAL inv_dx0                       __attribute__((unused)) = grid.inv_dx0;              \
   const REAL inv_dx0_sqrd                  __attribute__((unused)) = grid.inv_dx0_sqrd;         \
@@ -130,7 +133,7 @@
     REAL time_elapsed = (REAL)elapsed_time;                                                                    \
     REAL time_left    = ((REAL)grid.Nt/(REAL)n - 1.0) * time_elapsed;		                               \
     std::cout.precision(3);                                                                                    \
-    std::cout << "\r(SFcollapse1D INFO) " << "Iter " << n << "/" << grid.Nt << " | t = " << n*grid.dt << " |  Runtime: " << time_elapsed << " seconds | ETA: " << time_left << " seconds" << std::flush; \
+    std::cout << "\r(SFcollapse1D INFO) " << "Iter " << n << "/" << grid.Nt << " | t = " << grid.t << " |  Runtime: " << time_elapsed << " seconds | ETA: " << time_left << " seconds" << std::flush; \
   }
   
 #endif // __MACROS_HPP__

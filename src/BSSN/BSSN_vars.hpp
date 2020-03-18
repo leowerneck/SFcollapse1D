@@ -19,54 +19,44 @@
  * .-----------------------------------------------------------------------.
  */
 
-#ifndef __GRIDFUNCTION_HPP__
-#define __GRIDFUNCTION_HPP__
+#ifndef __BSSN_VARS__
+#define __BSSN_VARS__
 
-/* Basic includes */
-#include <vector>
-#include <string>
-#include "macros.hpp"
-#include "grid.hpp"
+/* We use the following BSSN variables in the evolution:
+ *
+ * - alpha, the lapse function
+ * - cf, the conformal factor
+ * - vet^{i}, the rescaled version of \beta^{i}, the shift vector
+ * - bet^{i}, the rescaled version of the B^{i} vector
+ * - lambda^{i}, the rescaled version of \bar\Lambda^{i}
+ * - h_{ij}, the rescaled version of eps_{ij} = \bar\gamma_{ij} - \hat\gamma_{ij}
+ * - a_{ij}, the rescaled version of A_{ij} = e^{-4phi}( K_{ij} - (1/3)*K*gamma_{ij} )
+ */
 
-/* Define the gridfunction class */
-class gridfunction {
-public:
-  /* .--------------------.
-   * | Gridfunction array |
-   * .--------------------.
-   *
-   * We need three time levels
-   */
-  std::vector<REAL> level_np1;
-  std::vector<REAL> level_n;
-  std::vector<REAL> level_nm1;
-    
-  /* .-----------------.
-   * | The constructor |
-   * .-----------------.
-   */
-  gridfunction( const int N ) {
-    initialize_gridfunction(N);
-  }
+/* Here we define the BSSN variable macros */
+#define IDX_ALPHA    (0)
+#define IDX_CF       (1)
+#define IDX_TRK      (2)
+#define IDX_BETU0    (3)
+#define IDX_BETU1    (4)
+#define IDX_BETU2    (5)
+#define IDX_VETU0    (6)
+#define IDX_VETU1    (7)
+#define IDX_VETU2    (8)
+#define IDX_LAMBDAU0 (9)
+#define IDX_LAMBDAU1 (10)
+#define IDX_LAMBDAU2 (11)
+#define IDX_HDD00    (12)
+#define IDX_HDD01    (13)
+#define IDX_HDD02    (14)
+#define IDX_HDD11    (15)
+#define IDX_HDD12    (16)
+#define IDX_HDD22    (17)
+#define IDX_ADD00    (18)
+#define IDX_ADD01    (19)
+#define IDX_ADD02    (20)
+#define IDX_ADD11    (21)
+#define IDX_ADD12    (22)
+#define IDX_ADD22    (23)
 
-  /* .--------------------------------.
-   * | The shift time levels function |
-   * .--------------------------------.
-   */
-  void shift_timelevels( const int );
-
-  /* .----------------------.
-   * | Output level to file |
-   * .----------------------.
-   */
-  void output_to_file( const grid::parameters, const std::string, const int, const int );
-
-private:
-  /* .---------------------------------------.
-   * | The initialize_gridfunctions function |
-   * .---------------------------------------.
-   */
-  void initialize_gridfunction( const int );
-};
-
-#endif // __GRIDFUNCTION_HPP__
+#endif // __BSSN_VARS__

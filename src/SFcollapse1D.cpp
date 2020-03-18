@@ -57,7 +57,7 @@ int main( int argc, char *argv[] ) {
   utilities::parameter_information(grid);
 
   /* Declare all needed gridfunctions */
-  gridfunction phi(grid), Phi(grid), Pi(grid), a(grid), alpha(grid);
+  gridfunction phi(grid.Nx0Total), Phi(grid.Nx0Total), Pi(grid.Nx0Total), a(grid.Nx0Total), alpha(grid.Nx0Total);
 
   /* Set the initial condition */
   initial_condition( grid, phi, Phi, Pi, a, alpha );
@@ -88,12 +88,25 @@ int main( int argc, char *argv[] ) {
   a.shift_timelevels(1);
   alpha.shift_timelevels(1);
 
-  /* Begin evolving the system */
-  for(int n=2;n<=grid.Nt;n++) {
+  int n = 2;
+
+  /* Begin evolving the ADM+EKG equations */
+  while( grid.t < grid.t_final ) {
 
     /* Perform an integration step */
     evolution::time_step( grid, phi, Phi, Pi, a, alpha );
 
+    /* Check whether or not a regrid is necessary */
+    if( n%REGRID_CHECKER_CHECKPOINT == 0 ) {
+      const bool need_to_regrid = utilities::check_regrid_criterion( grid, phi.level_np1 );
+      if( need_to_regrid == true ) {
+    	cout << "\n(SFcollapse1D INFO) Regridding at iteration " << n << endl;
+    	utilities::regrid( grid, phi, Phi, Pi, a, alpha );
+    	utilities::parameter_information(grid);
+      }
+    }
+
+    /* Check for NaNs */
     if( n%NAN_CHECKER_CHECKPOINT == 0 ) utilities::NaN_checker( n, grid, phi, Phi, Pi, a, alpha );
 
     /* Print information to the user */
@@ -113,11 +126,15 @@ int main( int argc, char *argv[] ) {
     a.shift_timelevels(2);
     alpha.shift_timelevels(2);
 
+    /* Print integration information to the user */
     if( n%INFORMATION_CHECKPOINT == 0 ) INTEGRATION_INFO;
+
+    /* Update the iteration number */
+    n++;
     
   }
 
-  cout << "(SFcollapse1D) Program terminated without errors!\n";
+  cout << "(SFcollapse1D INFO) Program terminated without errors!\n";
   
   return 0;
 

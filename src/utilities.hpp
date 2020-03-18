@@ -31,18 +31,25 @@
 namespace utilities {
 
   /* NaN checker function ) */
-  void NaN_checker( const int n, grid::parameters grid, gridfunction phi, gridfunction Phi, gridfunction Pi, gridfunction a, gridfunction alpha );
+  void NaN_checker( const int, grid::parameters, gridfunction, gridfunction, gridfunction, gridfunction, gridfunction );
+
+  /* Function to check whether regridding is necessary or not */
+  bool check_regrid_criterion( const grid::parameters, const std::vector<REAL> );
+
   /* Regridding function */
-  void regrid( grid::parameters &grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha );
+  void regrid( grid::parameters &, gridfunction &, gridfunction &, gridfunction &, gridfunction &, gridfunction & );
 
   /* Lagrange interpolator */
-  REAL Lagrange_interpolator( const int, const std::vector<REAL>, const std::vector<REAL>, const REAL );
+  void Lagrange_interpolator( const int, const int, const std::vector<REAL>,
+			      gridfunction  , gridfunction  , gridfunction  , gridfunction  , gridfunction  ,
+			      gridfunction &, gridfunction &, gridfunction &, gridfunction &, gridfunction &,
+			      const REAL);
 
   /* Bisection index finder */
   int bisection_index_finder( const std::vector<REAL>, const REAL );
 
   /* Printing useful grid information to the user */
-  void parameter_information( grid::parameters grid );
+  void parameter_information( grid::parameters );
 
   /* Various error messages for SFcollapse1D */
   void SFcollapse1D_error( const int );
