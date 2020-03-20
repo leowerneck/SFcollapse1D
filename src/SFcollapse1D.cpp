@@ -86,7 +86,7 @@ int main( int argc, char *argv[] ) {
    * | Step 2: Integrate phi, Phi and Pi |
    * .-----------------------------------.
    */
-  evolution::computation_of_the_scalarfield_RHSs( 0, grid, 
+  evolution::time_step_scalarfield_gridfunctions( 0, grid, 
 						  phi.level_nm1, Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1, 
 						  Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1,
 						  Phi.level_n  , Pi.level_n  , phi.level_n );
@@ -131,7 +131,7 @@ int main( int argc, char *argv[] ) {
    * | Step 2: Integrate phi, Phi and Pi |
    * .-----------------------------------.
    */
-  evolution::computation_of_the_scalarfield_RHSs( 1, grid, 
+  evolution::time_step_scalarfield_gridfunctions( 1, grid, 
 						  phi.level_n, Phi.level_n  , Pi.level_n  , a.level_n  , alpha.level_n  , 
 						  Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1,
 						  Phi.level_np1, Pi.level_np1, phi.level_np1 );
@@ -196,7 +196,7 @@ int main( int argc, char *argv[] ) {
      * | Step 2: Integrate phi, Phi and Pi |
      * .-----------------------------------.
      */
-    evolution::computation_of_the_scalarfield_RHSs( n, grid, 
+    evolution::time_step_scalarfield_gridfunctions( n, grid, 
 						    phi.level_n, Phi.level_n  , Pi.level_n  , a.level_n  , alpha.level_n  , 
 						    Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1,
 						    Phi.level_np1, Pi.level_np1, phi.level_np1 );
