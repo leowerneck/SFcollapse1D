@@ -32,6 +32,7 @@
 
 using namespace std;
 
+/* Function to set the initial condition for all gridfunctions: phi, Phi, Pi, a, and alpha */
 void evolution::initial_condition( grid::parameters grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha ) {
 
   DECLARE_GRID_PARAMETERS;
@@ -73,8 +74,8 @@ void evolution::initial_condition( grid::parameters grid, gridfunction &phi, gri
 
 }
 
-
-void evolution::computation_of_the_scalarfield_RHSs( const int n, const grid::parameters grid,
+/* Function to step phi, Phi, and Pi forward in time */
+void evolution::time_step_scalarfield_gridfunctions( const int n, const grid::parameters grid,
 						     const vector<REAL> phi_n, const vector<REAL> Phi_n   , const vector<REAL> Pi_n   , const vector<REAL> a_n    , const vector<REAL> alpha_n  ,
 						     const vector<REAL> Phi_nm1 , const vector<REAL> Pi_nm1 , const vector<REAL> a_nm1  , const vector<REAL> alpha_nm1, 
 						           vector<REAL> &Phi_np1,       vector<REAL> &Pi_np1,       vector<REAL> &phi_np1 ) {
@@ -147,6 +148,7 @@ void evolution::computation_of_the_scalarfield_RHSs( const int n, const grid::pa
 
 }
 
+/* Function to apply outgoing radiation boundary conditions to phi, Phi, and Pi */
 void evolution::apply_outgoing_radiation_bdry_cond( const int n, grid::parameters grid,
 						    const vector<REAL> phi_nm1, const vector<REAL> Pi_nm1,
 						    const vector<REAL> phi_n  , const vector<REAL> Phi_n, const vector<REAL> a_n, const vector<REAL> alpha_n,
@@ -234,6 +236,7 @@ void evolution::apply_outgoing_radiation_bdry_cond( const int n, grid::parameter
     
 }
 
+/* Function to solve the Hamiltonian constraint */
 REAL evolution::pointwise_solution_of_the_Hamiltonian_constraint( const int j, grid::parameters grid, const vector<REAL> Phi, const vector<REAL> Pi, const vector<REAL> a ) {
 
   DECLARE_GRID_PARAMETERS;
@@ -291,6 +294,7 @@ REAL evolution::pointwise_solution_of_the_Hamiltonian_constraint( const int j, g
   
 }
 
+/* Function to solve the polar slicing condition */
 REAL evolution::pointwise_solution_of_the_polar_slicing_condition( const int j, grid::parameters grid, const vector<REAL> a, const vector<REAL> alpha ) {
 
   DECLARE_GRID_PARAMETERS;
@@ -312,6 +316,7 @@ REAL evolution::pointwise_solution_of_the_polar_slicing_condition( const int j, 
   
 }
 
+/* Function to perform the rescaling of the lapse function */
 void evolution::rescaling_of_the_lapse( grid::parameters grid, const std::vector<REAL> a, std::vector<REAL> &alpha ) {
 
   DECLARE_GRID_PARAMETERS;
@@ -331,6 +336,7 @@ void evolution::rescaling_of_the_lapse( grid::parameters grid, const std::vector
 
 }
 
+/* Function to compute and output the mass aspect ratio */
 void evolution::compute_and_output_mass_aspect_ratio( const int which_level, const int n, const grid::parameters grid, const gridfunction a ) {
 
   DECLARE_GRID_PARAMETERS;
