@@ -21,6 +21,7 @@
 
 /* Basic includes */
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <cmath>
 #include <chrono>
@@ -60,7 +61,7 @@ int main( int argc, char *argv[] ) {
   gridfunction phi(grid.Nx0Total), Phi(grid.Nx0Total), Pi(grid.Nx0Total), a(grid.Nx0Total), alpha(grid.Nx0Total);
 
   /* Set the initial condition */
-  initial_condition( grid, phi, Phi, Pi, a, alpha );
+  evolution::initial_condition( grid, phi, Phi, Pi, a, alpha );
 
   /* Print information to the user */
   phi.output_to_file(grid,"scalarfield",-1,0);
@@ -68,10 +69,99 @@ int main( int argc, char *argv[] ) {
   Pi.output_to_file(grid,"Pi",-1,0);
   a.output_to_file(grid,"a",-1,0);
   alpha.output_to_file(grid,"alpha",-1,0);
-  evolution::output_mass_aspect_ratio(-1,0,grid,a);
+  evolution::compute_and_output_mass_aspect_ratio(-1,0,grid,a);
 
-  /* The first time step is special, perform it seperately */
-  evolution::first_time_step( grid, phi, Phi, Pi, a, alpha );
+  /* The first time step is special, requires two half-integrations */
+
+  /* Perform an integration step */
+  /* .--------------------------------------------------------------.
+   * | Step 1: Apply inner boundary conditions to Phi, a, and alpha |
+   * .--------------------------------------------------------------.
+   */
+  Phi.level_n[0]   = 0.0;
+  a.level_n[0]     = 1.0;
+  alpha.level_n[0] = 1.0;
+
+  /* .-----------------------------------.
+   * | Step 2: Integrate phi, Phi and Pi |
+   * .-----------------------------------.
+   */
+  evolution::computation_of_the_scalarfield_RHSs( 0, grid, 
+						  phi.level_nm1, Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1, 
+						  Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1,
+						  Phi.level_n  , Pi.level_n  , phi.level_n );
+  /* Step 2.d: Apply boundary conditions */
+  evolution::apply_outgoing_radiation_bdry_cond( 0, grid,
+						 phi.level_nm1, Pi.level_nm1,
+						 phi.level_nm1, Phi.level_nm1, a.level_nm1, alpha.level_nm1,
+						 phi.level_n  , Phi.level_n  , Pi.level_n );
+
+  Pi.level_n[0] = - Pi.level_nm1[0] + Pi.level_n[1] + Pi.level_nm1[1];
+  /* .-------------------------------.
+   * | Step 3: Integrate a and alpha |
+   * .-------------------------------.
+   */
+  // TODO: can this be parallelized in some way? Maybe SIMD?
+  LOOP(1,grid.Nx0Total) {
+    /* Step 3.a: Compute a */
+    a.level_n[j] = evolution::pointwise_solution_of_the_Hamiltonian_constraint(j,grid,Phi.level_n,Pi.level_n,a.level_n);
+    
+    /* Step 3.b: Compute alpha */
+    alpha.level_n[j] = evolution::pointwise_solution_of_the_polar_slicing_condition( j, grid, a.level_n, alpha.level_n );
+  }
+  /* Step 3.d: Now rescale alpha */
+  evolution::rescaling_of_the_lapse(grid,a.level_n,alpha.level_n);
+
+  /* .-------------------------.
+   * | Step 4: Update the time |
+   * .-------------------------.
+   */
+  grid.t += 0.5 * grid.dt;
+    
+  /* Perform an integration step */
+  /* .--------------------------------------------------------------.
+   * | Step 1: Apply inner boundary conditions to Phi, a, and alpha |
+   * .--------------------------------------------------------------.
+   */
+  Phi.level_np1[0]   = 0.0;
+  a.level_np1[0]     = 1.0;
+  alpha.level_np1[0] = 1.0;
+
+  /* .-----------------------------------.
+   * | Step 2: Integrate phi, Phi and Pi |
+   * .-----------------------------------.
+   */
+  evolution::computation_of_the_scalarfield_RHSs( 1, grid, 
+						  phi.level_n, Phi.level_n  , Pi.level_n  , a.level_n  , alpha.level_n  , 
+						  Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1,
+						  Phi.level_np1, Pi.level_np1, phi.level_np1 );
+  /* Step 2.d: Apply boundary conditions */
+  evolution::apply_outgoing_radiation_bdry_cond( 1, grid,
+						 phi.level_nm1, Pi.level_nm1,
+						 phi.level_n  , Phi.level_n  , a.level_n, alpha.level_n,
+						 phi.level_np1, Phi.level_np1, Pi.level_np1);
+
+  Pi.level_np1[0] = - Pi.level_n[0] + Pi.level_np1[1] + Pi.level_n[1];
+  /* .-------------------------------.
+   * | Step 3: Integrate a and alpha |
+   * .-------------------------------.
+   */
+  // TODO: can this be parallelized in some way? Maybe SIMD?
+  LOOP(1,grid.Nx0Total) {
+    /* Step 3.a: Compute a */
+    a.level_np1[j] = evolution::pointwise_solution_of_the_Hamiltonian_constraint(j,grid,Phi.level_np1,Pi.level_np1,a.level_np1);
+    
+    /* Step 3.b: Compute alpha */
+    alpha.level_np1[j] = evolution::pointwise_solution_of_the_polar_slicing_condition( j, grid, a.level_np1, alpha.level_np1 );
+  }
+  /* Step 3.d: Now rescale alpha */
+  evolution::rescaling_of_the_lapse(grid,a.level_np1,alpha.level_np1);
+
+  /* .-------------------------.
+   * | Step 4: Update the time |
+   * .-------------------------.
+   */
+  grid.t += 0.5 * grid.dt;
 
   /* Print information to the user */
   phi.output_to_file(grid,"scalarfield",1,1);
@@ -79,7 +169,7 @@ int main( int argc, char *argv[] ) {
   Pi.output_to_file(grid,"Pi",1,1);
   a.output_to_file(grid,"a",1,1);
   alpha.output_to_file(grid,"alpha",1,1);
-  evolution::output_mass_aspect_ratio(1,1,grid,a);
+  evolution::compute_and_output_mass_aspect_ratio(1,1,grid,a);
 
   /* Now shift the time levels */
   phi.shift_timelevels(1);
@@ -94,7 +184,50 @@ int main( int argc, char *argv[] ) {
   while( grid.t < grid.t_final ) {
 
     /* Perform an integration step */
-    evolution::time_step( grid, phi, Phi, Pi, a, alpha );
+    /* .--------------------------------------------------------------.
+     * | Step 1: Apply inner boundary conditions to Phi, a, and alpha |
+     * .--------------------------------------------------------------.
+     */
+    Phi.level_np1[0]   = 0.0;
+    a.level_np1[0]     = 1.0;
+    alpha.level_np1[0] = 1.0;
+
+    /* .-----------------------------------.
+     * | Step 2: Integrate phi, Phi and Pi |
+     * .-----------------------------------.
+     */
+    evolution::computation_of_the_scalarfield_RHSs( n, grid, 
+						    phi.level_n, Phi.level_n  , Pi.level_n  , a.level_n  , alpha.level_n  , 
+						    Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1,
+						    Phi.level_np1, Pi.level_np1, phi.level_np1 );
+    /* Step 2.a: Apply boundary conditions */
+    evolution::apply_outgoing_radiation_bdry_cond( n, grid,
+						   phi.level_nm1, Pi.level_nm1,
+						   phi.level_n  , Phi.level_n  , a.level_n, alpha.level_n,
+						   phi.level_np1, Phi.level_np1, Pi.level_np1);
+
+    Pi.level_np1[0] = - Pi.level_n[0] + Pi.level_np1[1] + Pi.level_n[1];
+    
+    /* .-------------------------------.
+     * | Step 3: Integrate a and alpha |
+     * .-------------------------------.
+     */
+    // TODO: can this be parallelized in some way? Maybe SIMD?
+    LOOP(1,grid.Nx0Total) {
+      /* Step 3.a: Compute a */
+      a.level_np1[j] = evolution::pointwise_solution_of_the_Hamiltonian_constraint(j,grid,Phi.level_np1,Pi.level_np1,a.level_np1);
+    
+      /* Step 3.b: Compute alpha */
+      alpha.level_np1[j] = evolution::pointwise_solution_of_the_polar_slicing_condition( j, grid, a.level_np1, alpha.level_np1 );
+    }
+    /* Step 3.d: Now rescale alpha */
+    evolution::rescaling_of_the_lapse(grid,a.level_np1,alpha.level_np1);
+
+    /* .-------------------------.
+     * | Step 4: Update the time |
+     * .-------------------------.
+     */
+    grid.t += grid.dt;
 
     /* Check whether or not a regrid is necessary */
     if( n%REGRID_CHECKER_CHECKPOINT == 0 ) {
@@ -107,7 +240,8 @@ int main( int argc, char *argv[] ) {
     }
 
     /* Check for NaNs */
-    if( n%NAN_CHECKER_CHECKPOINT == 0 ) utilities::NaN_checker( n, grid, phi, Phi, Pi, a, alpha );
+    // if( n%NAN_CHECKER_CHECKPOINT == 0 ) utilities::NaN_checker( n, grid, phi, Phi, Pi, a, alpha );
+    utilities::NaN_checker( n, grid, phi, Phi, Pi, a, alpha );
 
     /* Print information to the user */
     if( n%OUTPUT_CHECKPOINT == 0 ) {
@@ -116,7 +250,7 @@ int main( int argc, char *argv[] ) {
       Pi.output_to_file(grid,"Pi",1,n);
       a.output_to_file(grid,"a",1,n);
       alpha.output_to_file(grid,"alpha",1,n);
-      evolution::output_mass_aspect_ratio(1,n,grid,a);
+      evolution::compute_and_output_mass_aspect_ratio(1,n,grid,a);
     }
     
     /* Shift time levels appropriately */
