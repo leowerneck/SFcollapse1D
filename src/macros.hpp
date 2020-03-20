@@ -28,7 +28,7 @@
 /* Set the coordinate system */
 #define SPHERICAL      (0)
 #define SINH_SPHERICAL (1)
-#define COORD_SYSTEM SINH_SPHERICAL
+#define COORD_SYSTEM   SINH_SPHERICAL
 
 /* Set cell or vertex centered grid macros */
 #define CELL_CENTERED (0)
@@ -126,14 +126,17 @@
 #define LOOP(jmin,jmax) for(int j=jmin;j<jmax;j++)
 
 /* Information macro */
-#define INTEGRATION_INFO					                                               \
-  {                                                                                                            \
-    auto current_time = std::chrono::high_resolution_clock::now();                                             \
-    auto elapsed_time = std::chrono::duration_cast<std::chrono::seconds>( current_time - start_time ).count(); \
-    REAL time_elapsed = (REAL)elapsed_time;                                                                    \
-    REAL time_left    = ((REAL)grid.Nt/(REAL)n - 1.0) * time_elapsed;		                               \
-    std::cout.precision(3);                                                                                    \
-    std::cout << "\r(SFcollapse1D INFO) " << "Iter " << n << "/" << grid.Nt << " | t = " << grid.t << " |  Runtime: " << time_elapsed << " seconds | ETA: " << time_left << " seconds" << std::flush; \
+#define INTEGRATION_INFO					                                                                 \
+  {                                                                                                                              \
+    auto current_time = std::chrono::high_resolution_clock::now();                                                               \
+    auto elapsed_time = std::chrono::duration_cast<std::chrono::seconds>( current_time - start_time ).count();                   \
+    REAL time_elapsed = (REAL)elapsed_time;                                                                                      \
+    REAL time_left    = ((REAL)grid.Nt/(REAL)n - 1.0) * time_elapsed;		                                                 \
+    std::cout << fixed                                                                                                           \
+	      << "\r(SFcollapse1D INFO) " << "Iter " << setfill('0') << setw(to_string(grid.Nt).length()) << n << "/" << grid.Nt \
+	      << " | t = " << setprecision(3) << grid.t                                                                          \
+	      << " |  Runtime: " << setprecision(0) << time_elapsed                                                              \
+	      << " seconds | ETA: " << setprecision(0) << time_left << " seconds" << std::flush;                                 \
   }
   
 #endif // __MACROS_HPP__
