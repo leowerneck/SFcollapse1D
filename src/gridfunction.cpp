@@ -71,7 +71,8 @@ void gridfunction::output_to_file( const grid::parameters grid, const string bas
   DECLARE_GRID_PARAMETERS;
 
   ofstream outfile;
-  outfile.open("out/"+basename+"_"+string(to_string(Nt).length() - to_string(n).length(),'0')+to_string(n)+".dat");
+  const int number_of_digits = 8;
+  outfile.open("out/"+basename+"_"+string(number_of_digits - to_string(n).length(),'0')+to_string(n)+".dat");
   outfile.precision(15);
   LOOP(0,Nx0Total) {
     outfile << scientific << x[0][j] << " " << r_ito_x0[j]  << " " << (which_level == -1) * level_nm1[j] + (which_level == 0) * level_n[j] + (which_level == 1) * level_np1[j] << endl;
