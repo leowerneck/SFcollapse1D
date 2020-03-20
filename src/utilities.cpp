@@ -21,6 +21,7 @@
 
 /* Basic includes */
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <cmath>
 #include <vector>
@@ -479,23 +480,23 @@ void utilities::parameter_information( grid::parameters grid ) {
     cout << "Coordinate system: SinhSpherical" << endl;
 #endif
     cout << "Initial condition information:"   << endl;
-    cout << "phi_{0}    = " << PHI0            << endl;
-    cout << "r_{0}      = " << R0              << endl;
-    cout << "delta      = " << DELTA           << endl;
+    cout << fixed      << setprecision(0) << "phi_{0}    = " << PHI0            << endl;
+    cout << fixed      << setprecision(0) << "r_{0}      = " << R0              << endl;
+    cout << fixed      << setprecision(0) << "delta      = " << DELTA           << endl;
     cout << "\nRadial grid information:"       << endl;
-    cout << "N_{r}      = " << Nx0             << endl;
-    cout << "r_{max}    = " << rmax            << endl;
+    cout << fixed      << setprecision(0) << "N_{r}      = " << Nx0             << endl;
+    cout << fixed      << setprecision(0) << "r_{max}    = " << rmax            << endl;
 #if( COORD_SYSTEM == SINH_SPHERICAL )
-    cout << "sinhA      = " << sinhA           << endl;
-    cout << "sinhW      = " << sinhW           << endl;
+    cout << fixed      << setprecision(2) << "sinhA      = " << sinhA           << endl;
+    cout << fixed      << setprecision(5) << "sinhW      = " << sinhW           << endl;
 #endif
-    cout << "Points in 0<r<1: " << Nr_bet_01   << endl;
-    cout << "Points in 0<r<5: " << Nr_bet_05   << endl;
+    cout << fixed      << setprecision(0) << "Points in 0<r<1: " << Nr_bet_01   << endl;
+    cout << fixed      << setprecision(0) << "Points in 0<r<5: " << Nr_bet_05   << endl;
     cout << "\nTime evolution information:"    << endl;
-    cout << "N_{t}      = " << Nt              << endl;
-    cout << "t_{final}  = " << t_final         << endl;
-    cout << "dt         = " << dt              << endl;
-    cout << "CFL factor = " << CFL_FACTOR      << endl;
+    cout << fixed      << setprecision(0) << "N_{t}      = " << Nt              << endl;
+    cout << fixed      << setprecision(2) << "t_{final}  = " << t_final         << endl;
+    cout << scientific << setprecision(3) << "dt         = " << dt              << endl;
+    cout << fixed      << setprecision(2) << "CFL factor = " << CFL_FACTOR      << endl;
     cout << "\n";
 
     if( iter == 1 ) cout.rdbuf(coutbuf); // Reset to standard output again
