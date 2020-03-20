@@ -33,26 +33,32 @@
 
 namespace evolution {
 
-  /* First time step driver function prototype */
-  void first_time_step( grid::parameters &grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha );
+  /* Function to set the initial condition for all gridfunctions: phi, Phi, Pi, a, and alpha */
+  void initial_condition( grid::parameters grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha );
 
-  /* Generic time step driver function prototype */
-  void time_step( grid::parameters &grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha );
+  /* Function to step phi, Phi, and Pi forward in time */
+  void time_step_scalarfield_gridfunctions( const int n, const grid::parameters grid,
+					    const std::vector<REAL> phi_n, const std::vector<REAL> Phi_n, const std::vector<REAL> Pi_n, const std::vector<REAL> a_n, const std::vector<REAL> alpha_n,
+					    const std::vector<REAL> Phi_nm1, const std::vector<REAL> Pi_nm1, const std::vector<REAL> a_nm1, const std::vector<REAL> alpha_nm1, 
+					    std::vector<REAL> &Phi_np1, std::vector<REAL> &Pi_np1, std::vector<REAL> &phi_np1 );
 
-  /* First time step in Spherical coordinates prototype */
-  void first_time_step_Spherical( grid::parameters &grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha );
+  /* Function to apply outgoing radiation boundary conditions to phi, Phi, and Pi */
+  void apply_outgoing_radiation_bdry_cond( const int n, grid::parameters grid,
+					   const std::vector<REAL> phi_nm1, const std::vector<REAL> Pi_nm1,
+					   const std::vector<REAL> phi_n  , const std::vector<REAL> Phi_n, const std::vector<REAL> a_n, const std::vector<REAL> alpha_n,
+					   std::vector<REAL> &phi_np1, std::vector<REAL> &Phi_np1, std::vector<REAL> &Pi_np1 );
 
-  /* Generic time step in Spherical coordinates prototype */
-  void time_step_Spherical( grid::parameters &grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha );
+  /* Function to solve the Hamiltonian constraint */
+  REAL pointwise_solution_of_the_Hamiltonian_constraint( const int j, grid::parameters grid, const std::vector<REAL> Phi, const std::vector<REAL> Pi, const std::vector<REAL> a );
 
-  /* First time step in SinhSpherical coordinates prototype */
-  void first_time_step_SinhSpherical( grid::parameters &grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha );
+  /* Function to solve the polar slicing condition */
+  REAL pointwise_solution_of_the_polar_slicing_condition( const int j, grid::parameters grid, const std::vector<REAL> a, const std::vector<REAL> alpha );
 
-  /* Generic time step in SinhSpherical coordinates prototype */
-  void time_step_SinhSpherical( grid::parameters &grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha );
+  /* Function to compute and output the mass aspect ratio */
+  void compute_and_output_mass_aspect_ratio( const int, const int, const grid::parameters, const gridfunction );
 
-  /* Print mass_aspect_ratio */
-  void output_mass_aspect_ratio( const int, const int, const grid::parameters, const gridfunction );
+  /* Function to perform the rescaling of the lapse function */
+  void rescaling_of_the_lapse( grid::parameters, const std::vector<REAL>, std::vector<REAL> & );
 
 }
 
