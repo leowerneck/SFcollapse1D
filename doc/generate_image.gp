@@ -19,13 +19,13 @@
 # .-----------------------------------------------------------------------.
 
 set term epslatex
-set output sprintf("%s_%s.tex",which_var,which_regime)
+set output sprintf("resources/%s_%s.tex",which_var,which_regime)
 
 if ( which_var eq 'scalarfield' ) {
   if ( which_regime eq 'weak' ) {
-    ymin_tic   = -0.04
-    ymax_tic   = +0.04
-    tic_format = '%.2f'
+    ymin_tic   = -0.05
+    ymax_tic   = +0.05
+    tic_format = '%.3f'
   }
   if ( which_regime eq 'inter' ) {
     ymin_tic   = -0.4
@@ -33,8 +33,8 @@ if ( which_var eq 'scalarfield' ) {
     tic_format = '%.2f'
     }
   if ( which_regime eq 'strong' ) {
-    ymin_tic   = -0.4
-    ymax_tic   = +0.4
+    ymin_tic   = -0.0
+    ymax_tic   = +0.6
     tic_format = '%.2f'
   }
   label      = "$\\phi(t,r)$"
@@ -56,8 +56,8 @@ if( which_var eq 'a' ) {
 }
 if( which_var eq 'alpha' ) {
   if ( which_regime eq 'weak' ) {
-    ymin_tic   = 0.980
-    ymax_tic   = 1.002
+    ymin_tic   = 0.984
+    ymax_tic   = 1.0
     tic_format = '%.3f'
   }
   if ( which_regime eq 'inter' ) {
@@ -67,15 +67,15 @@ if( which_var eq 'alpha' ) {
   }
   if ( which_regime eq 'strong' ) {
     ymin_tic   = 0.0
-    ymax_tic   = 1.2
+    ymax_tic   = 1.0
     tic_format = '%.1f'
   }
   label      = "$\\alpha(t,r)$"
 }
 if( which_var eq 'mass' ) {
-  if ( which_regime eq 'inter' ) {
+  if ( which_regime eq 'weak' ) {
     ymin_tic   = 0.0
-    ymax_tic   = 0.07
+    ymax_tic   = 0.008
     tic_format = '%.3f'
   }
   if ( which_regime eq 'inter' ) {
@@ -85,8 +85,8 @@ if( which_var eq 'mass' ) {
   }
   if ( which_regime eq 'strong' ) {
     ymin_tic   = 0.0
-    ymax_tic   = 0.5
-    tic_format = '%.3f'
+    ymax_tic   = 0.6
+    tic_format = '%.2f'
   }
   label      = "$M(t,r)$"
 }
@@ -112,9 +112,9 @@ set ytics font ",6pt"
 set grid
 unset key
 # Configure the x axis
-set xrange [-1:6]
+set xrange [-1:5]
 unset xlabel
-set xtics (0,1,2,3,4,5)
+set xtics (0,1,2,3,4)
 set xtics format ''
 # Configure the y axis
 set yrange [ymin:ymax]
@@ -122,8 +122,12 @@ set ylabel label
 set ytics ymin_tic,increment,ymax_tic
 set ytics format tic_format
 # Generate the plot
-set label 1 '$t = 0$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
-filename = sprintf("../out/%s_000000.dat",which_var)
+nmax = 12000
+ninc = int(12000/8)
+n = 0
+time = dt * n
+set label 1 sprintf('$t = %.2f$',time) at 2,ymax_tic+increment/3.0 center font ",6pt"
+filename = sprintf("../out/%s_%08d.dat",which_var,n)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 # Plot number 2:
@@ -138,9 +142,9 @@ plot filename using 2:3 w l lw 2 lc rgb "blue"
 set grid
 unset key
 # Configure the x axis
-set xrange [-1:6]
+set xrange [-1:5]
 unset xlabel
-set xtics (0,1,2,3,4,5)
+set xtics (0,1,2,3,4)
 set xtics format ''
 # Configure the y axis
 set yrange [ymin:ymax]
@@ -148,8 +152,10 @@ unset ylabel
 set ytics ymin_tic,increment,ymax_tic
 set ytics format ''
 # Generate the plot
-set label 1 '$t = 1.1\times10^{5}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
-filename = sprintf("../out/%s_011000.dat",which_var)
+n = n + ninc
+time = dt * n
+set label 1 sprintf('$t = %.2f$',time) at 2,ymax_tic+increment/3.0 center font ",6pt"
+filename = sprintf("../out/%s_%08d.dat",which_var,n)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 # Plot number 3:
@@ -164,9 +170,9 @@ plot filename using 2:3 w l lw 2 lc rgb "blue"
 set grid
 unset key
 # Configure the x axis
-set xrange [-1:6]
+set xrange [-1:5]
 unset xlabel
-set xtics (0,1,2,3,4,5)
+set xtics (0,1,2,3,4)
 set xtics format ''
 # Configure the y axis
 set yrange [ymin:ymax]
@@ -174,8 +180,10 @@ unset ylabel
 set ytics ymin_tic,increment,ymax_tic
 set ytics format ''
 # Generate the plot
-set label 1 '$t = 2.2\times10^{5}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
-filename = sprintf("../out/%s_022000.dat",which_var)
+n = n + ninc
+time = dt * n
+set label 1 sprintf('$t = %.2f$',time) at 2,ymax_tic+increment/3.0 center font ",6pt"
+filename = sprintf("../out/%s_%08d.dat",which_var,n)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 # Plot number 4:
@@ -190,9 +198,9 @@ plot filename using 2:3 w l lw 2 lc rgb "blue"
 set grid
 unset key
 # Configure the x axis
-set xrange [-1:6]
+set xrange [-1:5]
 unset xlabel
-set xtics (0,1,2,3,4,5)
+set xtics (0,1,2,3,4)
 set xtics format ''
 # Configure the y axis
 set yrange [ymin:ymax]
@@ -200,8 +208,10 @@ set ylabel label
 set ytics ymin_tic,increment,ymax_tic
 set ytics format tic_format
 # Generate the plot
-set label 1 '$t = 3.3\times10^{5}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
-filename = sprintf("../out/%s_033000.dat",which_var)
+n = n + ninc
+time = dt * n
+set label 1 sprintf('$t = %.2f$',time) at 2,ymax_tic+increment/3.0 center font ",6pt"
+filename = sprintf("../out/%s_%08d.dat",which_var,n)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 # Plot number 5:
@@ -216,9 +226,9 @@ plot filename using 2:3 w l lw 2 lc rgb "blue"
 set grid
 unset key
 # Configure the x axis
-set xrange [-1:6]
+set xrange [-1:5]
 unset xlabel
-set xtics (0,1,2,3,4,5)
+set xtics (0,1,2,3,4)
 set xtics format ''
 # Configure the y axis
 set yrange [ymin:ymax]
@@ -226,8 +236,10 @@ unset ylabel
 set ytics ymin_tic,increment,ymax_tic
 set ytics format ''
 # Generate the plot
-set label 1 '$t = 4.4\times10^{5}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
-filename = sprintf("../out/%s_044000.dat",which_var)
+n = n + ninc
+time = dt * n
+set label 1 sprintf('$t = %.2f$',time) at 2,ymax_tic+increment/3.0 center font ",6pt"
+filename = sprintf("../out/%s_%08d.dat",which_var,n)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 # Plot number 6:
@@ -242,9 +254,9 @@ plot filename using 2:3 w l lw 2 lc rgb "blue"
 set grid
 unset key
 # Configure the x axis
-set xrange [-1:6]
+set xrange [-1:5]
 unset xlabel
-set xtics (0,1,2,3,4,5)
+set xtics (0,1,2,3,4)
 set xtics format ''
 # Configure the y axis
 set yrange [ymin:ymax]
@@ -252,8 +264,10 @@ unset ylabel
 set ytics ymin_tic,increment,ymax_tic
 set ytics format ''
 # Generate the plot
-set label 1 '$t = 5.5\times10^{5}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
-filename = sprintf("../out/%s_055000.dat",which_var)
+n = n + ninc
+time = dt * n
+set label 1 sprintf('$t = %.2f$',time) at 2,ymax_tic+increment/3.0 center font ",6pt"
+filename = sprintf("../out/%s_%08d.dat",which_var,n)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 # Plot number 7:
@@ -268,9 +282,9 @@ plot filename using 2:3 w l lw 2 lc rgb "blue"
 set grid
 unset key
 # Configure the x axis
-set xrange [-1:6]
+set xrange [-1:5]
 set xlabel "$r$"
-set xtics (0,1,2,3,4,5)
+set xtics (0,1,2,3,4)
 set xtics format
 # Configure the y axis
 set yrange [ymin:ymax]
@@ -278,8 +292,10 @@ set ylabel label
 set ytics ymin_tic,increment,ymax_tic
 set ytics format tic_format
 # Generate the plot
-set label 1 '$t = 6.6\times10^{5}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font ",6pt"
-filename = sprintf("../out/%s_066000.dat",which_var)
+n = n + ninc
+time = dt * n
+set label 1 sprintf('$t = %.2f$',time) at 2,ymax_tic+increment/3.0 center font ",6pt"
+filename = sprintf("../out/%s_%08d.dat",which_var,n)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 # Plot number 8:
@@ -294,9 +310,9 @@ plot filename using 2:3 w l lw 2 lc rgb "blue"
 set grid
 unset key
 # Configure the x axis
-set xrange [-1:6]
+set xrange [-1:5]
 set xlabel "$r$"
-set xtics (0,1,2,3,4,5)
+set xtics (0,1,2,3,4)
 set xtics format
 # Configure the y axis
 set yrange [ymin:ymax]
@@ -304,8 +320,10 @@ unset ylabel
 set ytics ymin_tic,increment,ymax_tic
 set ytics format ''
 # Generate the plot
-set label 1 '$t = 7.7\times10^{5}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font "0,6pt"
-filename = sprintf("../out/%s_077000.dat",which_var)
+n = n + ninc
+time = dt * n
+set label 1 sprintf('$t = %.2f$',time) at 2,ymax_tic+increment/3.0 center font "0,6pt"
+filename = sprintf("../out/%s_%08d.dat",which_var,n)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 # Plot number 9:
@@ -320,9 +338,9 @@ plot filename using 2:3 w l lw 2 lc rgb "blue"
 set grid
 unset key
 # Configure the x axis
-set xrange [-1:6]
+set xrange [-1:5]
 set xlabel "$r$"
-set xtics (0,1,2,3,4,5)
+set xtics (0,1,2,3,4)
 set xtics format
 # Configure the y axis
 set yrange [ymin:ymax]
@@ -330,8 +348,10 @@ unset ylabel
 set ytics ymin_tic,increment,ymax_tic
 set ytics format ''
 # Generate the plot
-set label 1 '$t = 8.8\times10^{5}\Delta t$' at 2.5,ymax_tic+increment/3.0 center font "0,6pt"
-filename = sprintf("../out/%s_088000.dat",which_var)
+n = n + ninc
+time = dt * n
+set label 1 sprintf('$t = %.2f$',time) at 2,ymax_tic+increment/3.0 center font "0,6pt"
+filename = sprintf("../out/%s_%08d.dat",which_var,n)
 plot filename using 2:3 w l lw 2 lc rgb "blue"
 
 unset multiplot

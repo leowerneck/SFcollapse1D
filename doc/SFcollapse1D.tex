@@ -163,9 +163,9 @@
 
 \section{Choptuik's original approach -- The ADM Equations}
 
-In 1993, Matt Choptuik performed numerical simulations of massless scalar fields minimally coupled to gravity and presented evidence for critical phenomena in this system~\cite{PhysRevLett.70.9}. He considered families of solutions $\S\lrsquare{p}$ with the property that a critical parameter value, $p^{\star}$, separates solutions containing black holes from those which do not. He also showed that the limit $p\to p^{\star}$ is \emph{universal} (i.e. independent of the type of initial condition), with structure appearing at arbitrarily small time scales. Furthermore, he showed that the masses of the black holes formed in this limit obey the power law $M_{\rm BH} \propto \abs{p-p^{\star}}^{\g}$, where $\g\approx0.37$ is a universal exponent.
+In 1993, Matt Choptuik performed numerical simulations of massless scalar fields minimally coupled to gravity and presented evidence for critical phenomena in this system~\cite{PhysRevLett.70.9}. He considered families of solutions $\S\lrsquare{p}$ with the property that a critical parameter value, $p^{*}$, separates solutions containing black holes from those which do not. He also showed that the limit $p\to p^{*}$ is \emph{universal} (i.e. independent of the type of initial condition), with structure appearing at arbitrarily small time scales. Furthermore, he showed that the masses of the black holes formed in this limit obey the power law $M_{\rm BH} \propto \abs{p-p^{*}}^{\g}$, where $\g\approx0.37$ is a universal exponent.
 
-Our goal here is to present a thorough review of the techniques used by Choptuik in his seminal paper, guiding the reader through the steps required to write down a program that is able to reproduce his results. It is important, however, that the reader keep in mind that the techniques used by Choptuik are outdated and specialized to this specific problem, making it harder to generalize the final program to work with different problems. A better approach, which will use only hyperbolic equations, thus allowing the use of better integration techniques that are more easily generalized will be presented in the next section.
+Our goal here is to present a thorough review of the techniques used by Choptuik in his seminal paper, guiding the reader through the steps required to write down a program that is able to reproduce his results. It is important, however, that the reader keep in mind that the techniques used by Choptuik are outdated and specialized to this specific problem, making it harder to generalize the final program to work with different problems. A more extensible and modern approach will be presented in the next section, when we review the problem using the BSSN formalism.
 
 We emphasize that the goal of this section is to discuss the \emph{numerical techniques} needed to solve the problem. This means we will not derive the equations used in detail, but we will present useful references.
 
@@ -203,12 +203,12 @@ The decomposition of spacetime into space plus time consists of considering spat
 
 \n where $\a$ is known as the \emph{lapse function}, $\b$ is known as the \emph{shift vector}, and $\gDD{i}{j}$ is the ADM 3-metric, with $\gUU{i}{j}$ its inverse.
 
-The lapse function measures the amount of proper time that elapses while moving from a hypersurface $\Sigma\lrpar{t}$ to a hypersurface $\Sigma\lrpar{t+dt}$, with $dt$ a given time step. The shift vector is responsible for ``correcting'' the spatial coordinates when moving from $\Sigma\lrpar{t}$ to $\Sigma\lrpar{t+dt}$. Given a point point $(X,Y,Z)$ at $\Sigma\lrpar{t}$, we integrate in time by moving in the normal direction towards the next hypersurface $\Sigma\lrpar{t+dt}$. However, there is no guarantee that we will arrive at the same spatial point $(X,Y,Z)$. The shift vector then corrects this, by translating the new point to $(X,Y,Z)$. Depending on the choice of folliation, however, this does not happen and therefore $\b^{i}=0$. The spatial 3-metric $\gDD{i}{j}$ lives only at the spatial hypersurfaces and have no time component. See figure~\ref{fig:adm_decomposition} for an illustration of the ADM decomposition.
+The lapse function measures the amount of proper time that elapses while moving from a hypersurface $\Sigma\lrpar{t}$ to a hypersurface $\Sigma\lrpar{t+\dt}$, with $\dt$ a given time step. The shift vector is responsible for ``correcting'' the spatial coordinates when moving from $\Sigma\lrpar{t}$ to $\Sigma\lrpar{t+\dt}$. Given a point point $(X,Y,Z)$ at $\Sigma\lrpar{t}$, we integrate in time by moving in the normal direction towards the next hypersurface $\Sigma\lrpar{t+\dt}$. However, there is no guarantee that we will arrive at the same spatial point $(X,Y,Z)$. The shift vector then corrects this, by translating the new point to $(X,Y,Z)$. Depending on the choice of folliation, however, this does not happen and therefore $\b^{i}=0$. The spatial 3-metric $\gDD{i}{j}$ lives only at the spatial hypersurfaces and have no time component. See figure~\ref{fig:adm_decomposition} for an illustration of the ADM decomposition.
 
 \begin{figure}[ht]
 \centering
 \tikz{
-	\node at (4.9,1) {$\Sigma(t+dt)$};
+	\node at (4.9,1) {$\Sigma(t+\dt)$};
 	\node at (4.5,-1) {$\Sigma(t)$};
 	\draw[fill,lightgray,draw=black,fill opacity=0.5] (0,-2) to [bend left] (1,-1) to [bend right] (2,0) to (4,-1) to [bend left] (3,-2) to [bend right] (2,-3) to (0,-2);
 	\draw[fill,lightgray,draw=black,fill opacity=0.5] (0,0) to [bend left] (1,1) to [bend right] (2,2) to (4,1) to [bend left] (3,0) to [bend right] (2,-1) to (0,0);
@@ -222,7 +222,7 @@ The lapse function measures the amount of proper time that elapses while moving 
         \draw[fill] (1.5,+1.0) circle [radius=0.05];
 	\draw[fill] (2.5,+0.5) circle [radius=0.05];
 }
-\caption[Illustration of the ADM decomposition.]{Illustration of the ADM decomposition. In the picture the roles of the lapse function, $\a$, and the shift vector, $\b^i$ are depicted, and $n^{i}$ is the unit vector normal to the hypersurface $\Sigma(t)$. The figure can be misleading, however, because the two surfaces, $\Sigma(t)$ and $\Sigma(t+dt)$, are drawn as exact copies of one another, while in general this is not the case.}
+\caption[Illustration of the ADM decomposition.]{Illustration of the ADM decomposition. In the picture the roles of the lapse function, $\a$, and the shift vector, $\b^i$ are depicted, and $n^{i}$ is the unit vector normal to the hypersurface $\Sigma(t)$. The figure can be misleading, however, because the two surfaces, $\Sigma(t)$ and $\Sigma(t+\dt)$, are drawn as exact copies of one another, while in general this is not the case.}
 \label{fig:adm_decomposition}
 \end{figure}
 
@@ -235,7 +235,7 @@ The general form of the line element is then (cf. eq. (2.123) in~\cite{Baumgarte
 
 With the coordinate choices made above, we have that the \emph{Hamiltonian constraint} (conservation of energy), $\H$, is given by
 
-\eq{ \H \equiv ^{(3)}\!R + K^{2} - K_{ij}K^{ij} - 16\pi\rho = 0\ ,\label{eq:ADMH} }
+\eq{ \H \equiv{} ^{(3)}\!R + K^{2} - K_{ij}K^{ij} - 16\pi\rho = 0\ ,\label{eq:ADMH} }
 
 \n where $^{(3)}\!R$ is the Ricci scalar computed from $\gDD{i}{j}$, $K_{ij}$ is the extrinsic curvature of the spatial hypersurface $\Sigma$, $K\equiv \gUU{i}{j}K_{ij}$ is the trace of the extrinsic curvature, and $\rho\equiv n^{\mu}n^{\nu}T_{\mu\nu}$ is the energy density. The \emph{momentum constraints} (conservation of momentum), $\M$, are given by
 
@@ -302,7 +302,7 @@ The evolution equations for the extrinsic curvature and the metric are given by
 
 \subsection{The scalar field evolution equations}
 
-The gravitational collapse of a massless scalar field is studied by studying the action
+The gravitational collapse of a massless scalar field is studied by minimally coupling it to gravity, which is described by the action
 
 \eq{S = \int d^{4}x \sqrtGdet \lrsquare{\frac{1}{16\pi}R - \frac{1}{2}\GUU{\mu}{\nu}\pd_{\mu}\phi\pd_{\nu}\phi}\ ,\label{eq:EKG}}
 
@@ -329,11 +329,11 @@ The gravitational collapse of a massless scalar field is studied by studying the
   \pd_{t}\Pi  &= \frac{1}{r^{2}}\pd_{r}\lrpar{r^{2}\frac{\a}{a}\Phi} \label{eq:chop2}\ .
 }
 
-The energy density, $\rho = n^{\mu}n^{\nu}T^{\phi}_{\mu\nu} = \alpha^{2}T^{\phi}_{tt}$, is given by
+\n The energy density, $\rho = n^{\mu}n^{\nu}T^{\phi}_{\mu\nu} = \alpha^{2}T^{\phi}_{tt}$, is given by
 
 \eq{ \rho = \frac{\Phi^{2} + \Pi^{2}}{2a^{2}}\ .}
 
-\n In this coordinate system, $K = K^{r}_{\ r}$, and therefore the Hamiltonian constraint is reduced to
+In this coordinate system, $K = K^{r}_{\ r}$, and therefore the Hamiltonian constraint is reduced to
 
 \eq{ \H = {}^{(3)}\!R - 16\pi\rho\ . }
 
@@ -353,7 +353,7 @@ The last equation used by Choptuik follows from the \emph{polar slicing conditio
 
 \eq{ \pd_{t}K_{\theta\theta} = -D_{\theta}D_{\theta}\a + \a\, ^{(3)}\!R_{\theta\theta} + 4\pi\a\lrsquare{r^{2}\lrpar{S-\rho} - 2S_{\theta\theta}} = 0\ ,}
 
-\n which finally imply\footnote{The following identities are useful to obtain this relation:
+\n leading to the constraint equation\footnote{The following identities are useful to obtain this relation:
 
   \eq{
     S_{ii} = T^{\phi}_{ii}\ ,\ S = \frac{\lrpar{3\Pi^{2} - \Phi^{2}}}{2a^{2}}\ ,\ {}^{(3)}\!R_{\theta\theta} = \frac{r}{a^{3}}\pd_{r}a + \frac{a^{2}-1}{a^{2}}\ ,\ D_{\theta}D_{\theta}\a = \frac{r}{a^{2}}\pd_{r}\a\ .\nn
@@ -424,7 +424,7 @@ We now begin the \emph{discretization} of the evolution equations inside box 2. 
 
 \al{
   \frac{\Phi^{n+1}_{j} - \Phi^{n-1}_{j}}{2\dt} &= \frac{1}{2\dr}\lrsquare{\frac{\a^{n}_{j+1}}{a^{n}_{j+1}}\Pi^{n}_{j+1} - \frac{\a^{n}_{j-1}}{a^{n}_{j-1}}\Pi^{n}_{j-1}}\ ,\\
-  \frac{\Pi^{n+1}_{j}  - \Pi^{n-1}_{j}}{2\dt}  &= \frac{3}{r_{j+1}^{2} - r_{j-1}^{3}}\lrsquare{r^{2}_{j+1}\frac{\a^{n}_{j+1}}{a^{n}_{j+1}}\Pi^{n}_{j+1} - r^{2}_{i-1}\frac{\a^{n}_{j-1}}{a^{n}_{j-1}}\Pi^{n}_{j-1}}\ ,
+  \frac{\Pi^{n+1}_{j}  - \Pi^{n-1}_{j}}{2\dt}  &= \frac{3}{r_{j+1}^{3} - r_{j-1}^{3}}\lrsquare{r^{2}_{j+1}\frac{\a^{n}_{j+1}}{a^{n}_{j+1}}\Pi^{n}_{j+1} - r^{2}_{i-1}\frac{\a^{n}_{j-1}}{a^{n}_{j-1}}\Pi^{n}_{j-1}}\ ,
 }
 
 \noindent where we have used the identity $r^{-2}\pd_{r} = 3\pd_{r^{3}}$ before discretizing the evolution equation for $\Pi$, in which case the step size associated with this derivative is $r^{3}_{j+1} - r^{3}_{j-1}$, where the exponent $3$ is understood to mean ``$r$ cubed'' and not ``at $n=3$''.
@@ -472,7 +472,7 @@ We also set up the program in a way that will allow us to push the outer boundar
 
 \eq{ r = A\frac{\sinh\lrpar{\frac{x}{w}}}{\sinh\lrpar{\frac{1}{w}}}\ ,\label{eq:sinhspherical}}
 
-\n where $A$ and $w$ are free parameters and $x\in[0,1]$. This new coordinate system will henceforth be called \emph{SinhSpherical coordinates}. Note that $A$ corresponds to $r_{\max}$, since for $x=1$ we have $r=A$. The parameters $w$ increases the density of the resolution for small values of $r$. Note that while the grid structure in the $r$-coordinate is \emph{non-uniform}, being more densily sampled around $r=0$ and less densily sampled around $r=r_{\max}$, it is \emph{uniformly} sampled in the $x$-coordinate. The grid structure is illustrated in figure~\ref{fig:grid_sph_sinh}.
+\n where $A$ and $w$ are free parameters and $x\in[0,1]$. This new coordinate system will henceforth be called \emph{SinhSpherical coordinates}. Note that $A$ corresponds to $r_{\max}$, since for $x=1$ we have $r=A$. The parameters $w$ changes the sampling density near small values of $r$. Note that while the grid structure in the $r$-coordinate is \emph{non-uniform}, being more densily sampled around $r=0$ and less densily sampled around $r=r_{\max}$, it is \emph{uniformly} sampled in the $x$-coordinate. The grid structure is illustrated in figure~\ref{fig:grid_sph_sinh}.
 
 \begin{figure}[ht]
   \centering
@@ -519,7 +519,7 @@ Since our equations are not covariant under the change of coordinates~\eqref{eq:
 
 \subsection{Structure of the evolution}
 
-The evolution of the EKG+ADM system of equations is relatively awkward since we are not allowed to use common (and simple) integrators that follow the \emph{method of lines}, such as RK4. The reason for this is that both the Hamiltonian constraint and the polar slicing conditions are \emph{elliptic} equations, while the EKG equations are \emph{hyperbolic equations}. Simply put, the EKG equations are equations that move $\Phi$ and $\Pi$ forward in time based on their values on previous time levels, while the Hamiltonian constraint and polar slicing condition solve for $a$ and $\a$, respectively, based on information on a \emph{single} time level. This complicates this, particularly because the Hamiltonian constraint is a non-linear equation from which we are trying to determine $A^{n+1}_{j+1}$. This means that the equation must be solved on every single gridpoint using a Newton-Raphson solver, for example, which considerably slows down the evolution and complicates the numerical algorithm. The polar slicing condition is not as difficult, it is simply a linear equation that must be solved for $\a^{n+1}_{j+1}$ in terms of other known quantities, but also contributes to making the integration more difficult.
+The evolution of the EKG+ADM system of equations is relatively awkward since we are not allowed to use common (and simple) integrators that follow the \emph{method of lines}, such as RK4. The reason for this is that both the Hamiltonian constraint and the polar slicing conditions are \emph{elliptic} equations, while the EKG equations are \emph{hyperbolic} equations. Simply put, the EKG equations are equations that move $\Phi$ and $\Pi$ forward in time based on their values on previous time levels, while the Hamiltonian constraint and polar slicing condition solve for $a$ and $\a$, respectively, based on information on a \emph{single} time level. This makes the integration less efficient, particularly because the Hamiltonian constraint is a non-linear equation from which we are trying to determine $A^{n+1}_{j+1}$. This means that the equation must be solved on every single gridpoint using a Newton-Raphson solver, for example, which considerably slows down the evolution and complicates the numerical algorithm. The polar slicing condition is not as difficult, it is simply a linear equation that must be solved for $\a^{n+1}_{j+1}$ in terms of other known quantities, but also contributes to making the integration more difficult.
 
 During the integration process, we have access to $\lrpar{\Phi,\Pi,a,\a}$ on all spatial points, on the time levels $n$ and $n-1$. This means that a typical integration step is carried out in the following way:
 
@@ -562,7 +562,7 @@ For the metric quantity $a(t,r)$, on the other hand, we must impose a different 
 
 \eq{ a(t,0) = 1\ . }
 
-\n This is a relatively strange boundary condition, which can be viewed as the so called ``elementary flatness condition'', which demands that the spacetime is free of conical singularities at the origin.
+\n This is a relatively strange boundary condition, which can be viewed as the so-called ``elementary flatness condition'', which demands that the spacetime is free of conical singularities at the origin.
 
 \parbox{4: EKG+ADM -- Inner boundary conditions}{
   For the EKG+ADM system, we apply the following \emph{inner} boundary conditions:
@@ -619,7 +619,7 @@ Notice, now, that the polar slicing condition is homogeneous in $\a$, meaning th
 
 \eq{ \kappa = \min_{0\leq j\leq J}\lrpar{\frac{a^{n}_{j}}{\a^{n}_{j}}}\ . }
 
-\n This rescaling typically sets $\a(t,r_{\max}) = a(t,r_{\max})$, which means that we are dealing with a metric that does not behave like the Schwarzschild metric, where we have $\a = a^{-1}$.
+\n This rescaling typically sets $\a(t,r_{\max}) = a(t,r_{\max})$, which means that we are dealing with a metric that does not behave like the Schwarzschild metric, where we have $\a = a^{-1}$, except when $a=1$.
 
 \parbox{5: EKG+ADM -- Outer boundary conditions}{
   For the EKG+ADM system, we apply the following \emph{outer} boundary conditions:
@@ -636,25 +636,47 @@ The initial condition for the scalar field is
 
 \eq{
   \spl{
-    \phi(0,r) &= \phi_{0}\exp\lrsquare{-\frac{\lrpar{r-r_{0}}^{2}}{\d^{2}}}\ ,\\
+    \phi(0,r) &= \eta\exp\lrsquare{-\frac{\lrpar{r-r_{0}}^{2}}{\d^{2}}}\ ,\\
     \pd_{t}\phi(0,r) &= 0\ .
   }
   \label{eq:initial_condition_1}
 }
 
-\n Typically the parameters $r_{0}$ and $\d$ are fixed, while the parameter $\phi_{0}$, the amplitude of the initial pulse, varies on different runs of the code. This is the parameter $p$ we mentioned, for which we wish to find the critical value $p^{\star}=\phi_{\star}$ that separates solutions with black hole formation from those with total dispersion.
+\n Typically the parameters $r_{0}$ and $\d$ are fixed, while the parameter $\eta$, the amplitude of the initial pulse, varies on different runs of the code. This is the parameter $p$ we mentioned, for which we wish to find the critical value $p^{*}=\eta_{*}$ that separates solutions with black hole formation from those with total dispersion.
 
-In terms of $\Phi$ and $\Pi$, the inital conditions read
+In terms of $\Phi$ and $\Pi$, the inital condition reads
 
 \eq{
   \spl{
-    \Phi(0,r) &= -2\frac{\lrpar{r-r_{0}}}{\d^{2}}\phi_{0}\exp\lrsquare{-\frac{\lrpar{r-r_{0}}^{2}}{\d^{2}}}\ ,\\
+    \Phi(0,r) &= -2\frac{\lrpar{r-r_{0}}}{\d^{2}}\eta\exp\lrsquare{-\frac{\lrpar{r-r_{0}}^{2}}{\d^{2}}}\ ,\\
     \Pi(0,r)  &= 0\ .
   }
   \label{eq:initial_condition_2}
 }
 
 \n To obtain the initial values of $a$ and $\a$ we must solve the constraints.
+
+Although we have shown the initial data used by Matt Choptuik in his PhD thesis~\cite{Choptuik_1986} and his original work~\cite{PhysRevLett.70.9}, we will choose different values for the free parameters $\lrpar{r_{0},\d}$. As pointed out by Thomas Baumgarte~\cite{Baumgarte_private}, Choptuik's choice for $\lrpar{r_{0},\d}$ lead to initial conditions which are ill-defined at the origin, as illustrated in figure~\ref{fig:origin_problem}. The radial derivative of the scalar field, $\Phi=\pd_{r}\phi$, does not go smoothly to zero at the origin, but has a ``kink'' instead. This is a consequence of imposing Neumann boundary conditions at the origin, but having an initial condition which is incompatible with this boundary condition when $r_{0}\neq 0$.
+
+\begin{figure}[H]
+  \centering
+  \input{resources/origin_problem.tex}
+  \caption[Problem with the initial condition at the origin.]{This figures shows the problem with the initial condition set by Choptuik in his original studies. There is a kink in the first derivative of the scalar field at the origin, namely the variable $\Phi$.}
+  \label{fig:origin_problem}
+\end{figure}
+
+Baumgarte has proposed a fix which he has already used himself in his studies of gravitational collapse of massless scalarfields~\cite{Baumgarte_2018}. It is a very simple fix, which consists of changing the parameters $r_{0}$ and $\delta$ appropriately. The simplest approach is to set $r_{0}=0$ and $\d=1$, which then results in the initial condition
+
+\eq{
+  \spl{
+    \phi(0,r) &= \eta\exp\lrpar{-r^{2}}\ ,\\
+    \Phi(0,r) &= -2r\eta\exp\lrpar{-r^{2}}\ ,\\
+    \Pi(0,r) &= 0\ .
+  }
+  \label{eq:initial_condition_new}
+}
+
+\n This condition then guarantees that $\Phi$ is both zero and smooth at the origin. Alternatively, one could multiply $\phi(0,r)$ by $r^{n}$ with $n\geq2$, which then also guarantees that $\phi(0,r=0)=0$.
 
 \subsection{The {\tt SFcollapse1D} code}
 
@@ -699,7 +721,7 @@ Here is what {\tt SFcollapse1D} does in pseudocode:
     Perform the rescaling of the lapse function\;
   }
   \Begin(\emph{Evolution}){
-    \For{$n=2$ \KwTo $N_{t}$}{
+    \While{$t<t_{\rm final}$}{
       Apply inner boundary conditions to set $\Phi^{n}_{0}$, $a^{n}_{0}$, and $\a^{n}_{0}$\;
       \For{$j=1$ \KwTo $N_{r}-1$}{
         \lIf{ $j=1$ }{start by computing $\phi^{n}_{0}$}
@@ -721,137 +743,95 @@ Here is what {\tt SFcollapse1D} does in pseudocode:
 
 \subsection{Results}
 
-\subsubsection{The weak, intermediate, and strong regimes}
+\subsubsection{The different field regimes}
 
-In this section we present results from three different runs in the so-called three different ``field regimes'': the \emph{weak}, \emph{intermediate}, and \emph{strong} field regimes. We note here that these are \emph{not} production runs, with the grid being very underesolved and therefore a lot of matter escaping the black hole interior in the strong regime. These runs were performed for the sake of illustrating the three different scenarios, not to obtain accurate results.
+In this section we present results from different runs in the so-called \emph{weak} and \emph{strong} field regimes. We emphasize here that the results presented in this section were not obtained with accuracy and stability in mind, but simply to illustrate the different regimes. This means that our grid choices are not meant to be used during production runs, since they underesolve the structures that emerge once the scalar field propagates and interacts with the underlying geometry.
 
-Since our choice is to keep $r_{0}=20$ and $\delta=5$ fixed throught the different runs, the parameter $p$ is identified with $\phi_{0}$, as previously mentioned. To obtain results in each of the regimes, all we need to do then is vary the value of $\phi_{0}$. Although we are evolving the set of variables $\lrpar{\phi,\Phi,\Pi,a,\a}$, our approach will be to present only three quantities: the scalar field $\phi(t,r)$, the lapse function $\a(t,r)$, and the \emph{mass-aspect function}, $M(t,r)$, which is defined in analogy to the Schwarzschild metric
+Throughout this section we fix the parameters $r_{0}=0$ and $\d=1$, so that $\eta$ is the parameter that will vary and allow us to obtain results in different regimes. Although we are evolving the set of variables $\lrpar{\phi,\Phi,\Pi,a,\a}$, we will be interested in looking only at the scalar field $\phi(t,r)$, the lapse function $\a(t,r)$, and the \emph{mass-aspect function}, $M(t,r)$, which is defined in analogy to the Schwarzschild metric
 
 \eq{a^{2}(t,r) \equiv \frac{1}{1 - \frac{2M(t,r)}{r}} \implies M(t,r) = \frac{r}{2}\lrsquare{1 - \frac{1}{a^{2}(t,r)}}\ .}
 
-The weak field regime is obtained by setting $\phi_{0}$ to a small value. In the run whose results are presented in figures~\ref{fig:phi_weak},~\ref{fig:alpha_weak}, and~\ref{fig:mass_weak}, we have set $\phi_{0}=0.01$. In this regime, the metric quantities $\a$ and $a$ differ at most $\sim2\%$ from flat space, the deviation being more prominent for the lapse than the radial metric. Because of this, the backreaction from the geometry on the scalar field is negligible and we see it propagating as if it was not coupled to gravity at all, i.e. just a simple scalar wave in spherical coordinates.
+The weak field regime is obtained by setting $\eta$ to a small value.\footnote{A natural question is then ``small when compared to what''? The answer to this question is meant to be ``small when compared to $\eta_{*}$'', but even that is not really satisfactory since 1) we do not know $\eta_{*}$ \emph{a priori} and 2) even if we are given $\eta_{*}$ it is not obvious how to choose $\eta$. Indeed, the best answer to this question is that we empirically determine the value of $\eta$ by finding a solution that produces a spacetime which is almost flat throughout the entire run.} In the run whose results are presented in figures~\ref{fig:phi_weak},~\ref{fig:alpha_weak}, and~\ref{fig:mass_weak}, we have set $\eta=0.05$. In this regime, the metric quantities $\a$ and $a$ differ at most $\sim2\%$ from flat space, the deviation being more prominent for the lapse than the radial metric. Because of this, the backreaction from the geometry on the scalar field is negligible and we see it propagating as if it was not coupled to gravity at all, i.e. just a simple scalar wave in spherical coordinates.
 
-\begin{figure}[ht]
+\begin{figure}[H]
   \centering
   \input{resources/scalarfield_weak.tex}
-  \caption[Weak field results for the scalar field $\phi(t,r)$.]{Weak field results for the scalar field $\phi(t,r)$. The parameters of the run are $\phi_{0}=0.01$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, $w=0.3$, and $N_{r}=600$.}
+  \caption[Weak field results for the scalar field $\phi(t,r)$.]{Weak field results for the scalar field $\phi(t,r)$. The parameters of the run are $\eta=0.05$, $r_{0}=0$, $\delta=1$, $r_{\max}=64$, $w=0.15$, and $N_{r}=640$.}
   \label{fig:phi_weak}
 \end{figure}
 
-\begin{figure}[ht]
+\begin{figure}[H]
   \centering
   \input{resources/alpha_weak.tex}
-  \caption[Weak field results for the lapse function $\a(t,r)$.]{Weak field results for the lapse function $\a(t,r)$. The parameters of the run are $\phi_{0}=0.01$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, $w=0.3$, and $N_{r}=600$.}
+  \caption[Weak field results for the lapse function $\a(t,r)$.]{Weak field results for the lapse function $\a(t,r)$. The parameters of the run are $\eta=0.05$, $r_{0}=0$, $\delta=1$, $r_{\max}=64$, $w=0.15$, and $N_{r}=640$.}
   \label{fig:alpha_weak}
 \end{figure}
 
-\begin{figure}[ht]
+\begin{figure}[H]
   \centering
   \input{resources/mass_weak.tex}
-  \caption[Weak field results for the mass-aspect function $M(t,r)$.]{Weak field results for the mass-aspect function $M(t,r)$. The parameters of the run are $\phi_{0}=0.01$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, $w=0.3$, and $N_{r}=600$.}
+  \caption[Weak field results for the mass-aspect function $M(t,r)$.]{Weak field results for the mass-aspect function $M(t,r)$. The parameters of the run are $\eta=0.05$, $r_{0}=0$, $\delta=1$, $r_{\max}=64$, $w=0.15$, and $N_{r}=640$.}
   \label{fig:mass_weak}
 \end{figure}
 
-For the intermediate field results we have set $\phi=0.053$. This regime is characterized by total dispersion (no black hole formation), as in the weak field regime, but the scalar field has enough energy to cause nonnegligible curvature of the geometry, which is enough to affect the propagation of the scalar field. The intermediate field regime results are presented in figures~\ref{fig:phi_inter},~\ref{fig:alpha_inter}, and~\ref{fig:mass_inter}.
+For the strong field results we have set $\eta=0.6$. This regime is characterized by total collapse, meaning that the scalar field energy is strong enough to curve spacetime to the point where a singularity emerges. If the rresolution of the run is sufficiently high, it is possible to prevent the simulation from crashing immediately after black hole formation. However, our resolution was not enough to keep this from happening nor from preventing that energy ``leaked'' out of the black hole interior after its formation.
 
-\begin{figure}[ht]
-  \centering
-  \input{resources/scalarfield_inter.tex}
-  \caption[Intermediate field results for the scalar field $\phi(t,r)$.]{Intermediate field results for the scalar field $\phi(t,r)$. The parameters of the run are $\phi_{0}=0.053$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, $w=0.3$, and $N_{r}=600$.}
-  \label{fig:phi_inter}
-\end{figure}
-
-\begin{figure}[ht]
-  \centering
-  \input{resources/alpha_inter.tex}
-  \caption[Intermediate field results for the lapse function $\a(t,r)$.]{Intermediate field results for the lapse function $\a(t,r)$. The parameters of the run are $\phi_{0}=0.053$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, $w=0.3$, and $N_{r}=600$.}
-  \label{fig:alpha_inter}
-\end{figure}
-
-\begin{figure}[ht]
-  \centering
-  \input{resources/mass_inter.tex}
-  \caption[Intermediate field results for the mass-aspect function $M(t,r)$.]{Intermediate field results for the mass-aspect function $M(t,r)$. The parameters of the run are $\phi_{0}=0.053$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, $w=0.3$, and $N_{r}=600$.}
-  \label{fig:mass_inter}
-\end{figure}
-
-For the strong field results we have set $\phi=0.1$. This regime is characterized by total collapse, meaning that the scalar field energy is strong enough to curve spacetime to the point where a singularity emerges. If enough resolution is used, it is possible to see that (almost) no energy leaves the ``horizon'' after the scalar field has collapsed. However, our illustrative run has been performed with a very low resolution ($N_{r}=600$), which causes \emph{a lot} of energy to escape the horizon if we keep the simulation running for too long.
-
-The lapse function goes to zero\footnote{In the actual code the lapse reaches a very small value, below $10^{-3}$ for example, which is enough for us to characterize black hole formation.} in this regime, which is a statement that around that region there is virtually no proper time being elapsed between one hypersurface of constant time and the next. This is known as the \emph{freezing of the lapse function}, and is a very useful feature to measure black hole formation.
+The lapse function goes to zero\footnote{In the actual code the lapse reaches a very small value, below $10^{-3}$ for example, which is enough for us to characterize black hole formation.} in this regime, which is a statement that around that region there is virtually no proper time being elapsed between one hypersurface of constant time and the next. This is known as the \emph{freezing of the lapse function}, and is a very useful feature to detect black hole formation.
 
 The strong field regime results are presented in figures~\ref{fig:phi_strong},~\ref{fig:alpha_strong}, and~\ref{fig:mass_strong}. Figure~\ref{fig:phi_strong} shows clearly that no time is passing for the scalar field after it collapses, since its evolution gets frozen. The freezing of the lapse function is evident in figure~\ref{fig:alpha_strong}, while the mass of the black hole formed (in code units) can be seen as the plateau of the function $m(t,r)$ in figure~\ref{fig:mass_strong}.
 
-\begin{figure}[ht]
+\begin{figure}[H]
   \centering
   \input{resources/scalarfield_strong.tex}
-  \caption[Old strong field results for the scalar field $\phi(t,r)$.]{Strong field results for the scalar field $\phi(t,r)$. The parameters of the run are $\phi_{0}=0.1$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, $w=0.3$, and $N_{r}=600$.}
+  \caption[Strong field results for the scalar field $\phi(t,r)$.]{Strong field results for the scalar field $\phi(t,r)$. The parameters of the run are $\eta=0.6$, $r_{0}=0$, $\delta=1$, $r_{\max}=64$, $w=0.15$, and $N_{r}=640$.}
   \label{fig:phi_strong}
 \end{figure}
 
-\begin{figure}[ht]
+\begin{figure}[H]
   \centering
   \input{resources/alpha_strong.tex}
-  \caption[Old strong field results for the lapse function $\a(t,r)$.]{Strong field results for the lapse function $\a(t,r)$. The parameters of the run are $\phi_{0}=0.1$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, $w=0.3$, and $N_{r}=600$.}
+  \caption[Strong field results for the lapse function $\a(t,r)$.]{Strong field results for the lapse function $\a(t,r)$. The parameters of the run are $\eta=0.6$, $r_{0}=0$, $\delta=1$, $r_{\max}=64$, $w=0.15$, and $N_{r}=640$.}
   \label{fig:alpha_strong}
 \end{figure}
 
-\begin{figure}[ht]
+\begin{figure}[H]
   \centering
   \input{resources/mass_strong.tex}
-  \caption[Old strong field results for the mass-aspect function $M(t,r)$.]{Strong field results for the mass-aspect function $M(t,r)$. The parameters of the run are $\phi_{0}=0.1$, $r_{0}=20$, $\delta=5$, $r_{\max}=50$, $w=0.3$, and $N_{r}=600$.}
+  \caption[Strong field results for the mass-aspect function $M(t,r)$.]{Strong field results for the mass-aspect function $M(t,r)$. The parameters of the run are $\eta=0.6$, $r_{0}=0$, $\delta=1$, $r_{\max}=64$, $w=0.15$, and $N_{r}=640$.}
   \label{fig:mass_strong}
-\end{figure}
-
-\subsubsection{Improved initial conditions}
-
-The parameters used to obtain the results of the previous subsection have been inspired by Matt Choptuik's PhD thesis~\cite{Choptuik_1986} and his original work~\cite{PhysRevLett.70.9}. However, as pointed out by Thomas Baumgarte~\cite{Baumgarte_private}, the initial condition we set in the previous cases are ill-defined at the origin, as illustrated in figure~\ref{fig:origin_problem}. The derivative of the scalar field, $\Phi=\pd_{r}\phi$, does not go smoothly to zero at the origin, but has a ``kink'' instead, which is a result of our choice of boundary conditions.
-
-\begin{figure}[ht]
-  \centering
-  \input{resources/origin_problem.tex}
-  \caption[Problem with the initial condition at the origin.]{This figures shows the problem with the initial condition set by Choptuik in his original studies. There is a kink in the first derivative of the scalar field at the origin, namely the variable $\Phi$.}
-  \label{fig:origin_problem}
-\end{figure}
-
-Baumgarte has proposed a fix which he has already used himself in his studies of gravitational collapse of massless scalarfields~\cite{Baumgarte_2018}. It is a very simple fix, which consists of changing the parameters $r_{0}$ and $\delta$ appropriately. The simplest choice, which is the one Baumgarte usually adopts, is $r_{0}=0$ and $\d=1$, which then results in the initial conditions
-
-\eq{
-  \spl{
-    \phi(0,r) &= \phi_{0}\exp\lrpar{-r^{2}}\ ,\\
-    \Phi(0,r) &= -2r\phi_{0}\exp\lrpar{-r^{2}}\ ,\\
-    \Pi(0,r) &= 0\ .
-  }
-  \label{eq:initial_condition_new}
-}
-
-\n Note that this condition guarantees that $\Phi$ is both zero and smooth at the origin.
-
-Because we have changed the values of $r_{0}$ and $\d$, the values of $\phi_{0}$ that result in gravitational collapse also change. To show results using the new initial conditions, we perform a higher resolution run, with $N_{r}=12000$ and $\phi_{0}=0.4$, showing that gravitational collapse again occurs and a black hole is formed. These results are shown in figures~\ref{fig:phi_strong_new},~\ref{fig:alpha_strong_new}, and~\ref{fig:mass_strong_new}.
-
-\begin{figure}[ht]
-  \centering
-  \input{resources/scalarfield_strong_new.tex}
-  \caption[New strong field results for the scalar field $\phi(t,r)$.]{Strong field results for the scalar field $\phi(t,r)$. The parameters of the run are $\phi_{0}=0.4$, $r_{0}=0$, $\delta=1$, $r_{\max}=50$, $w=0.2$, and $N_{r}=12000$. Note that the figure only shows the region $r\in[0,5]$.}
-  \label{fig:phi_strong_new}
-\end{figure}
-
-\begin{figure}[ht]
-  \centering
-  \input{resources/alpha_strong_new.tex}
-  \caption[New strong field results for the lapse function $\a(t,r)$.]{Strong field results for the lapse function $\a(t,r)$. The parameters of the run are $\phi_{0}=0.4$, $r_{0}=0$, $\delta=1$, $r_{\max}=50$, $w=0.2$, and $N_{r}=12000$. Note that the figure only shows the region $r\in[0,5]$.}
-  \label{fig:alpha_strong_new}
-\end{figure}
-
-\begin{figure}[ht]
-  \centering
-  \input{resources/mass_strong_new.tex}
-  \caption[New strong field results for the mass-aspect function $M(t,r)$.]{Strong field results for the mass-aspect function $M(t,r)$. The parameters of the run are $\phi_{0}=0.4$, $r_{0}=0$, $\delta=1$, $r_{\max}=50$, $w=0.2$, and $N_{r}=12000$. Note that the figure only shows the region $r\in[0,5]$.}
-  \label{fig:mass_strong_new}
 \end{figure}
 
 \subsubsection{Critical phenomena}
 
 
+
+\begin{figure}[H]
+  \centering
+  \input{resources/critical_lapse_best.tex}
+  \caption[$\alpha_{\rm central}$ results near criticality using a different grid setup.]{$\alpha_{\rm central}$ results near criticality using a different grid setup. The simulation parameters used were $N_{r}=320$, $w=0.08$, and $r_{\max}=16$. Note that we have fine-tuned the critical parameter to $\d\eta\sim10^{-13}$.}
+  \label{fig:critical_alpha_best}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \input{resources/critical_exponent.tex}
+  \caption[Critical exponent behaviour for subcritical data.]{Critical exponent behaviour for several subcritical data runs. The plot shows the maximum central density as a function of the logarithmic difference of the critical parameter $\eta_{*}$ and the run parameter $\eta$. The fitting function chosen was $\rho^{\rm max}_{\rm central} \sim \left|\eta_{*}-\eta\right|^{-2\gamma}$, resulting in the critical exponent $\gamma\approx0.3746$, in excellent agreement with the literature.}
+  \label{fig:critical_alpha_best}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \input{resources/critical_lapse.tex}
+  \caption[$\alpha_{\rm central}$ results near criticality.]{$\alpha_{\rm central}$ results near criticality. The results below have been found by first finding initial values that result in full dispersal and black hole formation, respectively, and then fine tuning the value of $\eta$ using bisection. The simulation parameters used were $N_{r}=960$, $w=0.11$, and $r_{\max}=16$. Note that we have fine-tuned the critical parameter to $\d\eta\sim10^{-10}$.}
+  \label{fig:critical_alpha}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \input{resources/critical_lapse_new.tex}
+  \caption[$\alpha_{\rm central}$ results near criticality using a different grid setup.]{$\alpha_{\rm central}$ results near criticality using a different grid setup. The simulation parameters used were $N_{r}=320$, $w=0.09$, and $r_{\max}=16$. Note that we have fine-tuned the critical parameter to $\d\eta\sim10^{-11}$.}
+  \label{fig:critical_alpha_new}
+\end{figure}
 
 % Print the references on a new page
 \clearpage
