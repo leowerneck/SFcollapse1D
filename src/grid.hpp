@@ -22,7 +22,6 @@
 #ifndef __GRID_HPP__
 #define __GRID_HPP__
 
-#include <vector>
 #include "macros.hpp"
 
 /* Define parameters class */
@@ -43,18 +42,18 @@ namespace grid {
     /* Total number of points in each spatial direction */
     int Nx0Total;
     /* Domain size */
-    REAL x0_min,x0_max;
+    real x0_min,x0_max;
     /* Vector of vectors for x0,x1,x2 */
-    std::vector< std::vector<REAL> > x;
+    realmat x;
     /* Step sizes */
-    REAL dx0, ds_min;
+    real dx0, ds_min;
     /* Inverse spatial step sizes */
-    REAL inv_dx0;
+    real inv_dx0;
     /* Inverse spatial step sizes squared */
-    REAL inv_dx0_sqrd;
+    real inv_dx0_sqrd;
     /* Sinh Spherical coordinate system variables */
-    REAL sinhA, sinhW, inv_sinhW, sinh_inv_W, A_over_sinh_inv_W;
-    std::vector< REAL > r_ito_x0;
+    real sinhA, sinhW, inv_sinhW, sinh_inv_W, A_over_sinh_inv_W;
+    realvec r_ito_x0;
     /* Regridding parameters */
     int current_regrid_level, max_regrid_levels;
 
@@ -65,9 +64,9 @@ namespace grid {
      * Number of time steps */
     int Nt;
     /* Initial and final times */
-    REAL t_initial,t_final;
+    real t_initial,t_final;
     /* Time and time step */
-    REAL t,dt;
+    real t,dt;
 
     /* .-----------------.
      * | The constructor |
@@ -93,22 +92,22 @@ namespace grid {
    * confusion because the function call is clearly
    * different.
    */
-  REAL compute_x_of_r( const REAL r );
-  REAL compute_r_of_x( const REAL x );
-  REAL compute_x_of_r( const REAL r, const REAL A, const REAL w );
-  REAL compute_r_of_x( const REAL x, const REAL A, const REAL w );
+  real compute_x_of_r( const real r );
+  real compute_r_of_x( const real x );
+  real compute_x_of_r( const real r, const real A, const real w );
+  real compute_r_of_x( const real x, const real A, const real w );
   
   /* .-----------------------------.
    * | The compute_xyz_Cartesian() |
    * .-----------------------------.
    */
-  void compute_xyz_Cartesian(const REAL x0, const REAL x1, const REAL x2, REAL xyz[3]);
+  void compute_xyz_Cartesian(const real x0, const real x1, const real x2, real xyz[3]);
 
   /* .-----------------------------.
    * | The compute_xyz_Cartesian() |
    * .-----------------------------.
    */
-  REAL compute_r_from_x0(const int j);
+  real compute_r_from_x0(const int j);
 
 }
 

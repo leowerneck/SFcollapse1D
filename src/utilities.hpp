@@ -30,29 +30,39 @@
 
 namespace utilities {
 
+  /* Compute mass-aspect function */
+  void compute_and_output_mass_aspect_function( const int, const int, const grid::parameters, const gridfunction );
+
   /* NaN checker function ) */
   void NaN_checker( const int, grid::parameters, gridfunction, gridfunction, gridfunction, gridfunction, gridfunction );
 
   /* Function to check whether regridding is necessary or not */
-  bool check_regrid_criterion( const grid::parameters, const std::vector<REAL> );
+  bool check_regrid_criterion( const grid::parameters, const realvec );
 
   /* Regridding function */
   void regrid( grid::parameters &, gridfunction &, gridfunction &, gridfunction &, gridfunction &, gridfunction & );
 
   /* Lagrange interpolator */
-  void Lagrange_interpolator( const int, const int, const std::vector<REAL>,
-			      gridfunction  , gridfunction  , gridfunction  , gridfunction  , gridfunction  ,
-			      gridfunction &, gridfunction &, gridfunction &, gridfunction &, gridfunction &,
-			      const REAL);
+  void Lagrange_interpolator( const int interp_index, const int interp_stencil_size, const realvec x,
+			      const realvec phi, const realvec Phi, const realvec Pi, const realvec a, const realvec alpha,
+			      realvec &phi_star, realvec &Phi_star, realvec &Pi_star, realvec &a_star, realvec &alpha_star,
+			      const real x_star );
 
   /* Bisection index finder */
-  int bisection_index_finder( const std::vector<REAL>, const REAL );
+  int bisection_index_finder( const realvec, const real );
 
   /* Printing useful grid information to the user */
-  void parameter_information( grid::parameters );
+  void parameter_information( const real, grid::parameters );
 
   /* Various error messages for SFcollapse1D */
   void SFcollapse1D_error( const int );
+
+  /* Print central values */
+  void output_gridfunctions_central_values( const int, const grid::parameters,
+					    const realvec, const realvec, const realvec, const realvec, const realvec );
+
+  /* Lapse collapse checker */
+  bool check_for_collapse_of_the_lapse( const grid::parameters, const gridfunction );
 
 }
 

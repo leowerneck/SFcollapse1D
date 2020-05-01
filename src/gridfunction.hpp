@@ -23,7 +23,6 @@
 #define __GRIDFUNCTION_HPP__
 
 /* Basic includes */
-#include <vector>
 #include <string>
 #include "macros.hpp"
 #include "grid.hpp"
@@ -37,9 +36,9 @@ public:
    *
    * We need three time levels
    */
-  std::vector<REAL> level_np1;
-  std::vector<REAL> level_n;
-  std::vector<REAL> level_nm1;
+  realvec level_np1;
+  realvec level_n;
+  realvec level_nm1;
     
   /* .-----------------.
    * | The constructor |

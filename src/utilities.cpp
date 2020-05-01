@@ -24,16 +24,16 @@
 #include <iomanip>
 #include <fstream>
 #include <cmath>
-#include <vector>
 #include "macros.hpp"
 #include "grid.hpp"
 #include "utilities.hpp"
+#include "evolution.hpp"
 #include "gridfunction.hpp"
 
 using namespace std;
 
 /* Check whether or not a regrid is necessary */
-bool utilities::check_regrid_criterion( const grid::parameters grid, const vector<REAL> phi ) {
+bool utilities::check_regrid_criterion( const grid::parameters grid, const realvec phi ) {
 
   DECLARE_GRID_PARAMETERS;
 
@@ -50,21 +50,10 @@ bool utilities::check_regrid_criterion( const grid::parameters grid, const vecto
    * [1] T.W. Baumgarte, Aspherical deformations of the Choptuik spacetime,
    *     Phys. Rev. D 98 084012, 2018. ArXiV: https://arxiv.org/abs/1807.10342
    */
-  LOOP(0,Nx0Total) {
+  LOOP(1,Nx0Total-1) {
     /* First, compute phi_{x} and phi_{xx} */
-    REAL phi_x, phi_xx;
-    if( (j != 0) && (j != Nx0Total-1) ) {
-      phi_x  = inv_dx0*0.5  * ( phi[j+1] - phi[j-1] );
-      phi_xx = inv_dx0_sqrd * ( phi[j+1] - 2.0*phi[j] + phi[j-1] );
-    }
-    else if( j==0 ) {
-      phi_x  = inv_dx0*0.5  * ( -3.0*phi[j] + 4.0*phi[j+1] - phi[j+2] );
-      phi_xx = inv_dx0_sqrd * ( 2.0*phi[j] - 5.0*phi[j+1] + 4.0*phi[j+2] - phi[j+3] );
-    }
-    else {
-      phi_x  = inv_dx0*0.5  * ( 3.0*phi[j] - 4.0*phi[j-1] + phi[j-2] );
-      phi_xx = inv_dx0_sqrd * ( 2.0*phi[j] - 5.0*phi[j-1] + 4.0*phi[j-2] - phi[j-3] );
-    }
+    const real phi_x  = inv_dx0*0.5  * ( phi[j+1] - phi[j-1] );
+    const real phi_xx = inv_dx0_sqrd * ( phi[j+1] - 2.0*phi[j] + phi[j-1] );
     /* Then, compute phi_{rr}. We know that
      *
      * r = A sinh( x/w ) / sinh( 1/w )
@@ -81,12 +70,12 @@ bool utilities::check_regrid_criterion( const grid::parameters grid, const vecto
      *
      * => pd_{rr} = ( (w/A) sinh(1/w) )^{2} ( 1/cosh(x/w) )^{2} [ pd_{xx} - tanh(x/w)/w pd_{x} )
      */
-    const REAL tmp0   = cosh( x[0][j] * inv_sinhW );
-    const REAL tmp1   = tanh( x[0][j] * inv_sinhW ) * inv_sinhW;
-    const REAL tmp2   = 1.0 / SQR(tmp0);
-    const REAL tmp3   = SQR(sinhW) / SQR(A_over_sinh_inv_W);
-    const REAL phi_rr = tmp3 * tmp2 * ( phi_xx - tmp1 * phi_x );
-    const REAL l      = 1.0 / sqrt( abs(phi_rr) );
+    const real tmp0   = cosh( x[0][j] * inv_sinhW );
+    const real tmp1   = tanh( x[0][j] * inv_sinhW ) * inv_sinhW;
+    const real tmp2   = 1.0 / SQR(tmp0);
+    const real tmp3   = SQR(sinhW) / SQR(A_over_sinh_inv_W);
+    const real phi_rr = tmp3 * tmp2 * ( phi_xx - tmp1 * phi_x );
+    const real l      = 1.0 / sqrt( abs(phi_rr) );
 
     /* If the criterion is met, return true */
     if( l < 25*ds_min ) return true;
@@ -147,11 +136,10 @@ void utilities::regrid( grid::parameters &grid, gridfunction &phi, gridfunction 
    * This option sets Nx0 -> Nx0_new, with Nx0_new > Nx0.
    */
   const int  Nx0_new    = (Nx0Total-1) * REGRID_FACTOR + 1;
-  const int  max_idx    = Nx0_new;
-  const REAL x0_max_new = x0_max;
+  const real x0_max_new = x0_max;
 #if( COORD_SYSTEM == SINH_SPHERICAL )
-  const REAL sinhA_new  = sinhA;
-  const REAL sinhW_new  = sinhW;
+  const real sinhA_new  = sinhA;
+  const real sinhW_new  = sinhW;
 #endif
 
 #elif( REGRID_OPTION == REGRID_OUTER_BOUNDARY )
@@ -163,11 +151,10 @@ void utilities::regrid( grid::parameters &grid, gridfunction &phi, gridfunction 
    * This option sets x0_max -> x0_max_new, with x0_max_new < x0_max.
    */
   const int  Nx0_new    = Nx0Total;
-  const int  max_idx    = Nx0_new - 1;
-  const REAL x0_max_new = x0_max * REGRID_FACTOR;
+  const real x0_max_new = x0_max * REGRID_FACTOR;
 #if( COORD_SYSTEM == SINH_SPHERICAL )
-  const REAL sinhA_new  = sinhA * REGRID_FACTOR;
-  const REAL sinhW_new  = sinhW;
+  const real sinhA_new  = sinhA * REGRID_FACTOR;
+  const real sinhW_new  = sinhW;
 #endif
 
 #elif( (REGRID_OPTION == REGRID_POINT_DENSITY) && (COORD_SYSTEM == SINH_SPHERICAL) )
@@ -179,22 +166,21 @@ void utilities::regrid( grid::parameters &grid, gridfunction &phi, gridfunction 
    * This option sets sinhW -> sinhW_new, with sinhW_new < sinhW.
    */
   const int  Nx0_new    = Nx0Total;
-  const int  max_idx    = Nx0_new - 1;
-  const REAL x0_max_new = x0_max;
-  const REAL sinhA_new  = sinhA;
-  const REAL sinhW_new  = sinhW * REGRID_FACTOR;
+  const real x0_max_new = x0_max;
+  const real sinhA_new  = sinhA;
+  const real sinhW_new  = sinhW * REGRID_FACTOR;
 
 #else
   utilities::SFcollapse1D_error( REGRIDDING_OPTION_ERROR );
 #endif
 
   /* Set arrays for the values of r_star and x_star */
-  vector<REAL> x_new(Nx0_new);
-  vector<REAL> r_star(Nx0_new);
-  vector<REAL> x_star(Nx0_new);
+  realvec x_new(Nx0_new);
+  realvec r_star(Nx0_new);
+  realvec x_star(Nx0_new);
 
   /* Compute the values of r_star from the new parameters */
-  const REAL dx0_new = (x0_max_new - x0_min)/((REAL)Nx0_new-1.0);
+  const real dx0_new = (x0_max_new - x0_min)/((real)Nx0_new-1.0);
   LOOP(0,Nx0_new) {
     x_new[j]  = (j-Ngz0) * dx0_new;
 #if( COORD_SYSTEM == SPHERICAL )
@@ -206,77 +192,128 @@ void utilities::regrid( grid::parameters &grid, gridfunction &phi, gridfunction 
 #endif
   }
 
-  /* Now we know which points we need to find our gridfunctions at, so we
-   * define new gridfunctions to be defined at the points x_star.
-   */
-  gridfunction phi_star(Nx0_new);
-  gridfunction Phi_star(Nx0_new);
-  gridfunction Pi_star(Nx0_new);
-  gridfunction a_star(Nx0_new);
-  gridfunction alpha_star(Nx0_new);
+  cout << scientific << setprecision(15) << "Before: " << alpha.level_np1[0] << endl;
 
-  /* Set the gridfunctions at the origin and outer boundary */
-#if( REGRID_OPTION == REGRID_RADIAL_POINTS )
-  const vector<int> indices = {0};
-#else
-  const vector<int> indices = {0,max_idx};
-#endif
+  // Set the gridfunctions at the origin and outer boundary
+  phi.level_nm1[0]   = phi.level_np1[0];
+  Phi.level_nm1[0]   = Phi.level_np1[0];
+  Pi.level_nm1[0]    = Pi.level_np1[0];
+  a.level_nm1[0]     = a.level_np1[0];
+  alpha.level_nm1[0] = alpha.level_np1[0];
 
-  for( int which_idx=0;which_idx<(int)indices.size();which_idx++) {
-    
-    const int idx = indices[which_idx];
-    
-    phi_star.level_nm1[idx] = phi.level_nm1[idx];
-    phi_star.level_n[idx]   = phi.level_n[idx];
-    phi_star.level_np1[idx] = phi.level_np1[idx];
-
-    Phi_star.level_nm1[idx] = Phi.level_nm1[idx];
-    Phi_star.level_n[idx]   = Phi.level_n[idx];
-    Phi_star.level_np1[idx] = Phi.level_np1[idx];
-
-    Pi_star.level_nm1[idx] = Pi.level_nm1[idx];
-    Pi_star.level_n[idx]   = Pi.level_n[idx];
-    Pi_star.level_np1[idx] = Pi.level_np1[idx];
-
-    a_star.level_nm1[idx] = a.level_nm1[idx];
-    a_star.level_n[idx]   = a.level_n[idx];
-    a_star.level_np1[idx] = a.level_np1[idx];
-
-    alpha_star.level_nm1[idx] = alpha.level_nm1[idx];
-    alpha_star.level_n[idx]   = alpha.level_n[idx];
-    alpha_star.level_np1[idx] = alpha.level_np1[idx];
-
-  }
+  // phi.level_nm1[max_idx] = phi.level_np1[max_idx];
+  // Phi.level_nm1[max_idx] = Phi.level_np1[max_idx];
+  // Pi.level_nm1[max_idx]  = Pi.level_np1[max_idx];
 
   /* Now perform the interpolations, one point at a time */
-  LOOP(1,max_idx) {
+  LOOP(1,Nx0Total) {
     utilities::Lagrange_interpolator( j, REGRID_INTERP_STENCIL_SIZE, grid.x[0],
-				      phi     , Phi     , Pi     , a     , alpha     ,
-				      phi_star, Phi_star, Pi_star, a_star, alpha_star,
-				      x_star[j]);
+				      phi.level_np1, Phi.level_np1, Pi.level_np1, a.level_np1, alpha.level_np1,
+				      phi.level_nm1, Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1,
+				      x_star[j] );
   }
 
-  /* Update all gridfunctions */
-  /* phi */
-  phi.level_nm1 = phi_star.level_nm1;
-  phi.level_n   = phi_star.level_n;
-  phi.level_np1 = phi_star.level_np1;
-  /* Phi */
-  Phi.level_nm1 = Phi_star.level_nm1;
-  Phi.level_n   = Phi_star.level_n;
-  Phi.level_np1 = Phi_star.level_np1;
-  /* Pi */
-  Pi.level_nm1 = Pi_star.level_nm1;
-  Pi.level_n   = Pi_star.level_n;
-  Pi.level_np1 = Pi_star.level_np1;
-  /* a */
-  a.level_nm1 = a_star.level_nm1;
-  a.level_n   = a_star.level_n;
-  a.level_np1 = a_star.level_np1;
-  /* alpha */
-  alpha.level_nm1 = alpha_star.level_nm1;
-  alpha.level_n   = alpha_star.level_n;
-  alpha.level_np1 = alpha_star.level_np1;
+  phi.level_nm1[0] = - 3.0 * phi.level_nm1[2] + 4.0 * phi.level_nm1[1];
+
+  /* Then perform a time step, similar to the initial time step */
+  /* .--------------------------------------------------------------.
+   * | Step 1: Apply inner boundary conditions to Phi, a, and alpha |
+   * .--------------------------------------------------------------.
+   */
+  Phi.level_n[0]   = 0.0;
+  a.level_n[0]     = 1.0;
+  alpha.level_n[0] = 1.0;
+
+  /* .-----------------------------------.
+   * | Step 2: Integrate phi, Phi and Pi |
+   * .-----------------------------------.
+   */
+  evolution::time_step_scalarfield_gridfunctions( 0, grid, 
+						  phi.level_nm1, Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1, 
+						  Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1,
+						  Phi.level_n  , Pi.level_n  , phi.level_n );
+  /* Step 2.d: Apply boundary conditions */
+  evolution::apply_outgoing_radiation_bdry_cond( 0, grid,
+						 phi.level_nm1, Pi.level_nm1,
+						 phi.level_nm1, Phi.level_nm1, a.level_nm1, alpha.level_nm1,
+						 phi.level_n  , Phi.level_n  , Pi.level_n );
+
+  Pi.level_n[0] = - Pi.level_nm1[0] + Pi.level_n[1] + Pi.level_nm1[1];
+
+  /* .-------------------------------.
+   * | Step 3: Integrate a and alpha |
+   * .-------------------------------.
+   */
+  // TODO: can this be parallelized in some way? Maybe SIMD?
+  LOOP(1,grid.Nx0Total) {
+    /* Step 3.a: Compute a */
+    a.level_n[j] = evolution::pointwise_solution_of_the_Hamiltonian_constraint(j,grid,Phi.level_n,Pi.level_n,a.level_n);
+    
+    /* Step 3.b: Compute alpha */
+    alpha.level_n[j] = evolution::pointwise_solution_of_the_polar_slicing_condition( j, grid, a.level_n, alpha.level_n );
+  }
+  /* Step 3.d: Now rescale alpha */
+  evolution::rescaling_of_the_lapse(grid,a.level_n,alpha.level_n);
+  
+  /* .-------------------------.
+   * | Step 4: Update the time |
+   * .-------------------------.
+   */
+  grid.t += 0.5 * grid.dt;
+
+  /* Perform an integration step */
+  /* .--------------------------------------------------------------.
+   * | Step 1: Apply inner boundary conditions to Phi, a, and alpha |
+   * .--------------------------------------------------------------.
+   */
+  Phi.level_np1[0]   = 0.0;
+  a.level_np1[0]     = 1.0;
+  alpha.level_np1[0] = 1.0;
+  
+  /* .-----------------------------------.
+   * | Step 2: Integrate phi, Phi and Pi |
+   * .-----------------------------------.
+   */
+  evolution::time_step_scalarfield_gridfunctions( 1, grid, 
+						  phi.level_n, Phi.level_n  , Pi.level_n  , a.level_n  , alpha.level_n  , 
+						  Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1,
+						  Phi.level_np1, Pi.level_np1, phi.level_np1 );
+  /* Step 2.d: Apply boundary conditions */
+  evolution::apply_outgoing_radiation_bdry_cond( 1, grid,
+						 phi.level_nm1, Pi.level_nm1,
+						 phi.level_n  , Phi.level_n  , a.level_n, alpha.level_n,
+						 phi.level_np1, Phi.level_np1, Pi.level_np1);
+  
+  Pi.level_np1[0] = - Pi.level_n[0] + Pi.level_np1[1] + Pi.level_n[1];
+  /* .-------------------------------.
+   * | Step 3: Integrate a and alpha |
+   * .-------------------------------.
+   */
+  // TODO: can this be parallelized in some way? Maybe SIMD?
+  LOOP(1,grid.Nx0Total) {
+    /* Step 3.a: Compute a */
+    a.level_np1[j] = evolution::pointwise_solution_of_the_Hamiltonian_constraint(j,grid,Phi.level_np1,Pi.level_np1,a.level_np1);
+    
+    /* Step 3.b: Compute alpha */
+    alpha.level_np1[j] = evolution::pointwise_solution_of_the_polar_slicing_condition( j, grid, a.level_np1, alpha.level_np1 );
+  }
+  /* Step 3.d: Now rescale alpha */
+  evolution::rescaling_of_the_lapse(grid,a.level_np1,alpha.level_np1);
+
+  /* .-------------------------.
+   * | Step 4: Update the time |
+   * .-------------------------.
+   */
+  grid.t += 0.5 * grid.dt;
+
+  cout << scientific << setprecision(15) << "After: " << alpha.level_np1[0] << endl;
+
+  /* Shift time levels appropriately */
+  phi.level_n   = phi.level_nm1;
+  Phi.level_n   = Phi.level_nm1;
+  Pi.level_n    = Pi.level_nm1;
+  a.level_n     = a.level_nm1;
+  alpha.level_n = alpha.level_nm1;
 
   /* Finally, update all grid parameters */
   grid.Nx0      = Nx0_new;
@@ -298,10 +335,10 @@ void utilities::regrid( grid::parameters &grid, gridfunction &phi, gridfunction 
 }
 
 /* Lagrange interpolator */
-void utilities::Lagrange_interpolator( const int interp_index, const int interp_stencil_size, const vector<REAL> x,
-				       gridfunction phi      , gridfunction Phi      , gridfunction Pi      , gridfunction a      , gridfunction alpha,
-				       gridfunction &phi_star, gridfunction &Phi_star, gridfunction &Pi_star, gridfunction &a_star, gridfunction &alpha_star,
-				       const REAL x_star ) {
+void utilities::Lagrange_interpolator( const int interp_index, const int interp_stencil_size, const realvec x,
+				       const realvec phi, const realvec Phi, const realvec Pi, const realvec a, const realvec alpha,
+				       realvec &phi_star, realvec &Phi_star, realvec &Pi_star, realvec &a_star, realvec &alpha_star,
+				       const real x_star ) {
 
   /* This function implements a simple Lagrange polynomial interpolator.
    * It follows closely the discussion in: https://en.wikipedia.org/wiki/Lagrange_polynomial
@@ -316,8 +353,8 @@ void utilities::Lagrange_interpolator( const int interp_index, const int interp_
    * .------------------------------------------.
    *
    * Step 1.a: Set the size of x and bisect the closest value of x_star from x */
-  int size_of_x = x.size();
-  int idx_min   = utilities::bisection_index_finder( x, x_star ) - interp_stencil_size/2;
+  int idx       = utilities::bisection_index_finder( x, x_star );
+  int idx_min   = max(0,idx-interp_stencil_size/2-1);
 
   /* Step 2.b: At this point idx_min holds the integer for which | x[idx_min] - x_star |
    *           is minimal. We now want to perform the interpolation. Ideally, we will
@@ -325,55 +362,49 @@ void utilities::Lagrange_interpolator( const int interp_index, const int interp_
    *           for interpolation. To this end, we need to make sure we are within the 
    *           bounds of the array x.
    */
-  while( idx_min < 0 ) idx_min++;
-  while( idx_min + interp_stencil_size > size_of_x ) idx_min--;
-  int idx_max = idx_min + interp_stencil_size;
+  // while( idx_min < 0 ) idx_min++;
+  // while( idx_min + interp_stencil_size > size_of_x ) idx_min--;
+  // int idx_max = idx_min + interp_stencil_size;
 
   /* .------------------------------------------------.
    * | Step 2: Compute the Lagrange basis polynomials |
    * .------------------------------------------------.
    */
-  vector<REAL> l_j_of_x_star(interp_stencil_size);
-  for(int j=idx_min;j<idx_max;j++) {
-    REAL numer = 1.0;
-    REAL denom = 1.0;
-    for(int m=idx_min;m<idx_max;m++) {
-      numer *= ( (m == j) ? 1.0 : x_star - x[m] ); // If m=j, multiply by 1
-      denom *= ( (m == j) ? 1.0 : x[j]   - x[m] ); // If m=j, multiply by 1
+  realvec l_i_of_x_star(interp_stencil_size);
+  for(int i=0;i<interp_stencil_size;i++) {
+    real numer = 1.0;
+    real denom = 1.0;
+    for(int j=0;j<i;j++) {
+      numer *=     x_star     - x[idx_min + j];
+      denom *= x[idx_min + i] - x[idx_min + j];
     }
-    l_j_of_x_star[j-idx_min] = numer/denom;
+    for(int j=i+1;j<interp_stencil_size;j++) {
+      numer *=     x_star     - x[idx_min + j];
+      denom *= x[idx_min + i] - x[idx_min + j];
+    }
+    l_i_of_x_star[i] = numer/denom;
   }
 
   /* .-----------------------------------.
    * | Step 3: Perform the interpolation |
    * .-----------------------------------.
    */
+  phi_star[interp_index]   = 0.0;
+  Phi_star[interp_index]   = 0.0;
+  Pi_star[interp_index]    = 0.0;
+  a_star[interp_index]     = 0.0;
+  alpha_star[interp_index] = 0.0;
   LOOP(0,interp_stencil_size) {
-    /* phi */
-    phi_star.level_nm1[interp_index]   += phi.level_nm1[idx_min + j]   * l_j_of_x_star[j];
-    phi_star.level_n[interp_index]     += phi.level_n[idx_min + j]     * l_j_of_x_star[j];
-    phi_star.level_np1[interp_index]   += phi.level_np1[idx_min + j]   * l_j_of_x_star[j];
-    /* Phi */
-    Phi_star.level_nm1[interp_index]   += Phi.level_nm1[idx_min + j]   * l_j_of_x_star[j];
-    Phi_star.level_n[interp_index]     += Phi.level_n[idx_min + j]     * l_j_of_x_star[j];
-    Phi_star.level_np1[interp_index]   += Phi.level_np1[idx_min + j]   * l_j_of_x_star[j];
-    /* Pi */
-    Pi_star.level_nm1[interp_index]    += Pi.level_nm1[idx_min + j]    * l_j_of_x_star[j];
-    Pi_star.level_n[interp_index]      += Pi.level_n[idx_min + j]      * l_j_of_x_star[j];
-    Pi_star.level_np1[interp_index]    += Pi.level_np1[idx_min + j]    * l_j_of_x_star[j];
-    /* a */
-    a_star.level_nm1[interp_index]     += a.level_nm1[idx_min + j]     * l_j_of_x_star[j];
-    a_star.level_n[interp_index]       += a.level_n[idx_min + j]       * l_j_of_x_star[j];
-    a_star.level_np1[interp_index]     += a.level_np1[idx_min + j]     * l_j_of_x_star[j];
-    /* alpha */
-    alpha_star.level_nm1[interp_index] += alpha.level_nm1[idx_min + j] * l_j_of_x_star[j];
-    alpha_star.level_n[interp_index]   += alpha.level_n[idx_min + j]   * l_j_of_x_star[j];
-    alpha_star.level_np1[interp_index] += alpha.level_np1[idx_min + j] * l_j_of_x_star[j];
+    phi_star[interp_index]   += phi[   idx_min + j] * l_i_of_x_star[j];
+    Phi_star[interp_index]   += Phi[   idx_min + j] * l_i_of_x_star[j];
+    Pi_star[interp_index]    += Pi[    idx_min + j] * l_i_of_x_star[j];
+    a_star[interp_index]     += a[     idx_min + j] * l_i_of_x_star[j];
+    alpha_star[interp_index] += alpha[ idx_min + j] * l_i_of_x_star[j];
   }
   
 }
 /* Bisection index finder */
-int utilities::bisection_index_finder( const vector<REAL> x, const REAL x_star ) {
+int utilities::bisection_index_finder( const realvec x, const real x_star ) {
 
   /* Set the size of x */
   int size_of_x = x.size();
@@ -383,13 +414,13 @@ int utilities::bisection_index_finder( const vector<REAL> x, const REAL x_star )
   int j2 = size_of_x-1;
 
   /* Find x1 and x2 */
-  REAL x1 = x_star - x[j1];
-  REAL x2 = x_star - x[j2];
+  real x1 = x_star - x[j1];
+  real x2 = x_star - x[j2];
 
   /* Check if x_star is indeed inside the interval [x1,x2] */
-  if( x1*x2 >= 0 ) {
-    cerr << "\n(bisection_index_finder ERROR) j1 = " << j1 << " | j2 = " << j2 << endl;
-    cerr << "(bisection_index_finder ERROR) x1 = " << x1 << " | x2 = " << x2 << " | x_star = " << x_star << endl;
+  if( x1*x2 > 0 ) {
+    cerr << setprecision(5) << "\n(bisection_index_finder ERROR) j1 = " << j1 << " | j2 = " << j2 << endl;
+    cerr << setprecision(5) << "(bisection_index_finder ERROR) x1 = " << x1 << " | x2 = " << x2 << " | x_star = " << x_star << endl;
     utilities::SFcollapse1D_error(BISECTION_INTERVAL_ERROR);
   }
 
@@ -400,7 +431,7 @@ int utilities::bisection_index_finder( const vector<REAL> x, const REAL x_star )
     const int  j_midpoint = 0.5*(j1 + j2);
 
     /* Compute x_star - x_{j_midpoint} */
-    const REAL x_midpoint = x_star - x[j_midpoint];
+    const real x_midpoint = x_star - x[j_midpoint];
     if( x_midpoint*x1 < 0 ) {
       j2 = j_midpoint;
       x2 = x_midpoint;
@@ -431,15 +462,15 @@ int utilities::bisection_index_finder( const vector<REAL> x, const REAL x_star )
 }
 
 /* Print parameter information to the user and to file */
-void utilities::parameter_information( grid::parameters grid ) {
+void utilities::parameter_information( const real phi0, grid::parameters grid ) {
 
   DECLARE_GRID_PARAMETERS;
 
   /* Compute information about the run to share with the user */
-  const REAL rmax = r_ito_x0[Nx0-1];
+  const real rmax = r_ito_x0[Nx0-1];
   int Nr_bet_01 = 0, Nr_bet_05 = 0;
   LOOP(0,Nx0Total) {
-    const REAL rlocal = r_ito_x0[j];
+    const real rlocal = r_ito_x0[j];
     if( rlocal < 1.0 ) Nr_bet_01++; // Counts points for which 0<r<1
     if( rlocal < 5.0 ) Nr_bet_05++; // Counts points for which 0<r<5
   }
@@ -480,23 +511,24 @@ void utilities::parameter_information( grid::parameters grid ) {
     cout << "Coordinate system: SinhSpherical" << endl;
 #endif
     cout << "Initial condition information:"   << endl;
-    cout << fixed      << setprecision(0) << "phi_{0}    = " << PHI0            << endl;
-    cout << fixed      << setprecision(0) << "r_{0}      = " << R0              << endl;
-    cout << fixed      << setprecision(0) << "delta      = " << DELTA           << endl;
+    cout << fixed      << setprecision(13) << "phi_{0}    = " << phi0            << endl;
+    cout << fixed      << setprecision(2)  << "r_{0}      = " << R0              << endl;
+    cout << fixed      << setprecision(2)  << "delta      = " << DELTA           << endl;
     cout << "\nRadial grid information:"       << endl;
-    cout << fixed      << setprecision(0) << "N_{r}      = " << Nx0             << endl;
-    cout << fixed      << setprecision(0) << "r_{max}    = " << rmax            << endl;
+    cout << fixed      << setprecision(0)  << "N_{r}      = " << Nx0             << endl;
+    cout << fixed      << setprecision(0)  << "r_{max}    = " << rmax            << endl;
+    cout << scientific << setprecision(5)  << "dr_{min}   = " << ds_min          << endl;
 #if( COORD_SYSTEM == SINH_SPHERICAL )
-    cout << fixed      << setprecision(2) << "sinhA      = " << sinhA           << endl;
-    cout << fixed      << setprecision(5) << "sinhW      = " << sinhW           << endl;
+    cout << fixed      << setprecision(2)  << "sinhA      = " << sinhA           << endl;
+    cout << fixed      << setprecision(5)  << "sinhW      = " << sinhW           << endl;
 #endif
-    cout << fixed      << setprecision(0) << "Points in 0<r<1: " << Nr_bet_01   << endl;
-    cout << fixed      << setprecision(0) << "Points in 0<r<5: " << Nr_bet_05   << endl;
+    cout << fixed      << setprecision(0)  << "Points in 0<r<1: " << Nr_bet_01   << endl;
+    cout << fixed      << setprecision(0)  << "Points in 0<r<5: " << Nr_bet_05   << endl;
     cout << "\nTime evolution information:"    << endl;
-    cout << fixed      << setprecision(0) << "N_{t}      = " << Nt              << endl;
-    cout << fixed      << setprecision(2) << "t_{final}  = " << t_final         << endl;
-    cout << scientific << setprecision(3) << "dt         = " << dt              << endl;
-    cout << fixed      << setprecision(2) << "CFL factor = " << CFL_FACTOR      << endl;
+    cout << fixed      << setprecision(0)  << "N_{t}      = " << Nt              << endl;
+    cout << fixed      << setprecision(2)  << "t_{final}  = " << t_final         << endl;
+    cout << scientific << setprecision(3)  << "dt         = " << dt              << endl;
+    cout << fixed      << setprecision(2)  << "CFL factor = " << CFL_FACTOR      << endl;
     cout << "\n";
 
     if( iter == 1 ) cout.rdbuf(coutbuf); // Reset to standard output again
@@ -504,6 +536,64 @@ void utilities::parameter_information( grid::parameters grid ) {
     iter++;
 
   }
+
+}
+
+/* Output the mass-aspect function */
+void utilities::compute_and_output_mass_aspect_function( const int which_level, const int n, const grid::parameters grid, const gridfunction a ) {
+
+  DECLARE_GRID_PARAMETERS;
+
+  /* Compute the mass aspect function based on which_level */
+  ofstream outfile;
+  const int number_of_digits = 8;
+  outfile.open("out/mass_"+string(number_of_digits - to_string(n).length(),'0')+to_string(n)+".dat");
+  outfile.precision(15);
+  LOOP(0,Nx0Total) {
+    const real a_local = (which_level == -1) * a.level_nm1[j] + (which_level == 0) * a.level_n[j] + (which_level == 1) * a.level_np1[j];
+    const real mass    = 0.5 * r_ito_x0[j] * ( 1.0 - 1.0/SQR(a_local) );
+    outfile << scientific << x[0][j] << " " << r_ito_x0[j]  << " " << mass << endl;
+  }
+  outfile.close();
+
+}
+
+/* Output central values (r=0) of the gridfunctions */
+void utilities::output_gridfunctions_central_values( const int n, const grid::parameters grid,
+						     const realvec phi, const realvec Phi, const realvec Pi, const realvec a, const realvec alpha ) {
+
+  DECLARE_GRID_PARAMETERS;
+
+  ofstream out_central;
+  if( t > 0.0 ) {
+    out_central.open("out_central_values.dat",ios_base::app);
+  }
+  else {
+    out_central.open("out_central_values.dat");
+  }
+
+  out_central << scientific << setprecision(15)
+	      << t        << " "
+	      << alpha[0] << " "
+	      << phi[0]   << " "
+	      << Phi[0]   << " "
+	      << Pi[0]    << " "
+	      << a[0]     << endl;
+
+  out_central.close();
+
+}
+
+/* Check whether or not a black hole has formed by checking whether or not the lapse has collapsed */
+bool utilities::check_for_collapse_of_the_lapse( const grid::parameters grid, const gridfunction alpha ) {
+
+  DECLARE_GRID_PARAMETERS;
+  
+  LOOP(0,Nx0Total) {
+    if( alpha.level_np1[j] < LAPSE_COLLAPSE_CRITERION ) return true;
+  }
+
+  return false;
 
 }
 
@@ -533,7 +623,7 @@ void utilities::SFcollapse1D_error( const int error ) {
     case SPHERICAL_USAGE_ERROR:
       cerr << "(SFcollapse1D ERROR) Incorrect usage of the program!\n";
       cerr << "(SFcollapse1D INFO) Spherical coordinates selected.\n";
-      cerr << "(SFcollapse1D INFO) Correct usage is: ./SFcollapse1D Nx Domain_size t_final\n";
+      cerr << "(SFcollapse1D INFO) Correct usage is: ./SFcollapse1D Nx Domain_size t_final phi0\n";
       cerr << "(SFcollapse1D INFO) Terminating the program...\n";
       exit(SPHERICAL_USAGE_ERROR);
       break;
@@ -541,7 +631,7 @@ void utilities::SFcollapse1D_error( const int error ) {
     case SINH_SPHERICAL_USAGE_ERROR:
       cerr << "(SFcollapse1D ERROR) Incorrect usage of the program!\n";
       cerr << "(SFcollapse1D INFO) SinhSpherical coordinates selected.\n";
-      cerr << "(SFcollapse1D INFO) Correct usage is: ./SFcollapse1D Nx Domain_size t_final sinhW\n";
+      cerr << "(SFcollapse1D INFO) Correct usage is: ./SFcollapse1D Nx Domain_size t_final sinhW phi0\n";
       cerr << "(SFcollapse1D INFO) Terminating the program...\n";
       exit(SINH_SPHERICAL_USAGE_ERROR);
       break;

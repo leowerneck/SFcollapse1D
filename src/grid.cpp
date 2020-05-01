@@ -25,7 +25,7 @@
 #include "macros.hpp"
 #include "grid.hpp"
 
-using namespace std;
+// using namespace std;
 
 /* As a reminder, the parameters class contains the following members (all public):
  * .------------------------------------------------------------------------------------------.
@@ -79,7 +79,7 @@ void grid::parameters::initialize_parameters(char *argv[]) {
   x0_min = 0.0;
 
   /* Set dx0,dx1,dx2 */
-  dx0 = (x0_max - x0_min)/((REAL)Nx0-1.0);
+  dx0 = (x0_max - x0_min)/((real)Nx0-1.0);
   /* Set inv_dx0,inv_dx1,inv_dx2 */
   inv_dx0 = 1.0/dx0;
   /* Set inv_dx0_sqrd,inv_dx1_sqrd,inv_dx2_sqrd */
@@ -140,18 +140,18 @@ void grid::parameters::initialize_parameters(char *argv[]) {
 }
 
 /* Spherical coordinates: x(r) and r(x) */
-REAL grid::compute_x_of_r( const REAL r ) {
+real grid::compute_x_of_r( const real r ) {
   return r;
 }
-REAL grid::compute_r_of_x( const REAL x ) {
+real grid::compute_r_of_x( const real x ) {
   return x;
 }
 
 /* SinhSpherical coordinates: x(r) and r(x) */
-REAL grid::compute_x_of_r( const REAL r, const REAL A, const REAL w ) {
+real grid::compute_x_of_r( const real r, const real A, const real w ) {
   return( w * asinh( sinh( 1.0/w ) / A * r ) );
 }
-REAL grid::compute_r_of_x( const REAL x, const REAL A, const REAL w ) {
+real grid::compute_r_of_x( const real x, const real A, const real w ) {
   return( A * sinh(x/w) / sinh(1.0/w) );
 }
 
@@ -159,7 +159,7 @@ REAL grid::compute_r_of_x( const REAL x, const REAL A, const REAL w ) {
  * | The compute_xyz_Cartesian() function |
  * .--------------------------------------.
  */
-void grid::compute_xyz_Cartesian(const REAL x0, const REAL x1, const REAL x2, REAL xyz[3]) {
+void grid::compute_xyz_Cartesian(const real x0, const real x1, const real x2, real xyz[3]) {
 
   /* Standard conversion from Spherical
    * to Cartesian coordinates:

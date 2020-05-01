@@ -33,19 +33,18 @@
 
 using namespace std;
 
-/* Function prototypes needed by this file */
-void initial_condition( grid::parameters grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha );
-
 int main( int argc, char *argv[] ) {
 
   /* Print logo to the user */
-#include "logo.hpp"
+// #include "logo.hpp"
 
   /* Check correct usage */
 #if( COORD_SYSTEM == SPHERICAL )
-  if( argc != 4 ) utilities::SFcollapse1D_error(SPHERICAL_USAGE_ERROR);
+  if( argc != 5 ) utilities::SFcollapse1D_error(SPHERICAL_USAGE_ERROR);
+  const real phi0 = atof(argv[4]);
 #elif( COORD_SYSTEM == SINH_SPHERICAL )
-  if( argc != 5 ) utilities::SFcollapse1D_error(SINH_SPHERICAL_USAGE_ERROR);
+  if( argc != 6 ) utilities::SFcollapse1D_error(SINH_SPHERICAL_USAGE_ERROR);
+  const real phi0 = atof(argv[5]);
 #endif
 
   /* Start the timer */
@@ -55,13 +54,13 @@ int main( int argc, char *argv[] ) {
   grid::parameters grid(argv);
   
   /* Print information about the run to the user */
-  utilities::parameter_information(grid);
+  utilities::parameter_information(phi0,grid);
 
   /* Declare all needed gridfunctions */
   gridfunction phi(grid.Nx0Total), Phi(grid.Nx0Total), Pi(grid.Nx0Total), a(grid.Nx0Total), alpha(grid.Nx0Total);
 
   /* Set the initial condition */
-  evolution::initial_condition( grid, phi, Phi, Pi, a, alpha );
+  evolution::initial_condition( phi0, grid, phi, Phi, Pi, a, alpha );
 
   /* Print information to the user */
   phi.output_to_file(grid,"scalarfield",-1,0);
@@ -69,7 +68,8 @@ int main( int argc, char *argv[] ) {
   Pi.output_to_file(grid,"Pi",-1,0);
   a.output_to_file(grid,"a",-1,0);
   alpha.output_to_file(grid,"alpha",-1,0);
-  evolution::compute_and_output_mass_aspect_ratio(-1,0,grid,a);
+  utilities::compute_and_output_mass_aspect_function(-1,0,grid,a);
+  // utilities::output_gridfunctions_central_values( 0, grid, phi.level_nm1, Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1 );
 
   /* The first time step is special, requires two half-integrations */
 
@@ -111,13 +111,13 @@ int main( int argc, char *argv[] ) {
   }
   /* Step 3.d: Now rescale alpha */
   evolution::rescaling_of_the_lapse(grid,a.level_n,alpha.level_n);
-
+  
   /* .-------------------------.
    * | Step 4: Update the time |
    * .-------------------------.
    */
   grid.t += 0.5 * grid.dt;
-    
+  
   /* Perform an integration step */
   /* .--------------------------------------------------------------.
    * | Step 1: Apply inner boundary conditions to Phi, a, and alpha |
@@ -126,7 +126,7 @@ int main( int argc, char *argv[] ) {
   Phi.level_np1[0]   = 0.0;
   a.level_np1[0]     = 1.0;
   alpha.level_np1[0] = 1.0;
-
+  
   /* .-----------------------------------.
    * | Step 2: Integrate phi, Phi and Pi |
    * .-----------------------------------.
@@ -140,7 +140,7 @@ int main( int argc, char *argv[] ) {
 						 phi.level_nm1, Pi.level_nm1,
 						 phi.level_n  , Phi.level_n  , a.level_n, alpha.level_n,
 						 phi.level_np1, Phi.level_np1, Pi.level_np1);
-
+  
   Pi.level_np1[0] = - Pi.level_n[0] + Pi.level_np1[1] + Pi.level_n[1];
   /* .-------------------------------.
    * | Step 3: Integrate a and alpha |
@@ -169,7 +169,19 @@ int main( int argc, char *argv[] ) {
   Pi.output_to_file(grid,"Pi",1,1);
   a.output_to_file(grid,"a",1,1);
   alpha.output_to_file(grid,"alpha",1,1);
-  evolution::compute_and_output_mass_aspect_ratio(1,1,grid,a);
+  utilities::compute_and_output_mass_aspect_function(1,1,grid,a);
+
+  /* Define the central density */
+  real max_central_density = 0.0;
+  {
+    const real central_Phi_sqrd = SQR( Phi.level_np1[0] );
+    const real central_Pi_sqrd  = SQR( Pi.level_np1[0]  );
+    const real central_a_sqrd   = SQR( a.level_np1[0]   );
+    const real central_density  = 0.5 * ( central_Phi_sqrd + central_Pi_sqrd ) / central_a_sqrd;
+    if( central_density > max_central_density) {
+      max_central_density = central_density;
+    }
+  }
 
   /* Now shift the time levels */
   phi.shift_timelevels(1);
@@ -179,6 +191,8 @@ int main( int argc, char *argv[] ) {
   alpha.shift_timelevels(1);
 
   int n = 2;
+
+  // bool lapse_collapsed = false;
 
   /* Begin evolving the ADM+EKG equations */
   while( grid.t < grid.t_final ) {
@@ -207,7 +221,6 @@ int main( int argc, char *argv[] ) {
 						   phi.level_np1, Phi.level_np1, Pi.level_np1);
 
     Pi.level_np1[0] = - Pi.level_n[0] + Pi.level_np1[1] + Pi.level_n[1];
-    
     /* .-------------------------------.
      * | Step 3: Integrate a and alpha |
      * .-------------------------------.
@@ -230,18 +243,39 @@ int main( int argc, char *argv[] ) {
     grid.t += grid.dt;
 
     /* Check whether or not a regrid is necessary */
-    if( n%REGRID_CHECKER_CHECKPOINT == 0 ) {
-      const bool need_to_regrid = utilities::check_regrid_criterion( grid, phi.level_np1 );
-      if( need_to_regrid == true ) {
-    	cout << "\n(SFcollapse1D INFO) Regridding at iteration " << n << endl;
-    	utilities::regrid( grid, phi, Phi, Pi, a, alpha );
-    	utilities::parameter_information(grid);
-      }
-    }
+    // if( n%REGRID_CHECKER_CHECKPOINT == 0 && grid.current_regrid_level < grid.max_regrid_levels ) {
+    // if( grid.current_regrid_level < grid.max_regrid_levels ) {
+    //   const bool need_to_regrid = utilities::check_regrid_criterion( grid, phi.level_np1 );
+    //   if( need_to_regrid == true ) {
+    // 	cout << "\n(SFcollapse1D INFO) Regridding at iteration " << n << endl;
+    // 	utilities::regrid( grid, phi, Phi, Pi, a, alpha );
+    // 	utilities::parameter_information(phi0,grid);
+    // 	n++;
+    //   }
+    // }
 
     /* Check for NaNs */
-    // if( n%NAN_CHECKER_CHECKPOINT == 0 ) utilities::NaN_checker( n, grid, phi, Phi, Pi, a, alpha );
-    utilities::NaN_checker( n, grid, phi, Phi, Pi, a, alpha );
+    if( n%NAN_CHECKER_CHECKPOINT == 0 ) utilities::NaN_checker( n, grid, phi, Phi, Pi, a, alpha );
+
+    /* Compute the central density */
+    const real central_Phi_sqrd = SQR( Phi.level_np1[0] );
+    const real central_Pi_sqrd  = SQR( Pi.level_np1[0]  );
+    const real central_a_sqrd   = SQR( a.level_np1[0]   );
+    const real central_density  = 0.5 * ( central_Phi_sqrd + central_Pi_sqrd ) / central_a_sqrd;
+    // cout << scientific << setprecision(15) << "\nCentral density: " << central_density << " | " << max_central_density << endl;
+    if( central_density > max_central_density ) {
+      max_central_density = central_density;
+    }
+
+    /* Check whether or not the lapse function has collapsed */
+    // if( grid.t > 5.2 )
+    //   if( utilities::check_for_collapse_of_the_lapse( grid, alpha ) ) {
+    // 	cout << "\n(SFcollapse1D INFO) The lapse function has collapsed!\n";
+    // 	cout <<   "(SFcollapse1D INFO) Iteration = " << n << " | t = " << setprecision(4) << grid.t << endl;
+    // 	cout <<   "(SFcollapse1D INFO) Stopping time integration...";
+    // 	// lapse_collapsed = true;
+    // 	break;
+    //   }
 
     /* Print information to the user */
     if( n%OUTPUT_CHECKPOINT == 0 ) {
@@ -250,8 +284,11 @@ int main( int argc, char *argv[] ) {
       Pi.output_to_file(grid,"Pi",1,n);
       a.output_to_file(grid,"a",1,n);
       alpha.output_to_file(grid,"alpha",1,n);
-      evolution::compute_and_output_mass_aspect_ratio(1,n,grid,a);
+      utilities::compute_and_output_mass_aspect_function(1,n,grid,a);
     }
+
+    /* Output central values */
+    // utilities::output_gridfunctions_central_values( n, grid, phi.level_np1, Phi.level_np1, Pi.level_np1, a.level_np1, alpha.level_np1 );
     
     /* Shift time levels appropriately */
     phi.shift_timelevels(2);
@@ -261,15 +298,36 @@ int main( int argc, char *argv[] ) {
     alpha.shift_timelevels(2);
 
     /* Print integration information to the user */
-    if( n%INFORMATION_CHECKPOINT == 0 ) INTEGRATION_INFO;
+    INTEGRATION_INFO;
 
     /* Update the iteration number */
     n++;
     
   }
 
-  cout << "(SFcollapse1D INFO) Program terminated without errors!\n";
-  
+  // Output max central density
+  // const real eta_weak   = 0.3364266156435;
+  // const real eta_strong = 0.3364266156436;
+  // const real phi0_c = 0.5*( eta_weak + eta_strong );
+  // ofstream out_central_density;
+  // out_central_density.open("max_central_density_values.dat",ios_base::app);
+  // out_central_density << scientific << setprecision(15)
+  // 		      << phi0                    << " "
+  // 		      << max_central_density     << " "
+  // 		      << phi0_c - phi0           << " "
+  // 		      << log(phi0_c - phi0)      << " "
+  // 		      << log(max_central_density) << endl;
+  // out_central_density.close();
+
+  cout << "\n(SFcollapse1D INFO) Program terminated without errors!\n";
+
+  // if( lapse_collapsed ) {
+  //   cout << setprecision(0) << "1\n";
+  // }
+  // else {
+  //   cout << setprecision(0) << "0\n";
+  // }
+
   return 0;
 
 }

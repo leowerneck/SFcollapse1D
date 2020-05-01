@@ -24,7 +24,6 @@
 
 /* Basic includes */
 #include <cmath>
-#include <vector>
 #include "macros.hpp"
 #include "grid.hpp"
 #include "gridfunction.hpp"
@@ -32,31 +31,28 @@
 namespace evolution {
 
   /* Function to set the initial condition for all gridfunctions: phi, Phi, Pi, a, and alpha */
-  void initial_condition( grid::parameters, gridfunction &, gridfunction &, gridfunction &, gridfunction &, gridfunction & );
+  void initial_condition( const real, grid::parameters, gridfunction &, gridfunction &, gridfunction &, gridfunction &, gridfunction & );
 
   /* Function to step phi, Phi, and Pi forward in time */
   void time_step_scalarfield_gridfunctions( const int, const grid::parameters,
-					    const std::vector<REAL>, const std::vector<REAL>, const std::vector<REAL>, const std::vector<REAL>, const std::vector<REAL>,
-					    const std::vector<REAL>, const std::vector<REAL>, const std::vector<REAL>, const std::vector<REAL>, 
-					    std::vector<REAL> &, std::vector<REAL> &, std::vector<REAL> & );
+					    const realvec, const realvec, const realvec, const realvec, const realvec,
+					    const realvec, const realvec, const realvec, const realvec, 
+					    realvec &, realvec &, realvec & );
 
   /* Function to apply outgoing radiation boundary conditions to phi, Phi, and Pi */
   void apply_outgoing_radiation_bdry_cond( const int, grid::parameters,
-					   const std::vector<REAL>, const std::vector<REAL>,
-					   const std::vector<REAL>, const std::vector<REAL>, const std::vector<REAL>, const std::vector<REAL>,
-					   std::vector<REAL> &, std::vector<REAL> &, std::vector<REAL> & );
+					   const realvec, const realvec,
+					   const realvec, const realvec, const realvec, const realvec,
+					   realvec &, realvec &, realvec & );
 
   /* Function to solve the Hamiltonian constraint */
-  REAL pointwise_solution_of_the_Hamiltonian_constraint( const int, grid::parameters, const std::vector<REAL>, const std::vector<REAL>, const std::vector<REAL> );
+  real pointwise_solution_of_the_Hamiltonian_constraint( const int, grid::parameters, const realvec, const realvec, const realvec );
 
   /* Function to solve the polar slicing condition */
-  REAL pointwise_solution_of_the_polar_slicing_condition( const int, grid::parameters, const std::vector<REAL>, const std::vector<REAL> );
+  real pointwise_solution_of_the_polar_slicing_condition( const int, grid::parameters, const realvec, const realvec );
 
   /* Function to perform the rescaling of the lapse function */
-  void rescaling_of_the_lapse( grid::parameters, const std::vector<REAL>, std::vector<REAL> & );
-
-  /* Function to compute and output the mass aspect ratio */
-  void compute_and_output_mass_aspect_ratio( const int, const int, const grid::parameters, const gridfunction );
+  void rescaling_of_the_lapse( grid::parameters, const realvec, realvec & );
 
 }
 
