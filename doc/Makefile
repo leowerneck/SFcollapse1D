@@ -29,8 +29,8 @@ doc: SFcollapse1D.tex SFcollapse1D.bib
 	@pdflatex SFcollapse1D.tex > /dev/null
 	@pdflatex SFcollapse1D.tex > /dev/null
 	@echo "cleaning up... \c"
-	@rm -rf *.log *.gz *.aux *.out *.bbl *.bcf *.blg *.xml *.toc *.lof *-converted-to.pdf *.eps
+	@rm -rf *.log *.gz *.aux *.out *.bbl *.bcf *.blg *.xml *.toc *.lof *.lot *-converted-to.pdf *.eps
 	@echo "done!"
 
 clean:
-	rm -rf *.log *.gz *.aux *.out *.bbl *.bcf *.blg *.xml *.toc *.lof *.pdf
+	rm -rf *.log *.gz *.aux *.out *.bbl *.bcf *.blg *.xml *.toc *.lof *.lot *.eps *.pdf

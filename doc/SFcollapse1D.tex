@@ -8,7 +8,7 @@
 % Load all necessary packages
 
 % Equation related packages
-\usepackage{amsmath,amssymb,xfrac}
+\usepackage{amsmath,amssymb,xfrac,bm}
 
 % Pseudocode package
 \usepackage[linesnumbered,lined,boxed]{algorithm2e}
@@ -21,6 +21,9 @@
 
 % Load setspace, which allow us to set the line spacing
 \usepackage{setspace}
+
+% Load multirow, for table manipulations
+\usepackage{multirow}
 
 % Load biblatex, useful for managing the references and citations
 \usepackage[backend=biber,natbib=true,style=numeric,sorting=none]{biblatex}
@@ -50,6 +53,7 @@
 \newcommand{\e}{\epsilon}
 \newcommand{\g}{\gamma}
 \newcommand{\s}{\sigma}
+\newcommand{\D}{\Delta}
 \newcommand{\gt}{\tilde{\gamma}}
 \newcommand{\gDD}[2]{\g_{{#1}{#2}}}
 \newcommand{\gUU}[2]{\g^{{#1}{#2}}}
@@ -150,11 +154,13 @@
 % Print the title
 \maketitle
 
-% Print the table of contents and list of figures
+% Print the table of contents, list of figures, and list of tables
 \ctr{\rule{\textwidth}{1pt}}
 \tableofcontents
 \ctr{\rule{\textwidth}{1pt}}
 \listoffigures
+\ctr{\rule{\textwidth}{1pt}}
+\listoftables
 \ctr{\rule{\textwidth}{1pt}}
 
 \spacing{1.5}
@@ -519,7 +525,7 @@ Since our equations are not covariant under the change of coordinates~\eqref{eq:
 
 \subsection{Structure of the evolution}
 
-The evolution of the EKG+ADM system of equations is relatively awkward since we are not allowed to use common (and simple) integrators that follow the \emph{method of lines}, such as RK4. The reason for this is that both the Hamiltonian constraint and the polar slicing conditions are \emph{elliptic} equations, while the EKG equations are \emph{hyperbolic} equations. Simply put, the EKG equations are equations that move $\Phi$ and $\Pi$ forward in time based on their values on previous time levels, while the Hamiltonian constraint and polar slicing condition solve for $a$ and $\a$, respectively, based on information on a \emph{single} time level. This makes the integration less efficient, particularly because the Hamiltonian constraint is a non-linear equation from which we are trying to determine $A^{n+1}_{j+1}$. This means that the equation must be solved on every single gridpoint using a Newton-Raphson solver, for example, which considerably slows down the evolution and complicates the numerical algorithm. The polar slicing condition is not as difficult, it is simply a linear equation that must be solved for $\a^{n+1}_{j+1}$ in terms of other known quantities, but also contributes to making the integration more difficult.
+The evolution of the EKG+ADM system of equations is relatively awkward since we are not allowed to use common (and simpler) integrators that follow, say, the \emph{method of lines}, such as a fourth-order Runge-Kutta (RK4) integrator. The reason for this is that both the Hamiltonian constraint and the polar slicing condition are \emph{elliptic} equations, while the EKG system is consisted of \emph{hyperbolic} equations. Simply put, the EKG system can be used to numerically evolve $\Phi$ and $\Pi$ forward in time based on their values on previous time levels, while the Hamiltonian constraint and polar slicing condition solve for $a$ and $\a$, respectively, based on information on a \emph{single} time level. This makes the integration less efficient, particularly because the Hamiltonian constraint is a non-linear equation from which we are trying to determine $A^{n+1}_{j+1}$. This means that the equation must be solved on every single gridpoint using a Newton-Raphson solver, for example, which considerably slows down the evolution and complicates the numerical algorithm. The polar slicing condition is not as difficult, it is simply an algebraic equation that must be solved for $\a^{n+1}_{j+1}$ in terms of other known quantities, but also contributes to making the integration more difficult.
 
 During the integration process, we have access to $\lrpar{\Phi,\Pi,a,\a}$ on all spatial points, on the time levels $n$ and $n-1$. This means that a typical integration step is carried out in the following way:
 
@@ -537,32 +543,33 @@ The summary above ignores quite a few implementation details, such as when and h
 
 \subsubsection{Inner boundary conditions}
 
-Let us first discuss inner boundary conditions, as these can be slightly more confusing to understand, specially since the arguments used by Choptuik are far more technical and obscure. Consider a function $f(t,r)$ which is spherically symmetric. Now what should be the behaviour of this function at $f(t,0)$? It is straightforward to see that, because of spherical symmetry,
+Consider a scalar function $f(t,r)$ which is spherically symmetric. Knowing only this is enough for us to imply conditions that this function must satisfy at the origin. For example, one of the consequences of spherical symmetry is that $f\lrpar{t,-r}=f\lrpar{t,r}$, which then imply that, in particular,
 
-\eq{ f\lrpar{t,-\dr} = f\lrpar{t,+\dr}\ , }
+\eq{ f\lrpar{t,-\dr} = f\lrpar{t,+\dr}\ . }
 
-\n which can then be rewritten as
+\n Then, we can rearrange this identity in the form of a boundary condition as
 
 \eq{ f\lrpar{t,+\dr} - f\lrpar{t,-\dr} = 0 \implies \left.\pd_{r}f(t,r)\right|_{r=0} = 0\ . }
 
-\n Notice that this is an \emph{inner} boundary condition, meaning that we are not really imposing anything, we are simply mapping the point $f\lrpar{t,-\dr}$ to another point in the grid, so that all points involved belong to the grid. Because we are imposing the boundary condition on the derivative of the fields, this is a \emph{Neumann boundary condition}. We will then demand that:
+\n Notice that this is an \emph{inner} boundary condition which is accurate to second-order in $\dr$. A characteristic of inner boundary conditions is that we simply map a point at the boundary to another point from the grid itself. Since we are imposing the boundary condition on the derivative of the function, this is a \emph{Neumann boundary condition}. Since our primary evolved variables are all scalars, they must satisfy
 
 \al{
   \left.\pd_{r}\phi\right|_{r=0} = 0\ ,\\
-  \left.\pd_{r}\a\right|_{r=0} = 0\ .
+  \left.\pd_{r}\a\right|_{r=0} = 0\ ,\\
+  \left.\pd_{r}a\right|_{r=0} = 0\ .
 }
 
-\n The first of these conditions must be translated in terms of $\Phi$ and $\Pi$. We impose
+\n From the definitions of $\Phi$ and $\Pi$, combined with the boundary conditions above, $\Phi$ and $\Pi$ must obey
 
 \eq{
   \Phi(t,0) = 0\ ,\ \left.\pd_{r}\Pi\right|_{r=0} = 0\ .
 }
 
-For the metric quantity $a(t,r)$, on the other hand, we must impose a different kind of boundary condition. This boundary condition is a direct consequence of our radial gauge, which, as mentioned before, ensures that a sphere of radius $r$ has proper area $4\pi r^{2}$, and is given by
+The radial metric quantity $a(t,r)$, on the other hand, is contrained at the origin due to our gauge choice. As mentioned before, the polar/radial gauge ensures that a sphere of radius $r$ has proper area $4\pi r^{2}$, and imposes the contraint
 
 \eq{ a(t,0) = 1\ . }
 
-\n This is a relatively strange boundary condition, which can be viewed as the so-called ``elementary flatness condition'', which demands that the spacetime is free of conical singularities at the origin.
+\n This is the so-called ``elementary flatness condition'', which demands that the spacetime is free of conical singularities at the origin. To ensure that our gauge choice is preserved throughout the entire numerical evolution, the elementary flatness condition is implemented instead of the Neumann condition.
 
 \parbox{4: EKG+ADM -- Inner boundary conditions}{
   For the EKG+ADM system, we apply the following \emph{inner} boundary conditions:
@@ -576,7 +583,7 @@ For the metric quantity $a(t,r)$, on the other hand, we must impose a different 
 
 \subsubsection{Outer boundary conditions}
 
-The outer boundary of our computational domain, located at $r=r_{\max}$, with $r_{\max}$ a user specified parameter, has to be treated carefully because using our centered finite difference stencils would require using points \emph{outside} our grid. At this point, then, we will change the finite difference approximation to \emph{backwards} finite difference stencils, namely
+The outer boundary of our computational domain, located at $r=r_{\max}$, with $r_{\max}$ a user specified parameter, has to be treated carefully because using our centered finite difference stencils would require using points \emph{outside} our grid. Instead, we adapt our discretization scheme so that we use \emph{backwards} finite difference stencils \emph{at the outermost radial point}, namely
 
 \eq{
   \spl{
@@ -599,7 +606,14 @@ For the scalar field, we will impose \emph{outgoing radiation boundary condition
 
 \n where the index $J$ corresponds to $r_{\max}$. Note that this is also a $\order{\dr^{2}+\dt}{2}$ approximation.
 
-The desired boundary condition for $\a$ is that $\lim_{r\to r_{\max}}\a\to 1$, i.e. asymptotic flatness. To obtain this, we must also consider our inner boundary condition $\left.\pd_{r}\a\right|_{r=0}=0$. Note that this condition can be interpretedd as implying that
+The desired outer boundary conditions for $a$ and $\a$ are
+
+\al{
+  \lim_{r\to \infty}a  &\to 1\ ,\\
+  \lim_{r\to \infty}\a &\to 1\ ,
+}
+
+\n i.e. asymptotic flatness. To obtain this, we must also consider our inner boundary condition $\left.\pd_{r}\a\right|_{r=0}=0$. Note that this condition can be interpreted as implying that
 
 \eq{ \alpha(t,0) = C\ , }
 
@@ -642,7 +656,7 @@ The initial condition for the scalar field is
   \label{eq:initial_condition_1}
 }
 
-\n Typically the parameters $r_{0}$ and $\d$ are fixed, while the parameter $\eta$, the amplitude of the initial pulse, varies on different runs of the code. This is the parameter $p$ we mentioned, for which we wish to find the critical value $p^{*}=\eta_{*}$ that separates solutions with black hole formation from those with total dispersion.
+\n Typically the parameters $r_{0}$ and $\d$ are fixed, while the parameter $\eta$, the amplitude of the initial pulse, varies on different runs of the code. This is the parameter $p$ we mentioned when discussing Choptuik's results, for which we wish to find the critical value $p^{*}=\eta_{*}$ that separates solutions with black hole formation from those with total dispersion.
 
 In terms of $\Phi$ and $\Pi$, the inital condition reads
 
@@ -656,16 +670,16 @@ In terms of $\Phi$ and $\Pi$, the inital condition reads
 
 \n To obtain the initial values of $a$ and $\a$ we must solve the constraints.
 
-Although we have shown the initial data used by Matt Choptuik in his PhD thesis~\cite{Choptuik_1986} and his original work~\cite{PhysRevLett.70.9}, we will choose different values for the free parameters $\lrpar{r_{0},\d}$. As pointed out by Thomas Baumgarte~\cite{Baumgarte_private}, Choptuik's choice for $\lrpar{r_{0},\d}$ lead to initial conditions which are ill-defined at the origin, as illustrated in figure~\ref{fig:origin_problem}. The radial derivative of the scalar field, $\Phi=\pd_{r}\phi$, does not go smoothly to zero at the origin, but has a ``kink'' instead. This is a consequence of imposing Neumann boundary conditions at the origin, but having an initial condition which is incompatible with this boundary condition when $r_{0}\neq 0$.
+Although we will use the same form of the initial data used by Matt Choptuik in his PhD thesis~\cite{Choptuik_1986} and his original work~\cite{PhysRevLett.70.9}, we will choose different values for the free parameters $\lrpar{r_{0},\d}$. As pointed out by Thomas Baumgarte~\cite{Baumgarte_private}, Choptuik's choice for $\lrpar{r_{0},\d}$ lead to initial conditions which are ill-defined at the origin, as illustrated in figure~\ref{fig:origin_problem}. The radial derivative of the scalar field, $\Phi=\pd_{r}\phi$, does not go smoothly to zero at the origin, but has a ``kink'' instead. This is a consequence of imposing Neumann boundary conditions at the origin, but having an initial condition which is incompatible with this boundary condition when $r_{0}\neq 0$.
 
 \begin{figure}[H]
   \centering
   \input{resources/origin_problem.tex}
-  \caption[Problem with the initial condition at the origin.]{This figures shows the problem with the initial condition set by Choptuik in his original studies. There is a kink in the first derivative of the scalar field at the origin, namely the variable $\Phi$.}
+  \caption[Problem with the initial condition at the origin.]{This figures shows the problem with the initial condition~\eqref{eq:initial_condition_2} when $r_{0}\neq0$. This initial condition uses the parameters $\eta=0.1$, $r_{0}=20$, and $\d=5$. There is a kink in the first derivative of the scalar field at the origin, namely the variable $\Phi$.}
   \label{fig:origin_problem}
 \end{figure}
 
-Baumgarte has proposed a fix which he has already used himself in his studies of gravitational collapse of massless scalarfields~\cite{Baumgarte_2018}. It is a very simple fix, which consists of changing the parameters $r_{0}$ and $\delta$ appropriately. The simplest approach is to set $r_{0}=0$ and $\d=1$, which then results in the initial condition
+Baumgarte has proposed a fix which he has already used himself in his studies of gravitational collapse of massless scalar fields~\cite{Baumgarte_2018}. It is a very simple fix, which consists of changing the parameters $r_{0}$ and $\delta$ appropriately. The simplest approach is to set $r_{0}=0$ and $\d=1$, which then results in the initial condition
 
 \eq{
   \spl{
@@ -676,11 +690,23 @@ Baumgarte has proposed a fix which he has already used himself in his studies of
   \label{eq:initial_condition_new}
 }
 
-\n This condition then guarantees that $\Phi$ is both zero and smooth at the origin. Alternatively, one could multiply $\phi(0,r)$ by $r^{n}$ with $n\geq2$, which then also guarantees that $\phi(0,r=0)=0$.
+\n This condition then guarantees that $\Phi$ is both zero and smooth at the origin. Alternatively, one could multiply $\phi(0,r)$ by $r^{n}$ with $n\geq2$, which then also guarantees that $\Phi(0,r=0)=0$.
 
 \subsection{The {\tt SFcollapse1D} code}
 
-Here is what {\tt SFcollapse1D} does in pseudocode:
+We now discuss our specific implementation of this problem in the {\tt SFcollapse1D} code. Algorithm~\ref{alg:SFcollapse1D} shows the the pseudocode of {\tt SFcollapse1D}.
+
+Some extra features of the code which are not discussed in the pseudocode are:
+
+\begin{itemize}
+  \item \textbf{Collapse of the lapse}: the code periodically checks whether or not the lapse function $\a$ has dropped below a user-specified threshold $\e_{\a}$. When the criterion $\a<\e_{\a}$ is met, the code interupts the time integratiion and characterizes the run as being in the strong field regime. We are able to infer this because around the singularity we have $\a \to 0$, which is known as the \emph{freezing of the lapse} or \emph{collapse of the lapse}.
+
+  \item \textbf{NaN checker}: the code also periodically checkes whether or not any of the evolved functions, $\lrpar{\phi,\Phi,\Pi,a,\a}$, have become NaN, ending the run if that is the case.
+
+  \item \textbf{Run information}: integration progress is constantly printed so that the user is able to track how much of the run has already been completed. The program also shows the time elapsed during the run and estimates the amount of time required to complete the run.
+
+  \item \textbf{Central values}: \emph{Central values} (i.e. values at $r=0$) of certain quantities, such as $\phi$, $\a$, and $\rho$, the energy density, are periodically outputted so that we can study critical phenomena.
+\end{itemize}
 
 \begin{algorithm}[H]
   \scriptsize
@@ -738,7 +764,7 @@ Here is what {\tt SFcollapse1D} does in pseudocode:
     }
   }
   \caption{The {\tt SFcollapse1D} program's pseudocode.}
-  \label{alg:SFcollapse1D}  
+  \label{alg:SFcollapse1D}
 \end{algorithm}
 
 \subsection{Results}
@@ -751,7 +777,9 @@ Throughout this section we fix the parameters $r_{0}=0$ and $\d=1$, so that $\et
 
 \eq{a^{2}(t,r) \equiv \frac{1}{1 - \frac{2M(t,r)}{r}} \implies M(t,r) = \frac{r}{2}\lrsquare{1 - \frac{1}{a^{2}(t,r)}}\ .}
 
-The weak field regime is obtained by setting $\eta$ to a small value.\footnote{A natural question is then ``small when compared to what''? The answer to this question is meant to be ``small when compared to $\eta_{*}$'', but even that is not really satisfactory since 1) we do not know $\eta_{*}$ \emph{a priori} and 2) even if we are given $\eta_{*}$ it is not obvious how to choose $\eta$. Indeed, the best answer to this question is that we empirically determine the value of $\eta$ by finding a solution that produces a spacetime which is almost flat throughout the entire run.} In the run whose results are presented in figures~\ref{fig:phi_weak},~\ref{fig:alpha_weak}, and~\ref{fig:mass_weak}, we have set $\eta=0.05$. In this regime, the metric quantities $\a$ and $a$ differ at most $\sim2\%$ from flat space, the deviation being more prominent for the lapse than the radial metric. Because of this, the backreaction from the geometry on the scalar field is negligible and we see it propagating as if it was not coupled to gravity at all, i.e. just a simple scalar wave in spherical coordinates.
+\n The mass-aspect function computes the amount of mass/energy inside a sphere of radius $r$. In the limit $r\to\infty$, we have $M\to M_{\rm ADM}$, the ADM mass.
+
+The weak field regime is obtained by choosing a value of $\eta$ which is smaller than the critical value $\eta_{*}$, and is characterized by full dispersiion. To illustrate the weak regime, we have empirically determined a value of $\eta$ that results in a spacetime which is almost flat throughout the entire run. In the run whose results are presented in figures~\ref{fig:phi_weak},~\ref{fig:alpha_weak}, and~\ref{fig:mass_weak}, we have set $\eta=0.05$. It can be seen that the metric quantities $\a$ and $a$ differ at most $\sim2\%$ from flat space, the deviation being more prominent for the lapse than the radial metric. Because of this, the backreaction from the geometry on the scalar field is negligible and we see it propagating as if it was not coupled to gravity at all, i.e. just a simple scalar wave in spherical coordinates.
 
 \begin{figure}[H]
   \centering
@@ -774,11 +802,11 @@ The weak field regime is obtained by setting $\eta$ to a small value.\footnote{A
   \label{fig:mass_weak}
 \end{figure}
 
-For the strong field results we have set $\eta=0.6$. This regime is characterized by total collapse, meaning that the scalar field energy is strong enough to curve spacetime to the point where a singularity emerges. If the rresolution of the run is sufficiently high, it is possible to prevent the simulation from crashing immediately after black hole formation. However, our resolution was not enough to keep this from happening nor from preventing that energy ``leaked'' out of the black hole interior after its formation.
+The strong field regime is obtained by choosing a value of $\eta$ which is larger than the critical value $\eta_{*}$, and is characterized by the gravitational collapse of the scalar field which leads to black hole formation. For the results presented in figures~\ref{fig:phi_strong},~\ref{fig:alpha_strong}, and~\ref{fig:mass_strong} we have set $\eta=0.6$. After a black hole forms, the code eventually crashes. The better the region around the black hole horizon, which can be determined by checking where $\frac{2M}{r}\approx1$, is resolved, the longer it will take for the code to crash, and the better we can estimiate the mass of the black hole and the horizon position. Our resolution was just high enough to keep to simulation from crashing immediately after black hole formation, but certainly our grid choice was not the best to resolve the horizon, as our grid is more densily sampled around $r\approx0$, not around $r\approx r_{\rm horizon}$.
 
-The lapse function goes to zero\footnote{In the actual code the lapse reaches a very small value, below $10^{-3}$ for example, which is enough for us to characterize black hole formation.} in this regime, which is a statement that around that region there is virtually no proper time being elapsed between one hypersurface of constant time and the next. This is known as the \emph{freezing of the lapse function}, and is a very useful feature to detect black hole formation.
+The lapse function goes to zero\footnote{In the actual code the lapse reaches a very small value, below $10^{-3}$ for example, which is enough for us to characterize black hole formation.} in this regime, which tells us that around that region there is virtually no proper time being elapsed between one hypersurface of constant time and the next. This is known as the \emph{freezing of the lapse function}, and is a very useful feature to detect black hole formation.
 
-The strong field regime results are presented in figures~\ref{fig:phi_strong},~\ref{fig:alpha_strong}, and~\ref{fig:mass_strong}. Figure~\ref{fig:phi_strong} shows clearly that no time is passing for the scalar field after it collapses, since its evolution gets frozen. The freezing of the lapse function is evident in figure~\ref{fig:alpha_strong}, while the mass of the black hole formed (in code units) can be seen as the plateau of the function $m(t,r)$ in figure~\ref{fig:mass_strong}.
+Figure~\ref{fig:phi_strong} shows clearly that no time is passing for the scalar field after it collapses, since its evolution gets frozen. The freezing of the lapse function is evident in figure~\ref{fig:alpha_strong}, while the mass of the black hole formed (in code units) can be seen as the plateau of the function $M(t,r)$ in figure~\ref{fig:mass_strong}, and its value is $M_{\rm BH}\approx0.473$.
 
 \begin{figure}[H]
   \centering
@@ -803,8 +831,6 @@ The strong field regime results are presented in figures~\ref{fig:phi_strong},~\
 
 \subsubsection{Critical phenomena}
 
-
-
 \begin{figure}[H]
   \centering
   \input{resources/critical_lapse_best.tex}
@@ -812,24 +838,179 @@ The strong field regime results are presented in figures~\ref{fig:phi_strong},~\
   \label{fig:critical_alpha_best}
 \end{figure}
 
+The central energy density is then expected to have the behaviour
+
+\eq{
+\ln\lrpar{\rho^{\rm max}_{\rm central}} = C - 2\g\ln\lrpar{z} + A\sin\lrpar{\omega z + \varphi}\ ,\label{eq:fit_critical_exponent}
+}
+
+\n where $\g$ is the critical exponent, $\omega$ is the angular frequency of the oscillations, $\varphi$ the oscillation phase and $C$ and $A$ constants. The variable $z$ is defined as
+
+\eq{
+  z \equiv \ln\abs{\eta_{*}-\eta}\ ,
+}
+
+\n and $\eta<\eta_{*}$, since we are only evolving subcritical data. The angular frequency $\omega$ is related to the logarithmic period $\D$ via the relation
+
+\eq{
+  \omega = \frac{4\pi\g}{\D}\ ,\label{eq:universal_period_ito_omega}
+}
+
+\n and the oscillations are conjectured to have the universal oscillation period~\cite{PhysRevD.55.R440}
+
+\eq{
+  T = \frac{\D}{2\g} \approx 4.6\ .
+}
+
+To fit the numerical data with equation~\eqref{eq:fit_critical_exponent}, we fit the linear and oscillatory behaviours of $\ln\lrpar{\rho^{\rm max}_{\rm central}}$ separately. First, we drop the oscillatory term altogether and assume the original power law behaviour discovered by Choptuik
+
+\eq{
+  \rho^{\rm max}_{\rm central} \propto \abs{\eta_{*}-\eta}^{-2\g}\ ,
+}
+
+\n which results in the relation
+
+
+\eq{
+  \ln\lrpar{\rho^{\rm max}_{\rm central}} = C - 2\g\ln\abs{\eta_{*}-\eta}\ .\label{eq:fit_critical_exponent_linear}
+}
+
+\n We then use~\eqref{eq:fit_critical_exponent_linear} to obtain the parameters $\eta_{*}$, $\g$, and $C$ using {\tt SciPy}~\cite{2020SciPy-NMeth}. Having determined the linear behaviour of the function, we compute
+
+\eq{
+g(z) \equiv \ln\lrpar{\rho^{\rm max}_{\rm central}} - C + 2\g\ln(z)\ ,
+}
+
+\n using the known values of $\eta_{*}$, $\g$, and $C$ and the numerical data. We then expect that that the data points $g(z)$ can be well approximated by the oscillatory function in equation~\eqref{eq:fit_critical_exponent}. To determine the remaining fit parameters, we first perfom an estimate of $T_{\rm data}$, the period of oscillation of the energy density data. This was done by plotting $g(z)$ and visually estimating the value of $T_{\rm data}$. This analysis allowed us to estimate $T_{\rm data}\approx4.6$, in agreement with~\cite{PhysRevD.55.R440}. The value of $\omega$ was then computed from the period, allowing us to impose reliable bounds to the possible values of the angular frequency. Figure~\ref{fig:critical_exponent_oscillation} shows how we determined $T_{\rm data}$ and that the oscillatory function in equation~\eqref{eq:fit_critical_exponent} is adequate to approximate $g(z)$.
+
+\begin{figure}[H]
+  \centering
+  \input{resources/critical_exponent_oscillation.tex}
+  \caption[Visual estimation of the oscillation period and fit.]{Visual estimation of the oscillation period (left) and fitting result (right). On the left panel, the vertical dashed lines are equally spaced with $\D z = 2.3$ and starting at $z=-28$. This allows us to visually estimate the period of oscillation to be $T_{\rm data}\approx4.6$, as expected. With this estimate of $T_{\rm data}$, we compute $\omega = \frac{2\pi}{T_{\rm data}}$ and use the value obtained to restringe our search for the fitting value of $\omega$. The function $A\sin\lrpar{\omega z+\varphi}$ is then used to fit the data points, and the result is displayed on the right panel. The values of $A$, $\omega$, and $\varphi$ are presented in table~\ref{tab:fit_critical_exponent}.}
+  \label{fig:critical_exponent_oscillation}
+\end{figure}
+
+Having found all the fitting parameters, whose values are shown in table~\ref{tab:fit_critical_exponent}, we use equation~\eqref{eq:fit_critical_exponent} to fit the numerical data. The result of this fit is presented in figure~\ref{fig:critical_exponent}. We emphasize that the parameter values obtained are in excellent agreement with the literature~\cite{PhysRevLett.70.9,Baumgarte_2018,PhysRevD.55.R440,PhysRevD.92.084037}.
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{cccccc}
+    \hline
+    \hline
+    $\g$ & $\omega$ & $\D$~\eqref{eq:universal_period_ito_omega} & $C$ & $A$ & $\varphi$\\
+    \hline
+    0.374 & 1.36 & 3.47 & -2.54 & 0.304 & 1.96\\
+    \hline
+    \hline
+  \end{tabular}
+  \caption[Fit parameters for the behaviour of the central energy density in a serries of subcritical runs.]{Fit parameters obtained for equation~\eqref{eq:fit_critical_exponent} in a series of subcritical runs. The value of $\D$ has been computed using~\eqref{eq:universal_period_ito_omega}.}
+  \label{tab:fit_critical_exponent}
+\end{table}
+
 \begin{figure}[H]
   \centering
   \input{resources/critical_exponent.tex}
-  \caption[Critical exponent behaviour for subcritical data.]{Critical exponent behaviour for several subcritical data runs. The plot shows the maximum central density as a function of the logarithmic difference of the critical parameter $\eta_{*}$ and the run parameter $\eta$. The fitting function chosen was $\rho^{\rm max}_{\rm central} \sim \left|\eta_{*}-\eta\right|^{-2\gamma}$, resulting in the critical exponent $\gamma\approx0.3746$, in excellent agreement with the literature.}
-  \label{fig:critical_alpha_best}
+  \caption[Central energy density near criticality.]{The plot shows the maximum central density for several subcritical runs. The critical exponent $\gamma\approx0.374$, oscillation period $T_{\rm data}\approx4.6$, and logarithmic oscillation period $\D\approx3.47$, obtained using the fitting function~\eqref{eq:fit_critical_exponent}, are all in excellent agreement with the literature.}
+  \label{fig:critical_exponent}
+\end{figure}
+
+We now show how the scalar field behaves near criticality. We start by computing the proper time, $\tau$, which in terms of the coordinate time, $t$, is given by
+
+\eq{
+  \tau(t) = \int_{0}^{t}\a\lrpar{t^{\prime}}dt^{\prime}\ .
+}
+
+\n Since we are interested in central values, we only need to evaluate the proper time at the origin. In practice, we evaluated it using
+
+\eq{
+  \tau_{n} = \left\{
+  \begin{matrix}
+    0 & \text{, if } n=0\\
+    \tau_{n-1} + \left(t_{n}-t_{n-1}\right)\lrpar{\frac{\alpha^{n}_{0}+\alpha^{n-1}_{0}}{2}} & \text{, if } n\neq0
+  \end{matrix}
+  \right.\ ,
+}
+
+\n where $\tau_{n}\equiv\tau(t_{n})$ and $t_{n}\equiv n\cdot\dt$. The behaviour of the scalar field as a function of proper time is displayed in figure~\ref{fig:accumulation_tau}.
+
+We now define the logarithmic time variable
+
+\eq{
+  \Lambda \equiv -\ln\lrpar{\tau_{*}-\tau}\ ,\label{eq:log_proper_time}
+}
+
+\n where $\tau_{*}$ is referred to as the \emph{accumulation time}. Now let $\tau_{n}$ represent the number of times $\phi_{\rm central}$ crosses zero throughout the simulation. Consider still two pairs of crossings $\lrpar{\tau_{n},\tau_{n+1}}$ and $\lrpar{\tau_{m},\tau_{m+1}}$ and assume that \emph{in the logarithmic time} $\Lambda$ these two pair of points correspond to the same half-period of oscillation $\frac{\D}{2}$, i.e.
+
+\eq{
+  \Lambda_{n+1}-\Lambda_{n} = \frac{\D}{2} = \Lambda_{m+1}-\Lambda_{m}\ ,\label{eq:lambda_diff}
+}
+
+\n where $\Lambda_{n} \equiv \Lambda\lrpar{\tau_{n}}$. From equations~\eqref{eq:log_proper_time} and~\eqref{eq:lambda_diff} we can estimate the accumulation time $\tau_{*}$ using
+
+\eq{
+  \ln\lrpar{\frac{\tau_{*}-\tau_{n}}{\tau_{*}-\tau_{n+1}}} = \ln\lrpar{\frac{\tau_{*}-\tau_{m}}{\tau_{*}-\tau_{m+1}}} \implies \tau_{*} = \frac{\tau_{n}\tau_{m+1}-\tau_{m}\tau_{n+1}}{\tau_{n}-\tau_{n+1}-\tau_{m}+\tau_{m+1}}\ . \label{eq:tau_star}
+}
+
+Using the same train of thought, we can use a single pair $\lrpar{\tau_{n},\tau_{n+1}}$ to estimate the period $\D$ using
+
+\eq{
+  \frac{\D}{2} = -\lrsquare{\ln\lrpar{\tau_{*}-\tau_{n+1}} - \ln\lrpar{\tau_{*}-\tau_{n}}} \implies \D = 2\ln\lrpar{ \frac{\tau_{*}-\tau_{n}}{\tau_{*}-\tau_{n+1}} }\ .\label{eq:Delta_method2}
+}
+
+
+%% tau = 0.625914 | diff = 0.483540 | Lambda = 0.504722  | Diff(0,1) = 0.483540 | Delta(0,1) = 3.23
+%% tau = 1.109454 | diff = 0.098750 | Lambda = 2.119155  | Diff(1,2) = 0.098750 | Delta(1,2) = 3.45
+%% tau = 1.208204 | diff = 0.017499 | Lambda = 3.845173  | Diff(2,3) = 0.017499 | Delta(2,3) = 3.41
+%% tau = 1.225703 | diff = 0.003190 | Lambda = 5.550879  | Diff(3,4) = 0.003190 | Delta(3,4) = 3.44
+%% tau = 1.228893 | diff = 0.000565 | Lambda = 7.273271  | Diff(4,5) = 0.000565 | Delta(4,5) = 3.37
+%% tau = 1.229458 | diff = 0.000106 | Lambda = 8.958907  | Diff(5,6) = 0.000106 | Delta(5,6) = 3.46
+%% tau = 1.229564 | diff = 0.000054 | Lambda = 10.689805 |                      | Delta(avg) = 3.43
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{c|ccccccc}
+    \hline
+    \hline
+    $n$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$\\
+    \hline
+    $\tau_{n}$ & 0.625914 & 1.109454 & 1.208204 & 1.225703 & 1.228893 & 1.229458 & 1.229564\\
+    $\Lambda_{n}$ & 0.504722 & 2.119155 & 3.845173 & 5.550879 & 7.273271 & 8.958907 & 10.689805\\
+    \hline
+    \hline
+    \multirow{2}{*}{Eq.~\eqref{eq:Delta_method2}} & $\D_{0,1}$ & $\D_{1,2}$ & $\D_{2,3}$ & $\D_{3,4}$ & $\D_{4,5}$ & $\D_{5,6}$ & $\D_{\rm avg}$\\
+    \cline{2-8}
+    & 3.23 & 3.45 & 3.41 & 3.44 & 3.37 & 3.46 & 3.43\\
+    \hline
+    \hline
+  \end{tabular}
+  \caption[Values of proper time and logarithmic proper time used to estimate the universal oscillation period $\D$.]{Values of proper time, $\tau$, and logarithmic proper time, $\Lambda$, for which the scalar field crosses zero. From these values we compute the period $\Delta$ using equation~\eqref{eq:Delta_method2}. The notation $\Delta_{n,n+1}$ indicates which pair $\lrpar{\tau_{n},\tau_{n+1}}$ was used to estimate $\Delta$. The average value $\D_{\rm avg}$ does not take into account $\D_{0,1}$ because we noticed that the scalar field was still transitioning to the critical regime.}
+  \label{tab:accumulation_time}
+\end{table}
+
+\begin{figure}[ht]
+  \centering
+  \input{resources/accumulation_tau.tex}
+  \caption[Central value of the scalar field, $\phi_{\rm central}$, near criticality as a function of proper time, $\tau$.]{Central value of the scalar field, $\phi_{\rm central}$, near criticality as a function of proper time, $\tau$.}
+  \label{fig:accumulation_tau}
+\end{figure}
+
+\begin{figure}[htt]
+  \centering
+  \input{resources/accumulation_Lambda.tex}
+  \caption[Central value of the scalar field, $\phi_{\rm central}$, near criticality as a function of logarithmic proper time, $\Lambda$.]{Same as figure~\ref{fig:accumulation_tau}, but the $x$-axis is now the logarithmic proper time $\Lambda\equiv-\ln\lrpar{\tau_{*}-\tau}$. The accumulation time, $\tau_{*}$, was determined as the average value obtained from equation~\eqref{eq:tau_star} after using all possible pairs $\lrpar{\tau_{n},\tau_{n+1}}$ for which the scalar field was already in the critical regime. The figure also displays the number of times the central value of the scalar field changes sign over the evolution. The average oscillation period was estimated to be $\D \approx 3.43$, in agreement with the literature. We also observe that the central value of the scalar field oscillates in the interval $\lrpar{-0.61,0.61}$, consistent with what was found in~\cite{PhysRevLett.70.9,PhysRevD.92.084037,Baumgarte_2018}.}
+  \label{fig:accumulation_Lambda}
 \end{figure}
 
 \begin{figure}[H]
   \centering
   \input{resources/critical_lapse.tex}
-  \caption[$\alpha_{\rm central}$ results near criticality.]{$\alpha_{\rm central}$ results near criticality. The results below have been found by first finding initial values that result in full dispersal and black hole formation, respectively, and then fine tuning the value of $\eta$ using bisection. The simulation parameters used were $N_{r}=960$, $w=0.11$, and $r_{\max}=16$. Note that we have fine-tuned the critical parameter to $\d\eta\sim10^{-10}$.}
+  \caption[$\alpha_{\rm central}$ results near criticality using a different grid setup.]{$\alpha_{\rm central}$ results near criticality using a different grid setup. The simulation parameters used were $N_{r}=960$, $w=0.11$, and $r_{\max}=16$. Note that we have fine-tuned the critical parameter to $\d\eta\sim10^{-10}$.}
   \label{fig:critical_alpha}
 \end{figure}
 
 \begin{figure}[H]
   \centering
   \input{resources/critical_lapse_new.tex}
-  \caption[$\alpha_{\rm central}$ results near criticality using a different grid setup.]{$\alpha_{\rm central}$ results near criticality using a different grid setup. The simulation parameters used were $N_{r}=320$, $w=0.09$, and $r_{\max}=16$. Note that we have fine-tuned the critical parameter to $\d\eta\sim10^{-11}$.}
+  \caption[$\alpha_{\rm central}$ results near criticality using yet another grid setup.]{$\alpha_{\rm central}$ results near criticality using yet another grid setup. The simulation parameters used were $N_{r}=320$, $w=0.09$, and $r_{\max}=16$. Note that we have fine-tuned the critical parameter to $\d\eta\sim10^{-11}$.}
   \label{fig:critical_alpha_new}
 \end{figure}
 
