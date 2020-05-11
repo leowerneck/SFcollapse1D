@@ -23,8 +23,8 @@ set terminal epslatex
 set output "resources/critical_exponent.tex"
 
 # Set axis ranges
-set xrange [-33:-7]
-set yrange [2.5:22.5]
+set xrange [-34:-6]
+set yrange [2:23]
 
 set xtics (-30,-25,-20,-15,-10)
 set ytics (5,10,15,20)
@@ -39,9 +39,10 @@ key_fit  = "Fitting curve"
 
 # Set the data file
 data_file = "../max_central_density_sorted.dat"
+fit_file  = "../fitting_curve_critical_exponent.dat"
 
 set grid
 set key width -2.5 box lc rgb "#BDBDBD"
 
 # Generate the plot
-plot data_file u 2:4 w l lw 3 lc rgb "red" notitle, data_file u 2:3 w p ls 8 lw 2 ps 2 lc rgb "blue" notitle, data_file u 2:(1000*$3) w p ls 8 lw 2 ps 2 lc rgb "blue" t key_data, data_file u 2:(1000*$4) w l lw 3 lc rgb "red" t key_fit
+plot fit_file u 1:2 w l lw 3 lc rgb "red" notitle, data_file u 2:3 w p ls 4 lw 2 ps 1.5 lc rgb "blue" notitle, data_file u 2:(1000*$3) w p ls 4 lw 2 ps 1.5 lc rgb "blue" t key_data, fit_file u 1:(1000*$2) w l lw 3 lc rgb "red" t key_fit

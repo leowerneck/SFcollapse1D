@@ -18,78 +18,12 @@
 # | along with this program.  If not, see <https://www.gnu.org/licenses/>.|
 # .-----------------------------------------------------------------------.
 
-set term epslatex size 4,5
-set output "origin_problem.tex"
-
-set multiplot layout 3,1 margins 0.1,0.98,0.1,0.98 spacing 0,0
+set term epslatex size 5,3
+set output "resources/origin_problem.tex"
 
 set xtics font ",6pt"
 set ytics font ",6pt"
 
-# Plot number 1:
-# .---.
-# | x |
-# .---.
-# |   |
-# .---.
-# |   |
-# .---.
-# Basic setup
-set grid
-unset key
-# Configure the x axis
-set xrange [-0.2:1.2]
-unset xlabel
-set xtics (0,0.2,0.4,0.6,0.8,1.0)
-set xtics format ''
-# Configure the y axis
-ymin = 0.0
-ymax = 1.2e-8
-increment = (ymax - ymin)/4.0
-set yr [ymin-increment:ymax+increment]
-set ylabel "$\\Phi_{\\rm weak}(0,r)$"
-set ytics ymin,increment,ymax
-set ytics format '%.2e'
-# Generate the plot
-filename = "Phi_weak.dat"
-plot filename using 2:3 w l lw 2 lc rgb "blue"
-
-# Plot number 2:
-# .---.
-# |   |
-# .---.
-# | x |
-# .---.
-# |   |
-# .---.
-# Basic setup
-set grid
-unset key
-# Configure the x axis
-set xrange [-0.2:1.2]
-unset xlabel
-set xtics (0,0.2,0.4,0.6,0.8,1.0)
-set xtics format ''
-# Configure the y axis
-ymin = 0.0
-ymax = 6e-8
-increment = (ymax - ymin)/4.0
-set yr [ymin-increment:ymax+increment]
-set ylabel "$\\Phi_{\\rm inter}(0,r)$"
-set ytics ymin,increment,ymax
-set ytics format '%.2e'
-# Generate the plot
-filename = "Phi_inter.dat"
-plot filename using 2:3 w l lw 2 lc rgb "blue"
-
-# Plot number 3:
-# .---.
-# |   |
-# .---.
-# |   |
-# .---.
-# | x |
-# .---.
 # Basic setup
 set grid
 unset key
@@ -97,17 +31,14 @@ unset key
 set xrange [-0.2:1.2]
 set xlabel "$r$"
 set xtics (0,0.2,0.4,0.6,0.8,1.0)
-set xtics format '%.1f'
+set xtics format "%.1f"
 # Configure the y axis
 ymin = 0.0
-ymax = 1.2e-7
+ymax = 8e-8
 increment = (ymax - ymin)/4.0
 set yr [ymin-increment:ymax+increment]
-set ylabel "$\\Phi_{\\rm strong}(0,r)$"
+set ylabel "$\\Phi(0,r)$"
 set ytics ymin,increment,ymax
-set ytics format '%.2e'
 # Generate the plot
-filename = "Phi_strong.dat"
+filename = "../out/Phi_00000000.dat"
 plot filename using 2:3 w l lw 2 lc rgb "blue"
-
-unset multiplot
