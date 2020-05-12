@@ -46,6 +46,17 @@
 % Code name shortcut
 \newcommand{\sfcol}{\texttt{SFcollapse1D}{}}
 
+% Change equations, tables, and figures numbering to respect sections
+%% \usepackage{chngcntr}
+\counterwithin{equation}{section}
+\counterwithin{table}{section}
+\counterwithin{figure}{section}
+\counterwithin{algocf}{section}
+\renewcommand{\theequation}{\arabic{section}.\arabic{equation}}
+\renewcommand{\thetable}{\arabic{section}.\arabic{table}}
+\renewcommand{\thefigure}{\arabic{section}.\arabic{figure}}
+\renewcommand{\thealgocf}{\arabic{section}.\arabic{algocf}}
+
 % Set useful shortcuts for greek letters and common math symbols
 \renewcommand{\a}{\alpha}
 \renewcommand{\b}{\beta}
@@ -167,15 +178,13 @@
 
 \section{Introduction}
 
-\section{Choptuik's original approach -- The ADM Equations}
+In 1993, Matt Choptuik performed numerical simulations of massless scalar fields minimally coupled to gravity and presented evidence for critical phenomena in this system~\cite{PhysRevLett.70.9}. He considered families of solutions, $\S\lrsquare{p}$, with the property that a critical parameter value, $p^{*}$, separates solutions containing black holes from those which do not. He also showed that the limit $p\to p^{*}$ is \emph{universal} (i.e. independent of the type of initial condition), with structure appearing at arbitrarily small spatiotemporal scales. Furthermore, he showed that the masses of the black holes formed in this limit obey the power law $M_{\rm BH} \propto \abs{p-p^{*}}^{\g}$, where $\g\approx0.37$ is a universal exponent.
 
-In 1993, Matt Choptuik performed numerical simulations of massless scalar fields minimally coupled to gravity and presented evidence for critical phenomena in this system~\cite{PhysRevLett.70.9}. He considered families of solutions $\S\lrsquare{p}$ with the property that a critical parameter value, $p^{*}$, separates solutions containing black holes from those which do not. He also showed that the limit $p\to p^{*}$ is \emph{universal} (i.e. independent of the type of initial condition), with structure appearing at arbitrarily small time scales. Furthermore, he showed that the masses of the black holes formed in this limit obey the power law $M_{\rm BH} \propto \abs{p-p^{*}}^{\g}$, where $\g\approx0.37$ is a universal exponent.
+We will present a thorough review of the techniques used by Choptuik in his seminal paper, guiding the reader through the steps required to write down a program that is able to reproduce his results. It is important, however, that the reader keep in mind that the formalism originally used by Choptuik, the ADM formalism~\cite{Arnowitt:1959ah}, is outdated and the resulting equations which are ultimately implemented are specialized to this problem, making it harder to generalize the final program for other applications. For a more extensible final program, it is recommended to use the BSSN formalism~\cite{shibata1995evolution,baumgarte1998numerical} instead. Choptuik himself has reproduced his original results using the BSSN formalism~\cite{PhysRevD.92.084037}, while many other groups have studied variations of the original problem, from which we would like to mention Baumgarte's study of aspherical initial data~\cite{Baumgarte_2018}.
 
-Our goal here is to present a thorough review of the techniques used by Choptuik in his seminal paper, guiding the reader through the steps required to write down a program that is able to reproduce his results. It is important, however, that the reader keep in mind that the techniques used by Choptuik are outdated and specialized to this specific problem, making it harder to generalize the final program to work with different problems. A more extensible and modern approach will be presented in the next section, when we review the problem using the BSSN formalism.
+We emphasize that our goal is to discuss the \emph{numerical techniques} needed to solve the problem. This means we will not derive the equations used in detail, but we will present useful references.
 
-We emphasize that the goal of this section is to discuss the \emph{numerical techniques} needed to solve the problem. This means we will not derive the equations used in detail, but we will present useful references.
-
-\subsection{The ADM decomposition of Einstein's field equations}
+\section{The ADM Equations}
 
 Here we present the equations obtained when decomposing Einstein's equations into its time and spatial componenents, known as the \emph{Arnowitt-Deser-Misner (ADM) decomposition}~\cite{Arnowitt:1959ah}. Our notation will follow that of Baumgarte and Shapiro~\cite{Baumgarte:2010ndz}.
 
@@ -187,7 +196,7 @@ Einstein's field equations are written in the form
 
 \n where $\GDD{\mu}{\nu}$ is the spacetime metric, $R_{\mu\nu}$ is the Ricci tensor computed from $\GDD{\mu}{\nu}$, $R \equiv \GUU{\mu}{\nu}R_{\mu\nu}$ is the Ricci scalar, and $T_{\mu\nu}$ is the energy-momentum tensor. Note that we have chosen units such that $G_{\rm N}=1=c$, which are called \emph{geometrized units}.
 
-The decomposition of spacetime into space plus time consists of considering spatial hypersurfaces $\Sigma\lrpar{t}$ of constant time $t$ which are then evolved in forward in time. The 4-metric $\GDD{\mu}{\nu}$ is written as
+The decomposition of spacetime into space plus time consists of considering spatial hypersurfaces, $\Sigma\lrpar{t}$, of constant coordinate time, $t$, which are then evolved in forward in time. The 4-metric $\GDD{\mu}{\nu}$ is written as
 
 \eq{
   \GDD{\mu}{\nu} =
@@ -207,9 +216,9 @@ The decomposition of spacetime into space plus time consists of considering spat
   \end{pmatrix}\ ,
 }
 
-\n where $\a$ is known as the \emph{lapse function}, $\b$ is known as the \emph{shift vector}, and $\gDD{i}{j}$ is the ADM 3-metric, with $\gUU{i}{j}$ its inverse.
+\n where $\a$ is known as the \emph{lapse function}, $\b$ is known as the \emph{shift vector}, and $\gDD{i}{j}$ is the ADM (or physical) 3-metric, with $\gUU{i}{j}$ its inverse.
 
-The lapse function measures the amount of proper time that elapses while moving from a hypersurface $\Sigma\lrpar{t}$ to a hypersurface $\Sigma\lrpar{t+\dt}$, with $\dt$ a given time step. The shift vector is responsible for ``correcting'' the spatial coordinates when moving from $\Sigma\lrpar{t}$ to $\Sigma\lrpar{t+\dt}$. Given a point point $(X,Y,Z)$ at $\Sigma\lrpar{t}$, we integrate in time by moving in the normal direction towards the next hypersurface $\Sigma\lrpar{t+\dt}$. However, there is no guarantee that we will arrive at the same spatial point $(X,Y,Z)$. The shift vector then corrects this, by translating the new point to $(X,Y,Z)$. Depending on the choice of folliation, however, this does not happen and therefore $\b^{i}=0$. The spatial 3-metric $\gDD{i}{j}$ lives only at the spatial hypersurfaces and have no time component. See figure~\ref{fig:adm_decomposition} for an illustration of the ADM decomposition.
+The lapse function measures the amount of proper time that elapses while moving from a hypersurface $\Sigma\lrpar{t}$ to a hypersurface $\Sigma\lrpar{t+\dt}$, with $\dt$ a given time step. The shift vector is responsible for ``correcting'' the spatial coordinates when moving from $\Sigma\lrpar{t}$ to $\Sigma\lrpar{t+\dt}$. Consider an observer at the spatial point $(X,Y,Z)$ which lies on $\Sigma\lrpar{t}$. When we integrate in time, by moving in the normal direction towards the next hypersurface, $\Sigma\lrpar{t+\dt}$, we will arrive at the spatial point $(X^{\prime},Y^{\prime},Z^{\prime})$, which lies on $\Sigma\lrpar{t+\dt}$. Our gauge freedom allows us to folliate spacetime as we please, thus there is no guarantee that the new spatial point $(X^{\prime},Y^{\prime},Z^{\prime})$ coincides with the original point $(X,Y,Z)$. The shift vector is then used by \emph{shift} the new point $(X^{\prime},Y^{\prime},Z^{\prime})$ to the original point $(X,Y,Z)$, if necessary. It is possible, of course, to choose a folliation where this does not happen for any time, and hence, \emph{for this particular gauge choice}, $\b^{i}=0$. See figure~\ref{fig:adm_decomposition} for an illustration of the ADM decomposition.
 
 \begin{figure}[ht]
 \centering
@@ -220,7 +229,7 @@ The lapse function measures the amount of proper time that elapses while moving 
 	\draw[fill,lightgray,draw=black,fill opacity=0.5] (0,0) to [bend left] (1,1) to [bend right] (2,2) to (4,1) to [bend left] (3,0) to [bend right] (2,-1) to (0,0);
 	\draw[->] (1.5,-1.0) -- (1.5,1.0);
         \draw[->] (1.5,+1.0) -- (2.5,0.5);
-	\draw[->,dashed] (1.5,0) to [bend left] (-0.5,-0.5) node [left] {$\a dt \,n^{i}$};
+	\draw[->,dashed] (1.5,0) to [bend left] (-0.5,-0.5) node [left] {$\a dt \,n^{\mu}$};
 	\draw[dashed] (1.5,-1) -- (3.5,2) node [above right] {Line of constant $x^i=X^i$};
 	\draw[->,dashed] (2,0.75) to [bend right] (1,2) node [left] {$\b^i\, dt$};
 	\draw[->,dashed] (1.5,-1) to [bend right] (-0.5,-1.5) node [left] {Point $x^i = X^i$};
@@ -228,7 +237,7 @@ The lapse function measures the amount of proper time that elapses while moving 
         \draw[fill] (1.5,+1.0) circle [radius=0.05];
 	\draw[fill] (2.5,+0.5) circle [radius=0.05];
 }
-\caption[Illustration of the ADM decomposition.]{Illustration of the ADM decomposition. In the picture the roles of the lapse function, $\a$, and the shift vector, $\b^i$ are depicted, and $n^{i}$ is the unit vector normal to the hypersurface $\Sigma(t)$. The figure can be misleading, however, because the two surfaces, $\Sigma(t)$ and $\Sigma(t+\dt)$, are drawn as exact copies of one another, while in general this is not the case.}
+\caption[Illustration of the ADM decomposition.]{Illustration of the ADM decomposition. In the picture the roles of the lapse function, $\a$, and the shift vector, $\b^i$ are depicted, and $n^{\mu}$ is the unit vector normal to the hypersurface $\Sigma(t)$. The figure can be misleading, however, because the two surfaces, $\Sigma(t)$ and $\Sigma(t+\dt)$, are drawn as exact copies of one another, while in general this is not the case.}
 \label{fig:adm_decomposition}
 \end{figure}
 
@@ -301,12 +310,12 @@ The evolution equations for the extrinsic curvature and the metric are given by
 
   \n while the momentum constraints (conservation of momentum) reads
 
-  \eq{ \M_{i} \equiv D_{j}K^{j}_{\ i} - D_{i}K - 8\pi S_{i} = 0\ , }
+  \eq{ \M_{i} \equiv D_{j}K^{j}_{\ i} - D_{i}K - 8\pi S_{i} = 0\ , \nn}
 
   \noindent where $\rho\equiv n^{\mu}n^{\nu}T_{\mu\nu}$ is the energy density and $S_{i} \equiv - P^{\mu}_{\ i}n^{\nu}T_{\mu\nu}$ are \emph{momentum densities}, with $P^{\mu}_{\ \nu} \equiv \d^{\mu}_{\ \nu} + n^{\mu}n_{\nu}$ the operator which projects the spacetime components of a tensor onto the spatial hypersurface.
 }
 
-\subsection{The scalar field evolution equations}
+\section{Minimally coupling a massless scalar field to gravity: the ADM+EKG system}
 
 The gravitational collapse of a massless scalar field is studied by minimally coupling it to gravity, which is described by the action
 
@@ -393,7 +402,9 @@ Equations~\eqref{eq:chop1},~\eqref{eq:chop2},~\eqref{eq:chop3}, and~\eqref{eq:ch
   
 }
 
-\subsection{Numerical techniques}
+\section{Numerical techniques}
+
+\subsection{Finite differences}
 
 \begin{sloppypar}
 To solve the equations inside box 2 above, we will use \emph{centered, second-order accurate finite differences} to approximate the derivatives. For a given function $f$ at the point ${(t,r)=(n\cdot\dt,j\cdot\dr)}$, where $\dt$ and $\dr$ are the time and radial step sizes, respectively, we introduce the notation $f(n\cdot\dt,j\cdot\dr) \equiv f^{n}_{j}$. Then, the derivatives of $f$ with respect to $t$ and $r$ are approximated using
@@ -472,7 +483,7 @@ To obtain the discretization of the Hamiltonian constraint, we first introduce a
   
 }
 
-\subsubsection{SinhSpherical coordinates}
+\subsection{SinhSpherical coordinates}
 
 We also set up the program in a way that will allow us to push the outer boundary, located at $r=r_{\max}$, a lot further out, so that we do not need to worry about spurious reflections from it. This is done by the change of variables
 
@@ -539,7 +550,7 @@ During the integration process, we have access to $\lrpar{\Phi,\Pi,a,\a}$ on all
 
 The summary above ignores quite a few implementation details, such as when and how to apply boundary conditions. We will go over those over the following sections.
 
-\subsection{Inner and outer boundary conditions}
+\subsection{Boundary conditions}
 
 \subsubsection{Inner boundary conditions}
 
@@ -644,6 +655,8 @@ Notice, now, that the polar slicing condition is homogeneous in $\a$, meaning th
   }
 }
 
+\section{Solving the ADM+EKG equations numerically}
+
 \subsection{Initial condition}
 
 The initial condition for the scalar field is
@@ -675,7 +688,7 @@ Although we will use the same form of the initial data used by Matt Choptuik in 
 \begin{figure}[H]
   \centering
   \input{resources/origin_problem.tex}
-  \caption[Problem with the initial condition at the origin.]{This figures shows the problem with the initial condition~\eqref{eq:initial_condition_2} when $r_{0}\neq0$. This initial condition uses the parameters $\eta=0.1$, $r_{0}=20$, and $\d=5$. There is a kink in the first derivative of the scalar field at the origin, namely the variable $\Phi$.}
+  \caption[Problem with the initial condition at the origin.]{This figures shows the problem with the initial condition~\eqref{eq:initial_condition_2} when $r_{0}\neq0$. This initial condition uses the parameters $\eta=0.1$, $r_{0}=20$, and $\d=5$. There is a kink in the first derivative of the scalar field at the origin, namely the variable $\Phi$, because the initial condition is incompatible with the inner boundary condition $\left.\Phi\right|_{r=0}=0$.}
   \label{fig:origin_problem}
 \end{figure}
 
@@ -701,7 +714,7 @@ Some extra features of the code which are not discussed in the pseudocode are:
 \begin{itemize}
   \item \textbf{Collapse of the lapse}: the code periodically checks whether or not the lapse function $\a$ has dropped below a user-specified threshold $\e_{\a}$. When the criterion $\a<\e_{\a}$ is met, the code interupts the time integratiion and characterizes the run as being in the strong field regime. We are able to infer this because around the singularity we have $\a \to 0$, which is known as the \emph{freezing of the lapse} or \emph{collapse of the lapse}.
 
-  \item \textbf{NaN checker}: the code also periodically checkes whether or not any of the evolved functions, $\lrpar{\phi,\Phi,\Pi,a,\a}$, have become NaN, ending the run if that is the case.
+  \item \textbf{NaN checker}: the code also periodically checks whether or not any of the evolved functions, $\lrpar{\phi,\Phi,\Pi,a,\a}$, have become NaN, ending the run if that is the case.
 
   \item \textbf{Run information}: integration progress is constantly printed so that the user is able to track how much of the run has already been completed. The program also shows the time elapsed during the run and estimates the amount of time required to complete the run.
 
@@ -903,7 +916,7 @@ Having found all the fitting parameters, whose values are shown in table~\ref{ta
     \hline
     \hline
   \end{tabular}
-  \caption[Fit parameters for the behaviour of the central energy density in a serries of subcritical runs.]{Fit parameters obtained for equation~\eqref{eq:fit_critical_exponent} in a series of subcritical runs. The value of $\D$ has been computed using~\eqref{eq:universal_period_ito_omega}.}
+  \caption[Fit parameters for the behaviour of the central energy density in a series of subcritical runs.]{Fit parameters obtained for equation~\eqref{eq:fit_critical_exponent} in a series of subcritical runs. The value of $\D$ has been computed using~\eqref{eq:universal_period_ito_omega}.}
   \label{tab:fit_critical_exponent}
 \end{table}
 
