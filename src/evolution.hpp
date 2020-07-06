@@ -31,7 +31,7 @@
 namespace evolution {
 
   /* Function to set the initial condition for all gridfunctions: phi, Phi, Pi, a, and alpha */
-  void initial_condition( const real, grid::parameters, gridfunction &, gridfunction &, gridfunction &, gridfunction &, gridfunction & );
+  void initial_condition( grid::parameters, gridfunction &, gridfunction &, gridfunction &, gridfunction &, gridfunction & );
 
   /* Function to step phi, Phi, and Pi forward in time */
   void time_step_scalarfield_gridfunctions( const int, const grid::parameters,

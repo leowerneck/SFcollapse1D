@@ -32,24 +32,111 @@
 using namespace std;
 
 /* Function to set the initial condition for all gridfunctions: phi, Phi, Pi, a, and alpha */
-void evolution::initial_condition( const real phi0, grid::parameters grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha ) {
+void evolution::initial_condition( grid::parameters grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha ) {
 
   DECLARE_GRID_PARAMETERS;
 
   LOOP(0,Nx0Total) {
+
+#if( INITIAL_CONDITION == GAUSSIAN_SHELL )
+
+    /* .----------------------------------------------.
+     * | phi(r,0) = phi0 * exp( -(r-r0)^2 / delta^2 ) |
+     * .----------------------------------------------.
+     */
+
     /* Set some useful auxiliary variables */
     const real r = r_ito_x0[j];
     const real factor = (r-R0)/SQR(DELTA);
     const real expfactor = (r-R0)*factor;
     const real exp_rmr0_over_deltasqrd = exp(-expfactor);
 
-    /* Set the initial condition for phi and Pi */
+    /* Set the initial condition for phi */
     phi.level_nm1[j] = phi0*exp_rmr0_over_deltasqrd;
+
+#elif( INITIAL_CONDITION == GAUSSIAN_SHELL_V2 )
+
+    /* .----------------------------------------------------.
+     * | phi(r,0) = phi0 * r^3 * exp( -(r-r0)^2 / delta^2 ) |
+     * .----------------------------------------------------.
+     */
+
+    /* Set some useful auxiliary variables */
+    const real r                       = r_ito_x0[j];
+    const real delta_sqrd              = SQR(DELTA);
+    const real factor                  = (r-R0)/delta_sqrd;
+    const real expfactor               = (r-R0)*factor;
+    const real exp_rmr0_over_deltasqrd = exp(-expfactor);
+
+    /* Set the initial condition for phi */
+    phi.level_nm1[j] = phi0*r*r*r*exp_rmr0_over_deltasqrd;
+
+#elif( INITIAL_CONDITION == TANH_SHELL )
+
+    /* .---------------------------------------------------------------------.
+     * | phi(r,0) = phi0 * ( tanh( (r-r01)/delta ) - tanh( (r-r02)/delta ) ) |
+     * .---------------------------------------------------------------------.
+     */
+
+    /* Set some useful auxiliary variables */
+    const real r                     = r_ito_x0[j];
+    const real rmr01_over_delta      = (r - R0_1)/DELTA;
+    const real rmr02_over_delta      = (r - R0_2)/DELTA;
+    const real tanh_rmr01_over_delta = tanh(rmr01_over_delta);
+    const real tanh_rmr02_over_delta = tanh(rmr02_over_delta);
+
+    /* Set the initial condition for phi */
+    phi.level_nm1[j] = 0.5 * phi0 * ( tanh_rmr01_over_delta - tanh_rmr02_over_delta );
+
+#elif( INITIAL_CONDITION == TANH_SHELL_V2 )
+
+    /* .------------------------------------------------------.
+     * | phi(r,0) = phi0 * ( 1 - tanh( (r-r0)^2 / delta^2 ) ) |
+     * .------------------------------------------------------.
+     */
+
+    /* Set some useful auxiliary variables */
+    const real r                        = r_ito_x0[j];
+    const real delta_sqrd               = SQR(DELTA);
+    const real factor                   = (r-R0)/delta_sqrd;
+    const real tanhfactor               = (r-R0)*factor;
+    const real tanh_rmr0_over_deltasqrd = tanh(tanhfactor);
+
+    /* Set the initial condition for phi */
+    phi.level_nm1[j] = phi0 * ( 1.0 - tanh_rmr0_over_deltasqrd );
+
+#else
+      cerr << "(SFcollapse1D ERROR) Unknown initial condition" << endl;
+      exit(1);
+#endif
+
+    /* Set the initial condition for Pi */
     Pi.level_nm1[j]  = 0.0;
 
     if( j>0 ) {
+
+#if( INITIAL_CONDITION == GAUSSIAN_SHELL )
       /* Set the initial condition for Phi */
       Phi.level_nm1[j] = -2.0*factor*phi0*exp_rmr0_over_deltasqrd;
+#elif( INITIAL_CONDITION == GAUSSIAN_SHELL_V2 )
+      /* Set the initial condition for Phi */
+      Phi.level_nm1[j] = 2.0*phi0*r*exp_rmr0_over_deltasqrd*( delta_sqrd - r*(r-R0) )/delta_sqrd;
+#elif( INITIAL_CONDITION == TANH_SHELL )
+      /* Set the initial condition for Phi */
+      const real cosh_rmr01_over_delta = cosh(rmr01_over_delta);
+      const real cosh_rmr02_over_delta = cosh(rmr02_over_delta);
+      const real sech_rmr01_over_delta = 1.0/cosh_rmr01_over_delta;
+      const real sech_rmr02_over_delta = 1.0/cosh_rmr02_over_delta;
+      Phi.level_nm1[j] = 0.5 * phi0 * ( SQR(sech_rmr01_over_delta) - SQR(sech_rmr02_over_delta) ) / DELTA;
+#elif( INITIAL_CONDITION == TANH_SHELL_V2 )
+      /* Set the initial condition for Phi */
+      const real cosh_rmr0_over_deltasqrd = cosh(tanhfactor);
+      const real sech_rmr0_over_deltasqrd = 1.0/cosh_rmr0_over_deltasqrd;
+      Phi.level_nm1[j] = -2.0*factor*phi0*SQR(sech_rmr0_over_deltasqrd);
+#else
+      cerr << "(SFcollapse1D ERROR) Unknown initial condition" << endl;
+      exit(1);
+#endif
       
       /* Compute a */
       a.level_nm1[j] = evolution::pointwise_solution_of_the_Hamiltonian_constraint( j, grid, Phi.level_nm1, Pi.level_nm1, a.level_nm1 );
