@@ -57,6 +57,13 @@ typedef std::vector< std::vector<double> > realmat;
 #define BISECTION_CONVERGENCE_ERROR  (8)
 #define NAN_ERROR                    (9)
 
+/* Initial condition macros */
+#define GAUSSIAN_SHELL    (0)
+#define GAUSSIAN_SHELL_V2 (1)
+#define TANH_SHELL        (2)
+#define TANH_SHELL_V2     (3)
+#define INITIAL_CONDITION GAUSSIAN_SHELL_V2
+
 /* Set ghostzones. The default is the same
  * number of ghostzones in every direction
  */
@@ -64,8 +71,10 @@ typedef std::vector< std::vector<double> > realmat;
 #define NGHOSTS0 NGHOSTS
 
 /* Scalar field collapse parameters */
-#define R0    (0.0)
-#define DELTA (1.0)
+#define R0    (2.0)
+#define DELTA (2.0)
+#define R0_1  (5.0)
+#define R0_2  (10.0)
 
 /* Square macro */
 #define SQR(x) ( (x)*(x) )
@@ -113,6 +122,7 @@ typedef std::vector< std::vector<double> > realmat;
   const int Nt                   __attribute__((unused)) = grid.Nt;                   \
   const int current_regrid_level __attribute__((unused)) = grid.current_regrid_level; \
   const int max_regrid_levels    __attribute__((unused)) = grid.max_regrid_levels;    \
+  const real phi0                __attribute__((unused)) = grid.phi0;                 \
   const real x0_min              __attribute__((unused)) = grid.x0_min;               \
   const real x0_max              __attribute__((unused)) = grid.x0_max;               \
   const real dx0                 __attribute__((unused)) = grid.dx0;                  \
@@ -142,7 +152,7 @@ typedef std::vector< std::vector<double> > realmat;
     const real time_elapsed = (real)elapsed_time;                                                                                \
     const real time_left    = ( (real)grid.Nt/(real)n - 1.0 ) * time_elapsed;		                                         \
     const real t_per_h      = 3600.0 * ( grid.t_final - grid.t ) / time_left;		                                         \
-    const real completed    = grid.t/grid.t_final*100;                                                           		 \
+    const real completed    = grid.t/grid.t_final*100;	\
     std::cout << fixed                                                                                                           \
 	      << "\r(SFcollapse1D INFO) " << "Iter " << setfill('0') << setw(to_string(grid.Nt).length()) << n << "/" << grid.Nt \
               << " | " << setprecision(2) << completed << "%"				                                         \
