@@ -23,8 +23,8 @@ set output sprintf("%s.gif",which_var)
 set encoding utf8
 
 if ( which_var eq 'scalarfield' ) {
-  ymin  = -0.4
-  ymax  = +0.4
+  ymin  = -0.5
+  ymax  = +0.5
   label = "phi(t,r)"
 }
 if( which_var eq 'Phi' ) {
@@ -44,13 +44,18 @@ if( which_var eq 'a' ) {
 }
 if( which_var eq 'alpha' ) {
   ymin = 0.0
-  ymax = 1.2
+  ymax = 1.0
   label = "alpha(t,r)"
 }
 if( which_var eq 'mass' ) {
   ymin = 0.0
   ymax = 0.5
   label = "Mass(t,r)"
+}
+  if( which_var eq 'rho' ) {
+  ymin = 0.0
+  ymax = 0.25
+  label = "rho(t,r)"
 }
 
 set xrange [0.0:5.0]
@@ -60,11 +65,14 @@ unset key
 set xlabel "r"
 set ylabel label
 
-last_file_number  = 27600/2
-output_multiplier = 200
+last_file_number  = 12900
+output_multiplier = 100
 number_of_files   = last_file_number/output_multiplier
-
+dt                = 8.484e-04
 do for[i=0:number_of_files] {
-  filename = sprintf("../out/cfl_05/%s_%05d.dat",which_var,i*output_multiplier)
+  n = i*output_multiplier
+  filename = sprintf("../out/%s_%08d.dat",which_var,n)
+  time = n*dt
+  set title sprintf("Time = %.2f",time)
   plot filename using 2:3 w l lw 2 lc rgb 'blue'
 }
