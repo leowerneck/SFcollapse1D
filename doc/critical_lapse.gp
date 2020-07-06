@@ -20,16 +20,28 @@
 
 # Set terminal and output
 set terminal epslatex
-set output "resources/critical_lapse_best.tex"
+set output "resources/critical_lapse_BSSN_black.tex"
 
 # Set grid
-set grid
+set grid @WHITE
+set border @WHITE
 
 # Set plot keys
-title_weak = "$\\eta = 0.3364266156435$"
-title_strg = "$\\eta = 0.3364266156436$"
-# title_weak = "$\\eta = 0.33634459617$"
-# title_strg = "$\\eta = 0.33634459618$"
+# Gaussian shell
+# title_weak = "$\\eta = 0.3364266156435$"
+# title_strg = "$\\eta = 0.3364266156436$"
+
+# Gaussian shell v2
+# title_weak = "$\\eta = 0.01591203885327$"
+# title_strg = "$\\eta = 0.01591203885328$"
+
+# Tanh shell
+# title_weak = "$\\eta = 0.2914370451806$"
+# title_strg = "$\\eta = 0.2914370451807$"
+
+# Gaussian shell (BSSN)
+title_weak = "$\\eta = 0.30332394090$"
+title_strg = "$\\eta = 0.30332394095$"
 
 # Multiplot layout
 # .-----------------.
@@ -59,13 +71,27 @@ set multiplot
 # .--------.
 
 # Configure key
-set key width -2.5 height 0.5 box lc rgb "#BDBDBD"
+# set key width -1.5 height 0.5 at 4,1.2 box lc rgb "#BDBDBD"
+set key width -1.5 height 0.5 at 4,1.2 box @WHITE
 
 set xlabel "$t$" offset 0,-9
 set ylabel "$\\alpha_{\\rm central}$"
 
-file_w = "../out_weak_best.dat"
-file_s = "../out_strong_best.dat"
+# Gaussian shell
+# file_w = "../out_weak_best.dat"
+# file_s = "../out_strong_best.dat"
+
+# Gaussian shell v2
+# file_w = "../out_weak_v2.dat"
+# file_s = "../out_strong_v2.dat"
+
+# Tanh shell
+# file_w = "../out_weak_tanh.dat"
+# file_s = "../out_strong_tanh.dat"
+
+# Gaussian shell (BSSN)
+file_w = "../weak_BSSN.dat"
+file_s = "../strong_BSSN.dat"
 
 set tmargin at screen 1 - BORDER_T
 set bmargin at screen 1 - BORDER_T - PLT_H
@@ -73,16 +99,58 @@ set lmargin at screen BORDER_L
 set rmargin at screen 1 - BORDER_R
 
 # Set x and y axis ranges for plot 1
-set xrange [-0.5:6.5]
-set yrange [-0.05:0.65]
+# Gaussian shell
+set xrange [-0.4:7.0]
+set yrange [-0.2:1.2]
+
+# Gaussian shell v2
+# set xrange [-0.5:14.5]
+# set yrange [-0.05:0.75]
+
+# Tanh shell
+# set xrange [-0.5:10.5]
+# set yrange [-0.05:0.75]
 
 # Set x and y tics for plot 1
-set xtics (0,1,2,3,4,5,6)
-set ytics ("0.0" 0,0.2,0.4,0.6)
+# Gaussian shell
+set xtics (0,1,2,3,4,5,6) format "$%.0f$"
+set ytics (0,0.2,0.4,0.6,0.8,1) format "$%.1f$"
+
+# Gaussian shell v2
+# set xtics (0,2,4,6,8,10,12,14) format "$%.0f$"
+# set ytics (0,0.35,0.7) format "$%.2f$"
+
+# Tanh shell
+# set xtics (0,2,4,6,8,10)
+# set ytics ("0.00" 0, "0.35" 0.35, "0.70" 0.70)
 
 # Draw "zoom" objects that connect plot 1 to plot 2
 # First the rectangle
-set object 1 rectangle from 5.05,-0.02 to 5.35,0.25 lw 2 dt 2 fs empty border lc rgb "#BCBCBC"
+# Gaussian shell
+# rectangle_left_border  = +5.06
+# rectangle_right_border = +5.34
+# rectangle_top_border   = +0.23
+# rectangle_bot_border   = -0.03
+
+# Gaussian shell v2
+# rectangle_left_border  = +12.95
+# rectangle_right_border = +13.55
+# rectangle_top_border   = +0.23
+# rectangle_bot_border   = -0.03
+
+# Tanh shell
+# rectangle_left_border  = +9.3
+# rectangle_right_border = +9.9
+# rectangle_top_border   = +0.23
+# rectangle_bot_border   = -0.03
+
+# Gaussian shell (BSSN)
+rectangle_left_border  = +5.6
+rectangle_right_border = +6.6
+rectangle_top_border   = +0.9
+rectangle_bot_border   = -0.1
+
+set object 1 rectangle from rectangle_left_border,rectangle_bot_border to rectangle_right_border,rectangle_top_border lw 2 dt 2 fs empty border lc rgb "#BCBCBC"
 
 # Set auxiliary variables
 end_x1 = 1 - BORDER_R - PLT_W
@@ -91,12 +159,11 @@ end_x2 = 1 - BORDER_R
 end_y2 = 1 - BORDER_T - PLT_H - SPACING_Y
 
 # Draw lines that link to plot 2
-# set arrow 2 from 5.4,-0.02 to screen end_x2,end_y2 lw 2 dt 2 lc rgb "#BCBCBC" nohead
-set arrow 1 from 5.05,-0.02 to screen end_x1,end_y1 nohead filled back lw 2 lc rgb "#BABABA" dt 2
-set arrow 2 from 5.35,-0.02 to screen end_x2,end_y2 nohead filled back lw 2 lc rgb "#BBBBBB" dt 2
+set arrow 1 from rectangle_left_border,rectangle_bot_border to screen end_x1,end_y1 nohead filled back lw 2 lc rgb "#BABABA" dt 2
+set arrow 2 from rectangle_right_border,rectangle_bot_border to screen end_x2,end_y2 nohead filled back lw 2 lc rgb "#BBBBBB" dt 2
 
 # Generate plot 1
-plot file_w using 1:2 with lines linewidth 3 @BLUE title title_weak, file_s using 1:2 with lines linewidth 3 dashtype 2 @ORANGE title title_strg
+plot file_w using 1:2 with lines linewidth 3 @CYAN title title_weak, file_s using 1:2 with lines linewidth 3 dashtype 2 @ORANGE title title_strg
 
 # .--------.
 # | Plot 2 |
@@ -112,9 +179,37 @@ set bmargin at screen BORDER_B
 set lmargin at screen 1 - BORDER_R - PLT_W
 set rmargin at screen 1 - BORDER_R
 
+# Set x and y axis ranges for plot 2
+set xrange [rectangle_left_border:rectangle_right_border]
+set yrange [rectangle_bot_border:rectangle_top_border]
+
 # Draw "zoom" objects that connect plot 2 to plot 3
 # First the rectangle
-set object 1 rectangle from 5.3,-0.01 to 5.32,0.14 lw 2 dt 2 fs empty border lc rgb "#BCBCBC"
+# Gaussian shell
+# rectangle_left_border  = +5.3
+# rectangle_right_border = +5.32
+# rectangle_top_border   = +0.14
+# rectangle_bot_border   = -0.02
+
+# Gaussian shell
+# rectangle_left_border  = +13.465
+# rectangle_right_border = +13.505
+# rectangle_top_border   = +0.12
+# rectangle_bot_border   = -0.02
+
+# Tanh shell
+# rectangle_left_border  = +9.850
+# rectangle_right_border = +9.882
+# rectangle_top_border   = +0.12
+# rectangle_bot_border   = -0.02
+
+# Gaussian shell (BSSN)
+rectangle_left_border  = +6.53
+rectangle_right_border = +6.59
+rectangle_top_border   = +0.55
+rectangle_bot_border   = -0.05
+
+set object 1 rectangle from rectangle_left_border,rectangle_bot_border to rectangle_right_border,rectangle_top_border lw 2 dt 2 fs empty border lc rgb "#BCBCBC"
 
 # Set auxiliary variables
 end_x1 = BORDER_L + PLT_W
@@ -123,18 +218,27 @@ end_x2 = BORDER_L + PLT_W
 end_y2 = BORDER_B
 
 # Draw lines that link to plot 3
-set arrow 1 from 5.3,+0.14 to screen end_x1,end_y1 nohead filled back lw 2 lc rgb "#BABABA" dt 2
-set arrow 2 from 5.3,-0.01 to screen end_x2,end_y2 nohead filled back lw 2 lc rgb "#BBBBBB" dt 2
-
-# Set x and y axis ranges for plot 2
-set xrange [5.05:5.35]
-set yrange [-0.02:0.25]
+set arrow 1 from rectangle_left_border,rectangle_top_border to screen end_x1,end_y1 nohead filled back lw 2 lc rgb "#BABABA" dt 2
+set arrow 2 from rectangle_left_border,rectangle_bot_border to screen end_x2,end_y2 nohead filled back lw 2 lc rgb "#BBBBBB" dt 2
 
 # Set x and y tics for plot 2
-set xtics ("5.08" 5.08,"5.20" 5.2,"5.32" 5.32)
-set ytics ("0.0" 0,0.1,0.2)
+# Gaussian shell
+# set xtics (5.08,5.2,5.32) format '$%.2f$'
+# set ytics (0,0.1,0.2) format '$%.1f$'
 
-plot file_w using 1:2 with lines linewidth 3 @BLUE title title_weak, file_s using 1:2 with lines linewidth 3 dashtype 2 @ORANGE title title_strg
+# Gaussian shell v2
+# set xtics (13,13.25,13.5) format '$%.2f$'
+# set ytics (0,0.1,0.2) format '$%.1f$'
+
+# Tanh shell
+# set xtics (9.4,9.6,9.8) format '$%.1f$'
+# set ytics ("0.0" 0,0.1,0.2)
+
+# Gaussian shell (BSSN)
+set xtics (5.9,6.2,6.5) format '$%.1f$'
+set ytics (0,0.4,0.8) format '$%.1f$'
+
+plot file_w using 1:2 with lines linewidth 3 @CYAN title title_weak, file_s using 1:2 with lines linewidth 3 dashtype 2 @ORANGE title title_strg
 
 # .--------.
 # | Plot 3 |
@@ -151,11 +255,24 @@ set lmargin at screen BORDER_L
 set rmargin at screen BORDER_L + PLT_W
 
 # Set x and y axis ranges for plot 3
-set xrange [5.300:5.320]
-set yrange [-0.02:0.14]
+set xrange [rectangle_left_border:rectangle_right_border]
+set yrange [rectangle_bot_border:rectangle_top_border]
 
 # Set x and y tics for plot 3
-set xtics ("5.302" 5.302,"5.310" 5.310,"5.318" 5.318)
-set ytics ("0.00" 0,0.06,"0.12" 0.12)
+# Gaussian shell
+# set xtics (5.302,5.31,5.318) format '$%.3f$'
+# set ytics (0,0.06,0.12) format '$%.2f$'
 
-plot file_w using 1:2 with lines linewidth 3 @BLUE title title_weak, file_s using 1:2 with lines linewidth 3 dashtype 2 @ORANGE title title_strg
+# Gaussian shell
+# set xtics (13.47,13.485,13.5) format '$%.3f$'
+# set ytics (0,0.05,0.10) format '$%.2f$'
+
+# Tanh shell
+# set xtics (9.854,9.866,9.878) format '$%.3f$'
+# set ytics ("0.00" 0,0.05,"0.10" 0.10)
+
+# Gaussian shell (BSSN)
+set xtics (6.54,6.56,6.58) format '$%.2f$'
+set ytics (0,0.25,0.5) format '$%.2f$'
+
+plot file_w using 1:2 with lines linewidth 3 @CYAN title title_weak, file_s using 1:2 with lines linewidth 3 dashtype 2 @ORANGE title title_strg
