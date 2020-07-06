@@ -36,15 +36,13 @@ using namespace std;
 int main( int argc, char *argv[] ) {
 
   /* Print logo to the user */
-// #include "logo.hpp"
+#include "logo.hpp"
 
   /* Check correct usage */
 #if( COORD_SYSTEM == SPHERICAL )
   if( argc != 5 ) utilities::SFcollapse1D_error(SPHERICAL_USAGE_ERROR);
-  const real phi0 = atof(argv[4]);
 #elif( COORD_SYSTEM == SINH_SPHERICAL )
   if( argc != 6 ) utilities::SFcollapse1D_error(SINH_SPHERICAL_USAGE_ERROR);
-  const real phi0 = atof(argv[5]);
 #endif
 
   /* Start the timer */
@@ -54,13 +52,38 @@ int main( int argc, char *argv[] ) {
   grid::parameters grid(argv);
   
   /* Print information about the run to the user */
-  utilities::parameter_information(phi0,grid);
+  utilities::parameter_information(grid);
 
   /* Declare all needed gridfunctions */
   gridfunction phi(grid.Nx0Total), Phi(grid.Nx0Total), Pi(grid.Nx0Total), a(grid.Nx0Total), alpha(grid.Nx0Total);
 
   /* Set the initial condition */
-  evolution::initial_condition( phi0, grid, phi, Phi, Pi, a, alpha );
+  evolution::initial_condition( grid, phi, Phi, Pi, a, alpha );
+
+  // Estimate ADM mass for BSSN computation
+  // real M_ADM = 0.0;
+  // cout << "M_ADM = " << scientific << setprecision(15) << M_ADM << endl;
+  // LOOP(0,grid.Nx0Total-1) {
+  //   const real r_left    = grid.r_ito_x0[j];
+  //   const real r_right   = grid.r_ito_x0[j+1];
+  //   const real dr        = r_right - r_left;
+  //   const real tmp_left  = sqrt(2.0*M_PI) * r_left / a.level_nm1[j];
+  //   const real tmp_right = sqrt(2.0*M_PI) * r_right / a.level_nm1[j+1];
+  //   const real X_left    = tmp_left * Phi.level_nm1[j];
+  //   const real X_right   = tmp_right * Phi.level_nm1[j+1];
+  //   const real Y_left    = tmp_left * Pi.level_nm1[j];
+  //   const real Y_right   = tmp_right * Pi.level_nm1[j+1];
+  //   const real I_left    = SQR(X_left) + SQR(Y_left);
+  //   const real I_right   = SQR(X_right) + SQR(Y_right);
+
+  //   M_ADM += 0.5 * dr * ( I_left + I_right );
+
+  //   cout << scientific << setprecision(15) << "r = " << 0.5*(r_left+r_right) << " | M_ADM = " << M_ADM << endl;
+  // }
+
+  // utilities::compute_and_output_mass_aspect_function(-1,0,grid,a);
+  
+  // return 0;
 
   /* Print information to the user */
   phi.output_to_file(grid,"scalarfield",-1,0);
@@ -69,7 +92,9 @@ int main( int argc, char *argv[] ) {
   a.output_to_file(grid,"a",-1,0);
   alpha.output_to_file(grid,"alpha",-1,0);
   utilities::compute_and_output_mass_aspect_function(-1,0,grid,a);
-  // utilities::output_gridfunctions_central_values( 0, grid, phi.level_nm1, Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1 );
+  // utilities::output_energy_density_to_file( grid, Phi.level_nm1, Pi.level_nm1, a.level_nm1, 0 );
+
+  utilities::output_gridfunctions_central_values( 0, grid, phi.level_nm1, Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1 );
 
   /* The first time step is special, requires two half-integrations */
 
@@ -170,6 +195,9 @@ int main( int argc, char *argv[] ) {
   a.output_to_file(grid,"a",1,1);
   alpha.output_to_file(grid,"alpha",1,1);
   utilities::compute_and_output_mass_aspect_function(1,1,grid,a);
+  // utilities::output_energy_density_to_file( grid, Phi.level_n, Pi.level_n, a.level_n, 1 );
+
+  utilities::output_gridfunctions_central_values( 1, grid, phi.level_n, Phi.level_n, Pi.level_n, a.level_n, alpha.level_n );
 
   /* Define the central density */
   real max_central_density = 0.0;
@@ -192,7 +220,7 @@ int main( int argc, char *argv[] ) {
 
   int n = 2;
 
-  // bool lapse_collapsed = false;
+  bool lapse_collapsed = false;
 
   /* Begin evolving the ADM+EKG equations */
   while( grid.t < grid.t_final ) {
@@ -257,25 +285,23 @@ int main( int argc, char *argv[] ) {
     /* Check for NaNs */
     if( n%NAN_CHECKER_CHECKPOINT == 0 ) utilities::NaN_checker( n, grid, phi, Phi, Pi, a, alpha );
 
-    /* Compute the central density */
+    // /* Compute the central density */
     const real central_Phi_sqrd = SQR( Phi.level_np1[0] );
     const real central_Pi_sqrd  = SQR( Pi.level_np1[0]  );
     const real central_a_sqrd   = SQR( a.level_np1[0]   );
     const real central_density  = 0.5 * ( central_Phi_sqrd + central_Pi_sqrd ) / central_a_sqrd;
-    // cout << scientific << setprecision(15) << "\nCentral density: " << central_density << " | " << max_central_density << endl;
     if( central_density > max_central_density ) {
       max_central_density = central_density;
     }
 
     /* Check whether or not the lapse function has collapsed */
-    // if( grid.t > 5.2 )
-    //   if( utilities::check_for_collapse_of_the_lapse( grid, alpha ) ) {
-    // 	cout << "\n(SFcollapse1D INFO) The lapse function has collapsed!\n";
-    // 	cout <<   "(SFcollapse1D INFO) Iteration = " << n << " | t = " << setprecision(4) << grid.t << endl;
-    // 	cout <<   "(SFcollapse1D INFO) Stopping time integration...";
-    // 	// lapse_collapsed = true;
-    // 	break;
-    //   }
+    if( utilities::check_for_collapse_of_the_lapse( grid, alpha ) ) {
+      cout << "\n(SFcollapse1D INFO) The lapse function has collapsed!\n";
+      cout <<   "(SFcollapse1D INFO) Iteration = " << n << " | t = " << setprecision(4) << grid.t << endl;
+      cout <<   "(SFcollapse1D INFO) Stopping time integration...\n";
+      lapse_collapsed = true;
+      break;
+    }
 
     /* Print information to the user */
     if( n%OUTPUT_CHECKPOINT == 0 ) {
@@ -285,10 +311,23 @@ int main( int argc, char *argv[] ) {
       a.output_to_file(grid,"a",1,n);
       alpha.output_to_file(grid,"alpha",1,n);
       utilities::compute_and_output_mass_aspect_function(1,n,grid,a);
+      // utilities::output_energy_density_to_file( grid, Phi.level_np1, Pi.level_np1, a.level_np1, n );
     }
 
-    /* Output central values */
-    // utilities::output_gridfunctions_central_values( n, grid, phi.level_np1, Phi.level_np1, Pi.level_np1, a.level_np1, alpha.level_np1 );
+    // Output central values
+    // if( grid.t < 7.0 ) {
+    //   if( n%500 == 0 ) {
+    // 	utilities::output_gridfunctions_central_values( n, grid, phi.level_np1, Phi.level_np1, Pi.level_np1, a.level_np1, alpha.level_np1 );
+    //   }
+    // }
+    // else if( grid.t > 7.0 && grid.t < 8.0 ) {
+    //   if( n%200 == 0 ) {
+    // 	utilities::output_gridfunctions_central_values( n, grid, phi.level_np1, Phi.level_np1, Pi.level_np1, a.level_np1, alpha.level_np1 );
+    //   }
+    // }
+    // else {
+    //   utilities::output_gridfunctions_central_values( n, grid, phi.level_np1, Phi.level_np1, Pi.level_np1, a.level_np1, alpha.level_np1 );
+    // }
     
     /* Shift time levels appropriately */
     phi.shift_timelevels(2);
@@ -305,28 +344,38 @@ int main( int argc, char *argv[] ) {
     
   }
 
-  // Output max central density
+  /* Output max central density */
+  // Gaussian shell
   // const real eta_weak   = 0.3364266156435;
   // const real eta_strong = 0.3364266156436;
-  // const real phi0_c = 0.5*( eta_weak + eta_strong );
+  // Gaussian shell v2
+  // const real eta_weak   = 1.591203885327e-2;
+  // const real eta_strong = 1.591203885328e-2;
+  // Tanh shell
+  // const real eta_weak   = 2.914370451806e-1;
+  // const real eta_strong = 2.914370451807e-1;
+  // // Set eta_{*}
+  // const real eta_c      = 0.5*( eta_weak + eta_strong );
   // ofstream out_central_density;
-  // out_central_density.open("max_central_density_values.dat",ios_base::app);
+  // out_central_density.open("max_central_density_values_tanh.dat",ios_base::app);
   // out_central_density << scientific << setprecision(15)
-  // 		      << phi0                    << " "
-  // 		      << max_central_density     << " "
-  // 		      << phi0_c - phi0           << " "
-  // 		      << log(phi0_c - phi0)      << " "
+  // 		      << grid.phi0                << " "
+  // 		      << max_central_density      << " "
+  // 		      << eta_c - grid.phi0        << " "
+  // 		      << log(eta_c - grid.phi0)   << " "
   // 		      << log(max_central_density) << endl;
   // out_central_density.close();
 
-  cout << "\n(SFcollapse1D INFO) Program terminated without errors!\n";
+  if( lapse_collapsed ) {
+    cout << "(SFcollapse1D INFO) Run result: Gravitational collapse! Strong field regime.\n";
+    //   cout << setprecision(0) << "1\n";
+  }
+  else {
+    cout << "\n(SFcollapse1D INFO) Run result: Full dispersion! Weak field regime.\n";
+    //   cout << setprecision(0) << "0\n";
+  }
 
-  // if( lapse_collapsed ) {
-  //   cout << setprecision(0) << "1\n";
-  // }
-  // else {
-  //   cout << setprecision(0) << "0\n";
-  // }
+  cout << "\n(SFcollapse1D INFO) Program terminated without errors!\n";
 
   return 0;
 
