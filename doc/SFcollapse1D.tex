@@ -5,6 +5,12 @@
 % Set document type, font size, and paper size
 \documentclass[a4paper,11pt]{article}
 
+%% \usepackage{xcolor}
+%% \usepackage{pagecolor}
+
+%% \pagecolor{black}
+%% \color{white}
+
 % Load all necessary packages
 
 % Equation related packages
@@ -846,15 +852,15 @@ Figure~\ref{fig:phi_strong} shows clearly that no time is passing for the scalar
 
 \begin{figure}[H]
   \centering
-  \input{resources/critical_lapse_best.tex}
+  \input{resources/critical_lapse.tex}
   \caption[$\alpha_{\rm central}$ results near criticality using a different grid setup.]{$\alpha_{\rm central}$ results near criticality using a different grid setup. The simulation parameters used were $N_{r}=320$, $w=0.08$, and $r_{\max}=16$. Note that we have fine-tuned the critical parameter to $\d\eta\sim10^{-13}$.}
-  \label{fig:critical_alpha_best}
+  \label{fig:critical_alpha}
 \end{figure}
 
 The central energy density is then expected to have the behaviour
 
 \eq{
-\ln\lrpar{\rho^{\rm max}_{\rm central}} = C - 2\g\ln\lrpar{z} + A\sin\lrpar{\omega z + \varphi}\ ,\label{eq:fit_critical_exponent}
+\ln\lrpar{\rho^{\rm max}_{\rm central}} = C - 2\g\,z + A\sin\lrpar{\omega z + \varphi}\ ,\label{eq:fit_critical_exponent}
 }
 
 \n where $\g$ is the critical exponent, $\omega$ is the angular frequency of the oscillations, $\varphi$ the oscillation phase and $C$ and $A$ constants. The variable $z$ is defined as
@@ -1009,23 +1015,62 @@ Using the same train of thought, we can use a single pair $\lrpar{\tau_{n},\tau_
 \begin{figure}[htt]
   \centering
   \input{resources/accumulation_Lambda.tex}
-  \caption[Central value of the scalar field, $\phi_{\rm central}$, near criticality as a function of logarithmic proper time, $\Lambda$.]{Same as figure~\ref{fig:accumulation_tau}, but the $x$-axis is now the logarithmic proper time $\Lambda\equiv-\ln\lrpar{\tau_{*}-\tau}$. The accumulation time, $\tau_{*}$, was determined as the average value obtained from equation~\eqref{eq:tau_star} after using all possible pairs $\lrpar{\tau_{n},\tau_{n+1}}$ for which the scalar field was already in the critical regime. The figure also displays the number of times the central value of the scalar field changes sign over the evolution. The average oscillation period was estimated to be $\D \approx 3.43$, in agreement with the literature. We also observe that the central value of the scalar field oscillates in the interval $\lrpar{-0.61,0.61}$, consistent with what was found in~\cite{PhysRevLett.70.9,PhysRevD.92.084037,Baumgarte_2018}.}
+  \caption[Central value of the scalar field, $\phi_{\rm central}$, near criticality as a function of logarithmic proper time, $\Lambda$.]{Same as figure~\ref{fig:accumulation_tau}, but the $x$-axis is now the logarithmic proper time\linebreak $\Lambda\equiv-\ln\lrpar{\tau_{*}-\tau}$. The accumulation time, $\tau_{*}$, was determined as the average value obtained from equation~\eqref{eq:tau_star} after using all possible pairs $\lrpar{\tau_{n},\tau_{n+1}}$ for which the scalar field was already in the critical regime. The figure also displays the number of times the central value of the scalar field changes sign over the evolution. The average oscillation period was estimated to be $\D \approx 3.43$, in agreement with the literature. We also observe that the central value of the scalar field oscillates in the interval $\lrpar{-0.61,0.61}$, consistent with what was found in~\cite{PhysRevLett.70.9,PhysRevD.92.084037,Baumgarte_2018}.}
   \label{fig:accumulation_Lambda}
 \end{figure}
 
+\subsubsection{Universality}
+
 \begin{figure}[H]
   \centering
-  \input{resources/critical_lapse.tex}
-  \caption[$\alpha_{\rm central}$ results near criticality using a different grid setup.]{$\alpha_{\rm central}$ results near criticality using a different grid setup. The simulation parameters used were $N_{r}=960$, $w=0.11$, and $r_{\max}=16$. Note that we have fine-tuned the critical parameter to $\d\eta\sim10^{-10}$.}
-  \label{fig:critical_alpha}
+  \input{resources/critical_lapse_v2.tex}
+  \caption[$\alpha_{\rm central}$ results near criticality using a different grid setup.]{$\alpha_{\rm central}$ results near criticality using a different grid setup. The simulation parameters used were $N_{r}=320$, $w=0.086$, and $r_{\max}=24$. Note that we have fine-tuned the critical parameter to $\d\eta\sim10^{-13}$.}
+  \label{fig:critical_alpha_v2}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \input{resources/critical_lapse_new.tex}
-  \caption[$\alpha_{\rm central}$ results near criticality using yet another grid setup.]{$\alpha_{\rm central}$ results near criticality using yet another grid setup. The simulation parameters used were $N_{r}=320$, $w=0.09$, and $r_{\max}=16$. Note that we have fine-tuned the critical parameter to $\d\eta\sim10^{-11}$.}
-  \label{fig:critical_alpha_new}
+  \input{resources/critical_lapse_tanh.tex}
+  \caption[$\alpha_{\rm central}$ results near criticality using a different grid setup.]{$\alpha_{\rm central}$ results near criticality using a different grid setup. The simulation parameters used were $N_{r}=320$, $w=0.086$, and $r_{\max}=24$. Note that we have fine-tuned the critical parameter to $\d\eta\sim10^{-13}$.}
+  \label{fig:critical_alpha_tanh}
 \end{figure}
+
+\setlength{\abovecaptionskip}{16pt plus 0pt minus 0pt}
+
+\begin{figure}[H]
+  \centering
+  \input{resources/accumulation_tau_combined.tex}
+  \caption[$\phi_{\rm central}$ results near criticality for different initial data, as a function of proper time.]{$\phi_{\rm central}$ results near criticality for different initial data, as a function of proper time.}
+  \label{fig:accumulation_tau_combined}
+\end{figure}
+
+\setlength{\abovecaptionskip}{16pt plus 0pt minus 0pt}
+
+\begin{figure}[H]
+  \centering
+  \input{resources/accumulation_Lambda_combined.tex}
+  \caption[$\phi_{\rm central}$ results near criticality for different initial data, as a function of logarithmic proper time.]{$\phi_{\rm central}$ results near criticality for different initial data, as a function of logarithmic proper time.}
+  \label{fig:accumulation_Lambda_combined}
+\end{figure}
+
+\setlength{\abovecaptionskip}{10pt plus 0pt minus 0pt}
+
+\begin{figure}[H]
+  \centering
+  \input{resources/critical_exponent_combined.tex}
+  \caption[Central energy density near criticality for different initial data.]{The plot shows the maximum central density for several subcritical runs for different initial data.}
+  \label{fig:critical_exponent}
+\end{figure}
+
+\al{
+  \phi(0,r) &= \eta\exp\lrpar{-\frac{r^{2}}{\d^{2}}}\ ,\label{eq:ic_1}\\
+  \phi(0,r) &= \eta\,r^{3}\,\exp\lrsquare{-\lrpar{\frac{r-r_{0}}{\d}}^{2}}\ ,\label{eq:ic_2}\\
+  \phi(0,r) &= \eta\lrcurly{1 - \tanh\lrsquare{\lrpar{\frac{r-r_{0}}{\d}}^{2}}}\ .\label{eq:ic_3}
+}
+
+$$
+\nabla_{\mu}\lrpar{\nabla^{\mu}\phi}=0\ .
+$$
 
 % Print the references on a new page
 \clearpage
