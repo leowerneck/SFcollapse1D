@@ -65,10 +65,10 @@ unset key
 set xlabel "r"
 set ylabel label
 
-last_file_number  = 12900
+last_file_number  = 5900
 output_multiplier = 100
 number_of_files   = last_file_number/output_multiplier
-dt                = 8.484e-04
+dt                = 1.685e-03
 do for[i=0:number_of_files] {
   n = i*output_multiplier
   filename = sprintf("../out/%s_%08d.dat",which_var,n)
