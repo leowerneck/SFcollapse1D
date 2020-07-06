@@ -20,14 +20,14 @@
 
 # Set terminal and output
 set terminal epslatex
-set output "resources/critical_exponent.tex"
+set output "resources/critical_exponent_BSSN.tex"
 
 # Set axis ranges
-set xrange [-34:-6]
-set yrange [2:23]
+set xrange [-26:-7]
+set yrange [2:18]
 
-set xtics (-30,-25,-20,-15,-10)
-set ytics (5,10,15,20)
+set xtics (-25,-20,-15,-10)
+set ytics (4,8,12,16)
 
 # Set axis labels
 set xlabel "$\\ln\\left(\\eta_{*}-\\eta\\right)$"
@@ -38,11 +38,11 @@ key_data = "Data points"
 key_fit  = "Fitting curve"
 
 # Set the data file
-data_file = "../max_central_density_sorted.dat"
-fit_file  = "../fitting_curve_critical_exponent.dat"
+data_file = "../rho_BSSN.dat"
+fit_file  = "../fitting_curve_critical_exponent_BSSN.dat"
 
 set grid
-set key width -2.5 box lc rgb "#BDBDBD"
+set key width box lc rgb "#BDBDBD"
 
 # Generate the plot
-plot fit_file u 1:2 w l lw 3 lc rgb "red" notitle, data_file u 2:3 w p ls 4 lw 2 ps 1.5 lc rgb "blue" notitle, data_file u 2:(1000*$3) w p ls 4 lw 2 ps 1.5 lc rgb "blue" t key_data, fit_file u 1:(1000*$2) w l lw 3 lc rgb "red" t key_fit
+plot fit_file u 1:2 w l lw 3 lc rgb "red" notitle, data_file u 4:5 w p ls 4 lw 3 ps 2 lc rgb "blue" notitle, data_file u 4:(1000*$5) w p ls 4 lw 3 ps 2 lc rgb "blue" t key_data, fit_file u 1:(1000*$2) w l lw 3 lc rgb "red" t key_fit
