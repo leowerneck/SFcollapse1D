@@ -56,6 +56,8 @@ namespace grid {
     realvec r_ito_x0;
     /* Regridding parameters */
     int current_regrid_level, max_regrid_levels;
+    /* Amplitude of initial condition */
+    real phi0;
 
     /* .-----------------.
      * | Time Parameters |

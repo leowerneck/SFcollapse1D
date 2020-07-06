@@ -68,6 +68,7 @@ void grid::parameters::initialize_parameters(char *argv[]) {
    */
 #if( COORD_SYSTEM == SPHERICAL )
   x0_max = fabs(atof(argv[2]));
+  phi0   = atof(argv[4]);
 #elif( COORD_SYSTEM == SINH_SPHERICAL )
   x0_max            = 1.0;
   sinhA             = fabs(atof(argv[2]));
@@ -75,6 +76,7 @@ void grid::parameters::initialize_parameters(char *argv[]) {
   inv_sinhW         = 1.0/sinhW;
   sinh_inv_W        = sinh(inv_sinhW);
   A_over_sinh_inv_W = sinhA / sinh_inv_W;
+  phi0              = atof(argv[5]);
 #endif
   x0_min = 0.0;
 
