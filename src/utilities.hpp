@@ -52,7 +52,7 @@ namespace utilities {
   int bisection_index_finder( const realvec, const real );
 
   /* Printing useful grid information to the user */
-  void parameter_information( const real, grid::parameters );
+  void parameter_information( grid::parameters );
 
   /* Various error messages for SFcollapse1D */
   void SFcollapse1D_error( const int );
@@ -60,6 +60,9 @@ namespace utilities {
   /* Print central values */
   void output_gridfunctions_central_values( const int, const grid::parameters,
 					    const realvec, const realvec, const realvec, const realvec, const realvec );
+
+  /* Output energy density to file */
+  void output_energy_density_to_file( const grid::parameters, const realvec, const realvec, const realvec, const int );
 
   /* Lapse collapse checker */
   bool check_for_collapse_of_the_lapse( const grid::parameters, const gridfunction );

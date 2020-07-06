@@ -24,6 +24,7 @@
 #include <iomanip>
 #include <fstream>
 #include <cmath>
+#include <string>
 #include "macros.hpp"
 #include "grid.hpp"
 #include "utilities.hpp"
@@ -462,7 +463,7 @@ int utilities::bisection_index_finder( const realvec x, const real x_star ) {
 }
 
 /* Print parameter information to the user and to file */
-void utilities::parameter_information( const real phi0, grid::parameters grid ) {
+void utilities::parameter_information( grid::parameters grid ) {
 
   DECLARE_GRID_PARAMETERS;
 
@@ -511,7 +512,7 @@ void utilities::parameter_information( const real phi0, grid::parameters grid ) 
     cout << "Coordinate system: SinhSpherical" << endl;
 #endif
     cout << "Initial condition information:"   << endl;
-    cout << fixed      << setprecision(13) << "phi_{0}    = " << phi0            << endl;
+    cout << scientific << setprecision(15) << "phi_{0}    = " << phi0            << endl;
     cout << fixed      << setprecision(2)  << "r_{0}      = " << R0              << endl;
     cout << fixed      << setprecision(2)  << "delta      = " << DELTA           << endl;
     cout << "\nRadial grid information:"       << endl;
@@ -565,22 +566,54 @@ void utilities::output_gridfunctions_central_values( const int n, const grid::pa
   DECLARE_GRID_PARAMETERS;
 
   ofstream out_central;
+  // const string filename = "out_central_values"+to_string(phi0)+".dat";
+  const string filename = "out_central_values.dat";
   if( t > 0.0 ) {
-    out_central.open("out_central_values.dat",ios_base::app);
+    out_central.open(filename,ios_base::app);
   }
   else {
-    out_central.open("out_central_values.dat");
+    out_central.open(filename);
   }
 
   out_central << scientific << setprecision(15)
 	      << t        << " "
 	      << alpha[0] << " "
-	      << phi[0]   << " "
-	      << Phi[0]   << " "
-	      << Pi[0]    << " "
-	      << a[0]     << endl;
+	      << phi[0]   << endl;
 
   out_central.close();
+
+}
+
+void utilities::output_energy_density_to_file( const grid::parameters grid, const realvec Phi, const realvec Pi, const realvec a, const int n ) {
+
+  DECLARE_GRID_PARAMETERS;
+
+  ofstream outfile;
+  const int number_of_digits = 8;
+  outfile.open("out/rho_2d_"+string(number_of_digits - to_string(n).length(),'0')+to_string(n)+".dat");
+  outfile.precision(15);
+  /* Set the number of theta points */
+  const int Nx1Total = 36;
+  /* Set the step size in theta */
+  const real dx1 = 2.0 * M_PI / ( (real) Nx1Total - 1 );
+  
+  LOOP(0,Nx0Total) {
+    /* First compute the energy density */
+    const real Phi_sqrd = SQR( Phi[j] );
+    const real Pi_sqrd  = SQR( Pi[j]  );
+    const real a_sqrd   = SQR( a[j]   );
+    const real rho      = 0.5 * ( Phi_sqrd + Pi_sqrd ) / a_sqrd;
+    /* Then output to file */
+    for( int i=0; i<Nx1Total; i++ ) {
+      const real r     = r_ito_x0[j];
+      const real theta = i * dx1;
+      const real xCart = r * cos(theta);
+      const real yCart = r * sin(theta);
+      outfile << scientific << xCart << " " << yCart << " " << rho << endl;
+    }
+    outfile << endl;
+  }
+  outfile.close();
 
 }
 
