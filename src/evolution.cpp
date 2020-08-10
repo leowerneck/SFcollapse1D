@@ -243,7 +243,7 @@ void evolution::apply_outgoing_radiation_bdry_cond( const int n, grid::parameter
   DECLARE_GRID_PARAMETERS;
 
   /* Declare useful auxiliary variables */
-  const int J     = Nx0Total;
+  const int J     = Nx0Total - 1;
   const real tmp0 = - phi_n[J] / r_ito_x0[J];
   const real tmp1 = 0.5 * inv_dx0;
   const real tmp2 = - tmp1 * ( 3.0*phi_n[J] - 4.0*phi_n[J-1] + phi_n[J-2] );
