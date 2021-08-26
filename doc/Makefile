@@ -24,10 +24,10 @@ all: doc
 doc: SFcollapse1D.tex SFcollapse1D.bib
 	@echo "Compiling the documentation... \c"
 	@cp resources/*.eps .
-	@pdflatex SFcollapse1D.tex > /dev/null
-	@biber    SFcollapse1D     > /dev/null
-	@pdflatex SFcollapse1D.tex > /dev/null
-	@pdflatex SFcollapse1D.tex > /dev/null
+	@pdflatex SFcollapse1D.tex
+	@biber    SFcollapse1D
+	@pdflatex SFcollapse1D.tex
+	@pdflatex SFcollapse1D.tex
 	@echo "cleaning up... \c"
 	@rm -rf *.log *.gz *.aux *.out *.bbl *.bcf *.blg *.xml *.toc *.lof *.lot *-converted-to.pdf resources/*-converted-to.pdf *.eps
 	@echo "done!"
