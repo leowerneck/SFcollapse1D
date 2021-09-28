@@ -79,7 +79,7 @@ utilities_headers = $(SRC_DIR)/grid.hpp         \
                     $(SRC_DIR)/utilities.hpp    \
                     $(SRC_DIR)/gridfunction.hpp
 
-all: SFcollapse1D
+all: SFcollapse1D runscript.sh
 
 SFcollapse1D: $(OBJECTS) out_dir
 	$(CXX) $(CXXFLAGS) $(OBJ_PATHS) -o SFcollapse1D
@@ -99,6 +99,9 @@ evolution.o: $(SRC_DIR)/evolution.cpp $(evolution_headers) obj_dir
 utilities.o: $(SRC_DIR)/utilities.cpp $(utilities_headers) obj_dir
 	$(CXX) $(CXXFLAGS) -o $(OBJ_DIR)/utilities.o -c $(SRC_DIR)/utilities.cpp
 
+runscript.sh: generate_runscript.py
+	python generate_runscript.py
+
 obj_dir:
 	mkdir -p obj
 
@@ -109,4 +112,4 @@ clean:
 	rm -rf $(OBJ_PATHS) SFcollapse1D
 
 realclean:
-	rm -rf $(OBJ_PATHS) SFcollapse1D *.txt *.dat out/*.dat animations/*.gif doc/*.pdf out/ obj/
+	rm -rf $(OBJ_PATHS) SFcollapse1D *.txt *.dat out/*.dat animations/*.gif doc/*.pdf out/ obj/ runscript.sh
