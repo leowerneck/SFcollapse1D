@@ -44,7 +44,7 @@ This should produce the following `.gif` animation:
 
 ![SFcollapse1D output: scalar field in the weak field regime](animations/scalarfield.gif "SFcollapse1D output: scalar field in the weak field regime")
 
-## Reproducing the plots from [Werneck *et al.* (2021)](https://arxiv.org/pdf/2106.06553.pdf)
+## Production quality results
 
 For the sake of those wishing to reproduce results from our production
 runs, we provide a script which will help the user get to some of our
