@@ -43,3 +43,18 @@ The entire run should take less than 10 seconds. If you have `gnuplot` installed
 This should produce the following `.gif` animation:
 
 ![SFcollapse1D output: scalar field in the weak field regime](animations/scalarfield.gif "SFcollapse1D output: scalar field in the weak field regime")
+
+## Reproducing the plots from [Werneck *et al.* (2021)](https://arxiv.org/pdf/2106.06553.pdf)
+
+For the sake of those wishing to reproduce results from our production
+runs, we provide a script which will help the user get to some of our
+published results very quickly. In particular, after running `make`, one
+can then run
+
+`$: ./runscript.sh`
+
+and wait for the 30-60 minutes (depending on your system) that is
+required to generate the following plot, which reproduces Figure 2 in
+[Werneck *et al.* (2021)](https://arxiv.org/pdf/2106.06553.pdf).
+
+![Lapse function near criticality](animations/lapse_self_similarity.png)
