@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
 from matplotlib.patches import Rectangle
@@ -108,21 +109,32 @@ for i in range(N):
 # Begin plotting
 fig,ax = plt.subplots(ncols=3,figsize=(15,5),dpi=300,sharey=True)
 
+label_fontsize = 22
+ticks_fontsize = 20
+
 for i in range(3):
     ax[i].grid()
 
 # Plot 1: Central scalar field as a function of coordinate time
-ax[0].set_ylabel(r"$\varphi_{\rm central}$")
-ax[0].set_xlabel(r"$t$")
+ax[0].set_ylabel(r"$\varphi_{\rm central}$",fontsize=label_fontsize)
+ax[0].set_xlabel(r"$t$",fontsize=label_fontsize)
 ax[0].plot(t_w,sf_w,'blue')
+ax[0].set_xticks([0,1,2,3,4,5])
+ax[0].set_xticklabels(["0","1","2","3","4","5"],fontsize=ticks_fontsize)
+ax[0].set_yticks([-0.6,-0.4,-0.2,0,0.2,0.4,0.6])
+ax[0].set_yticklabels(["-0.6","-0.4","-0.2","0.0","0.2","0.4","0.6"],fontsize=ticks_fontsize)
 
 # Plot 2: Central scalar field as a function of proper time
-ax[1].set_xlabel(r"$\tau$")
+ax[1].set_xlabel(r"$\tau$",fontsize=label_fontsize)
 ax[1].plot(tauw,sf_w,'blue')
+ax[1].set_xticks([0,0.3,0.6,0.9,1.2])
+ax[1].set_xticklabels(["0.0","0.3","0.6","0.9","1.2"],fontsize=ticks_fontsize)
 
 # Plot 3: Central scalar field as a function of proper time
-ax[2].set_xlabel(r"$\xi \equiv - \ln\left|\tau_{*}-\tau\right|$")
+ax[2].set_xlabel(r"$\xi \equiv - \ln\left|\tau_{*}-\tau\right|$",fontsize=label_fontsize)
 ax[2].plot(xiw,sfxiw,'blue')
+ax[2].set_xticks([0,3,6,9,12,15])
+ax[2].set_xticklabels(["0","3","6","9","12","15"],fontsize=ticks_fontsize)
 
 outfile = "central_scalar_field.png"
 plt.tight_layout()
