@@ -853,20 +853,29 @@ Figure~\ref{fig:phi_strong} shows clearly that no time is passing for the scalar
 \begin{figure}[H]
   \centering
   \input{resources/critical_lapse.tex}
-  \caption[$\alpha_{\rm central}$ results near criticality using a different grid setup.]{$\alpha_{\rm central}$ results near criticality using a different grid setup. The simulation parameters used were $N_{r}=320$, $w=0.08$, and $r_{\max}=16$. Note that we have fine-tuned the critical parameter to $\d\eta\sim10^{-13}$.}
+  \caption[$\alpha_{\rm central}$ results near criticality using a
+    different grid setup.]{$\alpha_{\rm central}$ results near
+    criticality using a different grid setup. The simulation parameters
+    used were $N_{r}=320$, $w=0.08$, and $r_{\max}=16$. Note that we
+    have fine-tuned the critical parameter to $\d\eta\sim10^{-13}$. This
+    figure can be reproduced by running the file \texttt{runscript.sh},
+    or manually running \texttt{./SFcollapse1D 320 16 5.3162 0.08
+      0.3364266156435} and then \texttt{./SFcollapse1D 320 16 5.3162
+      0.08 0.3364266156436} (being careful to copy the output of the
+    first run before starting the second), followed by \texttt{python generate\_plot.py}. }
   \label{fig:critical_alpha}
 \end{figure}
 
 The central energy density is then expected to have the behaviour
 
 \eq{
-\ln\lrpar{\rho^{\rm max}_{\rm central}} = C - 2\g\,z + A\sin\lrpar{\omega z + \varphi}\ ,\label{eq:fit_critical_exponent}
+\ln\lrpar{\rho^{\rm max}_{\rm central}} = C - 2\g\,x + A\sin\lrpar{\omega x + \varphi}\ ,\label{eq:fit_critical_exponent}
 }
 
-\n where $\g$ is the critical exponent, $\omega$ is the angular frequency of the oscillations, $\varphi$ the oscillation phase and $C$ and $A$ constants. The variable $z$ is defined as
+\n where $\g$ is the critical exponent, $\omega$ is the angular frequency of the oscillations, $\varphi$ the oscillation phase and $C$ and $A$ constants. The variable $x$ is defined as
 
 \eq{
-  z \equiv \ln\abs{\eta_{*}-\eta}\ ,
+  x \equiv \ln\abs{\eta_{*}-\eta}\ ,
 }
 
 \n and $\eta<\eta_{*}$, since we are only evolving subcritical data. The angular frequency $\omega$ is related to the logarithmic period $\D$ via the relation
@@ -897,15 +906,15 @@ To fit the numerical data with equation~\eqref{eq:fit_critical_exponent}, we fit
 \n We then use~\eqref{eq:fit_critical_exponent_linear} to obtain the parameters $\eta_{*}$, $\g$, and $C$ using {\tt SciPy}~\cite{2020SciPy-NMeth}. Having determined the linear behaviour of the function, we compute
 
 \eq{
-g(z) \equiv \ln\lrpar{\rho^{\rm max}_{\rm central}} - C + 2\g\ln(z)\ ,
+g(x) \equiv \ln\lrpar{\rho^{\rm max}_{\rm central}} - C + 2\g\ln(x)\ ,
 }
 
-\n using the known values of $\eta_{*}$, $\g$, and $C$ and the numerical data. We then expect that that the data points $g(z)$ can be well approximated by the oscillatory function in equation~\eqref{eq:fit_critical_exponent}. To determine the remaining fit parameters, we first perfom an estimate of $T_{\rm data}$, the period of oscillation of the energy density data. This was done by plotting $g(z)$ and visually estimating the value of $T_{\rm data}$. This analysis allowed us to estimate $T_{\rm data}\approx4.6$, in agreement with~\cite{PhysRevD.55.R440}. The value of $\omega$ was then computed from the period, allowing us to impose reliable bounds to the possible values of the angular frequency. Figure~\ref{fig:critical_exponent_oscillation} shows how we determined $T_{\rm data}$ and that the oscillatory function in equation~\eqref{eq:fit_critical_exponent} is adequate to approximate $g(z)$.
+\n using the known values of $\eta_{*}$, $\g$, and $C$ and the numerical data. We then expect that that the data points $g(x)$ can be well approximated by the oscillatory function in equation~\eqref{eq:fit_critical_exponent}. To determine the remaining fit parameters, we first perfom an estimate of $T_{\rm data}$, the period of oscillation of the energy density data. This was done by plotting $g(x)$ and visually estimating the value of $T_{\rm data}$. This analysis allowed us to estimate $T_{\rm data}\approx4.6$, in agreement with~\cite{PhysRevD.55.R440}. The value of $\omega$ was then computed from the period, allowing us to impose reliable bounds to the possible values of the angular frequency. Figure~\ref{fig:critical_exponent_oscillation} shows how we determined $T_{\rm data}$ and that the oscillatory function in equation~\eqref{eq:fit_critical_exponent} is adequate to approximate $g(x)$.
 
 \begin{figure}[H]
   \centering
   \input{resources/critical_exponent_oscillation.tex}
-  \caption[Visual estimation of the oscillation period and fit.]{Visual estimation of the oscillation period (left) and fitting result (right). On the left panel, the vertical dashed lines are equally spaced with $\D z = 2.3$ and starting at $z=-28$. This allows us to visually estimate the period of oscillation to be $T_{\rm data}\approx4.6$, as expected. With this estimate of $T_{\rm data}$, we compute $\omega = \frac{2\pi}{T_{\rm data}}$ and use the value obtained to restringe our search for the fitting value of $\omega$. The function $A\sin\lrpar{\omega z+\varphi}$ is then used to fit the data points, and the result is displayed on the right panel. The values of $A$, $\omega$, and $\varphi$ are presented in table~\ref{tab:fit_critical_exponent}.}
+  \caption[Visual estimation of the oscillation period and fit.]{Visual estimation of the oscillation period (left) and fitting result (right). On the left panel, the vertical dashed lines are equally spaced with $\D x = 2.3$ and starting at $x=-28$. This allows us to visually estimate the period of oscillation to be $T_{\rm data}\approx4.6$, as expected. With this estimate of $T_{\rm data}$, we compute $\omega = \frac{2\pi}{T_{\rm data}}$ and use the value obtained to restringe our search for the fitting value of $\omega$. The function $A\sin\lrpar{\omega x+\varphi}$ is then used to fit the data points, and the result is displayed on the right panel. The values of $A$, $\omega$, and $\varphi$ are presented in table~\ref{tab:fit_critical_exponent}.}
   \label{fig:critical_exponent_oscillation}
 \end{figure}
 
@@ -955,16 +964,16 @@ We now show how the scalar field behaves near criticality. We start by computing
 We now define the logarithmic time variable
 
 \eq{
-  \Lambda \equiv -\ln\lrpar{\tau_{*}-\tau}\ ,\label{eq:log_proper_time}
+  \xi \equiv -\ln\abs{\tau_{*}-\tau}\ ,\label{eq:log_proper_time}
 }
 
-\n where $\tau_{*}$ is referred to as the \emph{accumulation time}. Now let $\tau_{n}$ represent the number of times $\phi_{\rm central}$ crosses zero throughout the simulation. Consider still two pairs of crossings $\lrpar{\tau_{n},\tau_{n+1}}$ and $\lrpar{\tau_{m},\tau_{m+1}}$ and assume that \emph{in the logarithmic time} $\Lambda$ these two pair of points correspond to the same half-period of oscillation $\frac{\D}{2}$, i.e.
+\n where $\tau_{*}$ is referred to as the \emph{accumulation time}. Now let $\tau_{n}$ represent the number of times $\phi_{\rm central}$ crosses zero throughout the simulation. Consider still two pairs of crossings $\lrpar{\tau_{n},\tau_{n+1}}$ and $\lrpar{\tau_{m},\tau_{m+1}}$ and assume that \emph{in the logarithmic time} $\xi$ these two pair of points correspond to the same half-period of oscillation $\frac{\D}{2}$, i.e.
 
 \eq{
-  \Lambda_{n+1}-\Lambda_{n} = \frac{\D}{2} = \Lambda_{m+1}-\Lambda_{m}\ ,\label{eq:lambda_diff}
+  \xi_{n+1}-\xi_{n} = \frac{\D}{2} = \xi_{m+1}-\xi_{m}\ ,\label{eq:lambda_diff}
 }
 
-\n where $\Lambda_{n} \equiv \Lambda\lrpar{\tau_{n}}$. From equations~\eqref{eq:log_proper_time} and~\eqref{eq:lambda_diff} we can estimate the accumulation time $\tau_{*}$ using
+\n where $\xi_{n} \equiv \xi\lrpar{\tau_{n}}$. From equations~\eqref{eq:log_proper_time} and~\eqref{eq:lambda_diff} we can estimate the accumulation time $\tau_{*}$ using
 
 \eq{
   \ln\lrpar{\frac{\tau_{*}-\tau_{n}}{\tau_{*}-\tau_{n+1}}} = \ln\lrpar{\frac{\tau_{*}-\tau_{m}}{\tau_{*}-\tau_{m+1}}} \implies \tau_{*} = \frac{\tau_{n}\tau_{m+1}-\tau_{m}\tau_{n+1}}{\tau_{n}-\tau_{n+1}-\tau_{m}+\tau_{m+1}}\ . \label{eq:tau_star}
@@ -977,13 +986,13 @@ Using the same train of thought, we can use a single pair $\lrpar{\tau_{n},\tau_
 }
 
 
-%% tau = 0.625914 | diff = 0.483540 | Lambda = 0.504722  | Diff(0,1) = 0.483540 | Delta(0,1) = 3.23
-%% tau = 1.109454 | diff = 0.098750 | Lambda = 2.119155  | Diff(1,2) = 0.098750 | Delta(1,2) = 3.45
-%% tau = 1.208204 | diff = 0.017499 | Lambda = 3.845173  | Diff(2,3) = 0.017499 | Delta(2,3) = 3.41
-%% tau = 1.225703 | diff = 0.003190 | Lambda = 5.550879  | Diff(3,4) = 0.003190 | Delta(3,4) = 3.44
-%% tau = 1.228893 | diff = 0.000565 | Lambda = 7.273271  | Diff(4,5) = 0.000565 | Delta(4,5) = 3.37
-%% tau = 1.229458 | diff = 0.000106 | Lambda = 8.958907  | Diff(5,6) = 0.000106 | Delta(5,6) = 3.46
-%% tau = 1.229564 | diff = 0.000054 | Lambda = 10.689805 |                      | Delta(avg) = 3.43
+%% tau = 0.625914 | diff = 0.483540 | xi = 0.504722  | Diff(0,1) = 0.483540 | Delta(0,1) = 3.23
+%% tau = 1.109454 | diff = 0.098750 | xi = 2.119155  | Diff(1,2) = 0.098750 | Delta(1,2) = 3.45
+%% tau = 1.208204 | diff = 0.017499 | xi = 3.845173  | Diff(2,3) = 0.017499 | Delta(2,3) = 3.41
+%% tau = 1.225703 | diff = 0.003190 | xi = 5.550879  | Diff(3,4) = 0.003190 | Delta(3,4) = 3.44
+%% tau = 1.228893 | diff = 0.000565 | xi = 7.273271  | Diff(4,5) = 0.000565 | Delta(4,5) = 3.37
+%% tau = 1.229458 | diff = 0.000106 | xi = 8.958907  | Diff(5,6) = 0.000106 | Delta(5,6) = 3.46
+%% tau = 1.229564 | diff = 0.000054 | xi = 10.689805 |                      | Delta(avg) = 3.43
 \begin{table}[ht]
   \centering
   \begin{tabular}{c|ccccccc}
@@ -992,7 +1001,7 @@ Using the same train of thought, we can use a single pair $\lrpar{\tau_{n},\tau_
     $n$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$\\
     \hline
     $\tau_{n}$ & 0.625914 & 1.109454 & 1.208204 & 1.225703 & 1.228893 & 1.229458 & 1.229564\\
-    $\Lambda_{n}$ & 0.504722 & 2.119155 & 3.845173 & 5.550879 & 7.273271 & 8.958907 & 10.689805\\
+    $\xi_{n}$ & 0.504722 & 2.119155 & 3.845173 & 5.550879 & 7.273271 & 8.958907 & 10.689805\\
     \hline
     \hline
     \multirow{2}{*}{Eq.~\eqref{eq:Delta_method2}} & $\D_{0,1}$ & $\D_{1,2}$ & $\D_{2,3}$ & $\D_{3,4}$ & $\D_{4,5}$ & $\D_{5,6}$ & $\D_{\rm avg}$\\
@@ -1001,7 +1010,7 @@ Using the same train of thought, we can use a single pair $\lrpar{\tau_{n},\tau_
     \hline
     \hline
   \end{tabular}
-  \caption[Values of proper time and logarithmic proper time used to estimate the universal oscillation period $\D$.]{Values of proper time, $\tau$, and logarithmic proper time, $\Lambda$, for which the scalar field crosses zero. From these values we compute the period $\Delta$ using equation~\eqref{eq:Delta_method2}. The notation $\Delta_{n,n+1}$ indicates which pair $\lrpar{\tau_{n},\tau_{n+1}}$ was used to estimate $\Delta$. The average value $\D_{\rm avg}$ does not take into account $\D_{0,1}$ because we noticed that the scalar field was still transitioning to the critical regime.}
+  \caption[Values of proper time and logarithmic proper time used to estimate the universal oscillation period $\D$.]{Values of proper time, $\tau$, and logarithmic proper time, $\xi$, for which the scalar field crosses zero. From these values we compute the period $\Delta$ using equation~\eqref{eq:Delta_method2}. The notation $\Delta_{n,n+1}$ indicates which pair $\lrpar{\tau_{n},\tau_{n+1}}$ was used to estimate $\Delta$. The average value $\D_{\rm avg}$ does not take into account $\D_{0,1}$ because we noticed that the scalar field was still transitioning to the critical regime.}
   \label{tab:accumulation_time}
 \end{table}
 
@@ -1015,7 +1024,7 @@ Using the same train of thought, we can use a single pair $\lrpar{\tau_{n},\tau_
 \begin{figure}[htt]
   \centering
   \input{resources/accumulation_Lambda.tex}
-  \caption[Central value of the scalar field, $\phi_{\rm central}$, near criticality as a function of logarithmic proper time, $\Lambda$.]{Same as figure~\ref{fig:accumulation_tau}, but the $x$-axis is now the logarithmic proper time\linebreak $\Lambda\equiv-\ln\lrpar{\tau_{*}-\tau}$. The accumulation time, $\tau_{*}$, was determined as the average value obtained from equation~\eqref{eq:tau_star} after using all possible pairs $\lrpar{\tau_{n},\tau_{n+1}}$ for which the scalar field was already in the critical regime. The figure also displays the number of times the central value of the scalar field changes sign over the evolution. The average oscillation period was estimated to be $\D \approx 3.43$, in agreement with the literature. We also observe that the central value of the scalar field oscillates in the interval $\lrpar{-0.61,0.61}$, consistent with what was found in~\cite{PhysRevLett.70.9,PhysRevD.92.084037,Baumgarte_2018}.}
+  \caption[Central value of the scalar field, $\phi_{\rm central}$, near criticality as a function of logarithmic proper time, $\xi$.]{Same as figure~\ref{fig:accumulation_tau}, but the $x$-axis is now the logarithmic proper time\linebreak $\xi\equiv-\ln\abs{\tau_{*}-\tau}$. The accumulation time, $\tau_{*}$, was determined as the average value obtained from equation~\eqref{eq:tau_star} after using all possible pairs $\lrpar{\tau_{n},\tau_{n+1}}$ for which the scalar field was already in the critical regime. The figure also displays the number of times the central value of the scalar field changes sign over the evolution. The average oscillation period was estimated to be $\D \approx 3.43$, in agreement with the literature. We also observe that the central value of the scalar field oscillates in the interval $\lrpar{-0.61,0.61}$, consistent with what was found in~\cite{PhysRevLett.70.9,PhysRevD.92.084037,Baumgarte_2018}.}
   \label{fig:accumulation_Lambda}
 \end{figure}
 
