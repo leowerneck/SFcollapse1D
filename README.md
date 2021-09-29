@@ -47,8 +47,8 @@ This should produce the following `.gif` animation:
 ## Production quality results
 
 For the sake of those wishing to reproduce results from our production
-runs, we provide a script which will help the user get to some of our
-published results very quickly. In particular, after running `make`, one
+runs, we provide a script which will help the user to easily reproduce
+some of our published results. In particular, after running `make`, one
 can then run
 
 `$: ./runscript.sh`
@@ -56,10 +56,26 @@ can then run
 and wait for the 30-60 minutes (depending on your system) that is
 required to perform to runs with `SFcollapse1D` and generate the data
 required to make the plots `lapse_self_similarity.png` and
-`central_scalar_field.png`, which is generated using the
-`generate_plot.py` script. These reproduce Figures 2 and 4 in
-[Werneck *et al.* (2021)](https://arxiv.org/pdf/2106.06553.pdf),
-respectively.
+`central_scalar_field.png`. These plots are generated using the
+`generate_plot.py` script.
+
+If for some reason the user is not able to generate the file
+`runscript.sh` using `make`, the contents of that file are (modulo some
+processor affinity optimizations):
+
+```bash
+#!/bin/bash
+./SFcollapse1D 320 16 5.3162 0.08 0.3364266156435
+mv out_central_values.dat out_weak.dat
+./SFcollapse1D 320 16 5.3162 0.08 0.3364266156436
+mv out_central_values.dat out_strong.dat
+python generate_plot.py
+
+```
+
+The plots generated after running the commands above, which we display
+below, reproduce Figures 2 and 4 in [Werneck *et al.*
+(2021)](https://arxiv.org/pdf/2106.06553.pdf), respectively.
 
 ![Central lapse function near criticality](animations/lapse_self_similarity.png)
 
