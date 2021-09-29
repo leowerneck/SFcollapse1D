@@ -54,7 +54,13 @@ can then run
 `$: ./runscript.sh`
 
 and wait for the 30-60 minutes (depending on your system) that is
-required to generate the following plot, which reproduces Figure 2 in
-[Werneck *et al.* (2021)](https://arxiv.org/pdf/2106.06553.pdf).
+required to perform to runs with `SFcollapse1D` and generate the data
+required to make the plots `lapse_self_similarity.png` and
+`central_scalar_field.png`, which is generated using the
+`generate_plot.py` script. These reproduce Figures 2 and 4 in
+[Werneck *et al.* (2021)](https://arxiv.org/pdf/2106.06553.pdf),
+respectively.
 
-![Lapse function near criticality](animations/lapse_self_similarity.png)
+![Central lapse function near criticality](animations/lapse_self_similarity.png)
+
+![Central scalar field near criticality](animations/central_scalar_field.png)
