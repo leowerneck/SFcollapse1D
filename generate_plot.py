@@ -3,6 +3,14 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
 from matplotlib.patches import Rectangle
 
+def compute_proper_time(time,alpha):
+    # Compute proper time
+    proper_time = np.zeros(len(time))
+    for n in range(1,len(time)):
+        proper_time[n] = proper_time[n-1] + 0.5*(time[n]-time[n-1])*(alpha[n]+alpha[n-1])
+
+    return proper_time
+
 def draw_rectangle_and_connecting_lines(ax1_in,ax2_in,rec_left,rec_right,rec_bot,rec_top,connect):
 
     # Draw rectangle
@@ -82,5 +90,41 @@ draw_rectangle_and_connecting_lines(ax2,ax3,xl3[0],xl3[1],yl3[0],yl3[1],'left_to
 fig.text(0.5, 0.03, r"$t$", ha='center', va='center')
 fig.text(0.03, 0.5, r"$\alpha_{\rm central}$", ha='center', va='center', rotation='vertical')
 
+plt.savefig(outfile,dpi=300,bbox_inches='tight',facecolor='white')
+plt.close(fig)
+
+# Compute proper time
+tauw = compute_proper_time(t_w,alp_w)
+
+# Compute logarithmic proper time
+tau_star = 1.22958674
+N        = len(tauw[tauw<=tau_star])
+xiw      = np.zeros(N)
+sfxiw    = np.zeros(N)
+for i in range(N):
+    xiw[i]   = -np.log(np.abs(tau_star-tauw[i]))
+    sfxiw[i] = sf_w[i]
+
+# Begin plotting
+fig,ax = plt.subplots(ncols=3,figsize=(15,5),dpi=300,sharey=True)
+
+for i in range(3):
+    ax[i].grid()
+
+# Plot 1: Central scalar field as a function of coordinate time
+ax[0].set_ylabel(r"$\varphi_{\rm central}$")
+ax[0].set_xlabel(r"$t$")
+ax[0].plot(t_w,sf_w,'blue')
+
+# Plot 2: Central scalar field as a function of proper time
+ax[1].set_xlabel(r"$\tau$")
+ax[1].plot(tauw,sf_w,'blue')
+
+# Plot 3: Central scalar field as a function of proper time
+ax[2].set_xlabel(r"$\xi \equiv - \ln\left|\tau_{*}-\tau\right|$")
+ax[2].plot(xiw,sfxiw,'blue')
+
+outfile = "central_scalar_field.png"
+plt.tight_layout()
 plt.savefig(outfile,dpi=300,bbox_inches='tight',facecolor='white')
 plt.close(fig)
